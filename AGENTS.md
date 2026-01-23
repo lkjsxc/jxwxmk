@@ -287,5 +287,3 @@ A slice is done when:
 3. Performance (avoid pathological patterns)
 4. Content richness via reusable systems
 5. Visual polish (last)
-
-End of AGENTS.md
