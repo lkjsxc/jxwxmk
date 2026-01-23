@@ -24,8 +24,8 @@ services:
 
   backend:
     build:
-      context: ./src/backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./src/backend/Dockerfile
     environment:
       DATABASE_URL: postgresql://postgres:password@postgres/starve_game
       REDIS_URL: redis://redis:6379

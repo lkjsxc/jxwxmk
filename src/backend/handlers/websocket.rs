@@ -1,10 +1,7 @@
 use actix_web::{web, HttpRequest, HttpResponse};
 use actix_web_actors::ws;
-use actix::prelude::*;
+use actix::{Actor, StreamHandler, AsyncContext, ActorContext};
 use std::time::{Duration, Instant};
-
-use crate::models::player::Player;
-use crate::services::player_service::PlayerService;
 
 pub struct MyWebSocket {
     player_id: Option<uuid::Uuid>,
@@ -25,7 +22,7 @@ impl Actor for MyWebSocket {
 
     fn started(&mut self, ctx: &mut Self::Context) {
         self.last_heartbeat = Instant::now();
-        ctx.run_interval(Duration::from_secs(5), |act, ctx| {
+        ctx.run_interval(Duration::from_secs(5), |act: &mut Self, ctx: &mut Self::Context| {
             if Instant::now().duration_since(act.last_heartbeat) > Duration::from_secs(10) {
                 ctx.stop();
             }

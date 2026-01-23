@@ -1,5 +1,4 @@
 use actix_web::{web, App, HttpServer};
-use actix_web_actors::ws;
 use std::env;
 
 mod config;

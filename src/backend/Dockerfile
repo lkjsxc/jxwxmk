@@ -1,9 +1,10 @@
-FROM rust:1.75 AS builder
+FROM rust:latest AS builder
 
 WORKDIR /app
 
-COPY Cargo.toml Cargo.lock ./
-COPY src ./src
+COPY Cargo.toml ./
+RUN if [ -f Cargo.lock ]; then cp Cargo.lock ./; else touch Cargo.lock; fi
+COPY src/backend/ ./
 
 RUN cargo build --release
 
