@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starve.io Clone</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+        
+        #gameCanvas {
+            display: block;
+            margin: 0 auto;
+            background: #1a1a1a;
+        }
+        
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .health-bar, .hunger-bar {
+            width: 200px;
+            height: 20px;
+            background: #333;
+            border: 1px solid #fff;
+            margin: 5px 0;
+        }
+        
+        .health-fill {
+            height: 100%;
+            background: #ff4444;
+        }
+        
+        .hunger-fill {
+            height: 100%;
+            background: #ffaa44;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="1200" height="800"></canvas>
+    
+    <div id="ui">
+        <div>Health: <span id="healthValue">100</span></div>
+        <div class="health-bar">
+            <div class="health-fill" id="healthBar"></div>
+        </div>
+        <div>Hunger: <span id="hungerValue">100</span></div>
+        <div class="hunger-bar">
+            <div class="hunger-fill" id="hungerBar"></div>
+        </div>
+    </div>
+    
+    <script src="dist/main.js"></script>
+</body>
+</html>
