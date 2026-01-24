@@ -1,51 +1,21 @@
-use serde::{Deserialize, Serialize};
-use bincode;
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct Message {
-    pub protocol_version: u32,
-    pub msg_type: MessageType,
-    pub seq: u64,
-    pub payload: Vec<u8>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub enum MessageType {
-    Input(InputData),
-    Snapshot(SnapshotData),
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct InputData {
-    pub player_id: u64,
-    pub action: String,
-    pub data: Vec<u8>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct SnapshotData {
-    pub server_tick: u64,
-    pub world_state: Vec<u8>,
-}
-
-#[derive(Debug)]
-pub struct InputEvent {
-    pub session_id: String,
-    pub message: Message,
-}
-
-#[derive(Debug)]
-pub struct SnapshotEvent {
-    pub session_id: String,
-    pub message: Message,
-}
-
-impl Message {
-    pub fn encode(&self) -> Result<Vec<u8>, bincode::Error> {
-        bincode::serialize(self)
-    }
-
-    pub fn decode(bytes: &[u8]) -> Result<Self, bincode::Error> {
-        bincode::deserialize(bytes)
+    #[test]
+    fn test_message_encode_decode() {
+        let msg = Message {
+            protocol_version: 1,
+            msg_type: MessageType::Input(InputData {
+                player_id: 123,
+                action: "move".to_string(),
+                data: vec![1, 2, 3],
+            }),
+            seq: 42,
+            payload: vec![],
+        };
+        let encoded = msg.encode().unwrap();
+        let decoded = Message::decode(&encoded).unwrap();
+        assert_eq!(msg, decoded);
     }
 }
