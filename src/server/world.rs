@@ -1,17 +1,33 @@
 use std::collections::HashMap;
 use crate::net::{Message, MessageType, InputData, SnapshotData};
 
+mod gathering;
+mod crafting;
+mod survival;
+mod combat;
+
 #[derive(Debug, Clone)]
 pub struct Player {
     pub id: String,
     pub position: (f32, f32),
     pub health: f32,
+    pub hunger: f32,
     pub inventory: HashMap<u32, u32>,  // item_id -> quantity
+}
+
+#[derive(Debug)]
+pub struct ResourceNode {
+    pub id: u32,
+    pub node_type: String,  // "tree", "rock"
+    pub position: (f32, f32),
+    pub depleted: bool,
+    pub respawn_tick: u64,
 }
 
 #[derive(Debug)]
 pub struct WorldState {
     pub players: HashMap<String, Player>,
+    pub resources: Vec<ResourceNode>,
     pub tick: u64,
 }
 
@@ -19,6 +35,10 @@ impl WorldState {
     pub fn new() -> Self {
         Self {
             players: HashMap::new(),
+            resources: vec![
+                ResourceNode { id: 1, node_type: "tree".to_string(), position: (100.0, 200.0), depleted: false, respawn_tick: 0 },
+                ResourceNode { id: 2, node_type: "rock".to_string(), position: (150.0, 250.0), depleted: false, respawn_tick: 0 },
+            ],
             tick: 0,
         }
     }
@@ -29,6 +49,7 @@ impl WorldState {
             id: input.session_id.clone(),
             position: (0.0, 0.0),
             health: 100.0,
+            hunger: 100.0,
             inventory: HashMap::new(),
         });
 
@@ -38,10 +59,20 @@ impl WorldState {
                 if let Some(player) = self.players.get_mut(&input.session_id) {
                     match data.action.as_str() {
                         "move" => {
-                            // Simple move: assume data contains dx, dy
-                            // In real, decode from payload
-                            player.position.0 += 1.0;  // Placeholder
+                            player.position.0 += 1.0;
                             player.position.1 += 1.0;
+                        }
+                        "gather" => {
+                            gathering::gather_resource(player, &mut self.resources, data.data.clone());
+                        }
+                        "craft" => {
+                            crafting::craft_item(player, data.data.clone());
+                        }
+                        "eat" => {
+                            survival::consume_food(player, data.data.clone());
+                        }
+                        "attack" => {
+                            // Placeholder for PvP
                         }
                         _ => {}
                     }
@@ -53,13 +84,13 @@ impl WorldState {
 
     pub fn tick(&mut self) {
         self.tick += 1;
-        // Placeholder: decrease health over time
         for player in self.players.values_mut() {
-            player.health -= 0.1;
-            if player.health < 0.0 {
-                player.health = 0.0;
+            survival::update_survival(player);
+            if player.health <= 0.0 {
+                // Respawn or end game
             }
         }
+        gathering::update_resources(&mut self.resources, self.tick);
     }
 
     pub fn get_sessions(&self) -> Vec<String> {
