@@ -1,4 +1,5 @@
-use tracing::{debug, info};
+use serde::{Serialize, Deserialize};
+use crate::world::{ResourceNode, ResourceType, Inventory};
 
 pub struct MovementSystem;
 
@@ -76,16 +77,12 @@ impl SurvivalSystem {
         thirst: f32,
         delta_time: f32,
     ) {
-        // Health regenerates when hunger and thirst are high
-        // Health depletes when hunger or thirst are low
         let hunger_factor = (hunger / max).min(1.0);
         let thirst_factor = (thirst / max).min(1.0);
         
         let health_change = if hunger_factor > 0.7 && thirst_factor > 0.7 {
-            // Regenerate health
             0.1 * delta_time
         } else if hunger_factor < 0.3 || thirst_factor < 0.3 {
-            // Lose health from starvation/dehydration
             -0.2 * delta_time
         } else {
             0.0
@@ -93,6 +90,44 @@ impl SurvivalSystem {
         
         *current += health_change;
         *current = current.clamp(0.0, max);
+    }
+}
+
+pub struct ResourceSystem;
+
+impl ResourceSystem {
+    pub fn get_resource_item_id(resource_type: &ResourceType) -> String {
+        match resource_type {
+            ResourceType::Tree => "wood".to_string(),
+            ResourceType::Rock => "stone".to_string(),
+            ResourceType::Bush => "berry".to_string(),
+            ResourceType::Ore => "ore".to_string(),
+            ResourceType::Water => "water".to_string(),
+        }
+    }
+
+    pub fn gather(
+        resource: &mut ResourceNode,
+        inventory: &mut Inventory,
+        gather_power: f32,
+    ) -> Option<(String, u32)> {
+        if resource.quantity <= 0.0 {
+            return None;
+        }
+
+        let amount_to_take = gather_power.min(resource.quantity);
+        resource.quantity -= amount_to_take;
+        
+        if resource.quantity <= 0.0 {
+            resource.quantity = 0.0;
+        }
+        
+        let item_id = Self::get_resource_item_id(&resource.resource_type);
+        let amount_int = amount_to_take.ceil() as u32;
+
+        *inventory.items.entry(item_id.clone()).or_insert(0) += amount_int;
+        
+        Some((item_id, amount_int))
     }
 }
 
@@ -110,21 +145,47 @@ impl CraftingSystem {
             return false;
         }
         
-        // Remove required items
         for (item_type, quantity) in &recipe.requirements {
             if let Some(item_quantity) = inventory.items.get_mut(item_type) {
                 *item_quantity -= *quantity;
             }
         }
         
-        // Add crafted item
         *inventory.items.entry(recipe.result.item_type.clone()).or_insert(0) += recipe.result.quantity;
-        
         true
+    }
+
+    pub fn get_default_recipes() -> Vec<CraftingRecipe> {
+        vec![
+            CraftingRecipe {
+                id: "wood_pickaxe".to_string(),
+                name: "Wooden Pickaxe".to_string(),
+                requirements: vec![("wood".to_string(), 10)],
+                result: CraftingResult { item_type: "pickaxe_wood".to_string(), quantity: 1 },
+                crafting_time: 2.0,
+                tier: 1,
+            },
+            CraftingRecipe {
+                id: "stone_pickaxe".to_string(),
+                name: "Stone Pickaxe".to_string(),
+                requirements: vec![("wood".to_string(), 5), ("stone".to_string(), 10)],
+                result: CraftingResult { item_type: "pickaxe_stone".to_string(), quantity: 1 },
+                crafting_time: 3.0,
+                tier: 1,
+            },
+            CraftingRecipe {
+                id: "campfire".to_string(),
+                name: "Campfire".to_string(),
+                requirements: vec![("wood".to_string(), 20), ("stone".to_string(), 5)],
+                result: CraftingResult { item_type: "campfire".to_string(), quantity: 1 },
+                crafting_time: 5.0,
+                tier: 1,
+            },
+        ]
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CraftingRecipe {
     pub id: String,
     pub name: String,
@@ -134,16 +195,10 @@ pub struct CraftingRecipe {
     pub tier: u32,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CraftingResult {
     pub item_type: String,
     pub quantity: u32,
-}
-
-#[derive(Debug, Clone)]
-pub struct Inventory {
-    pub items: std::collections::HashMap<String, u32>,
-    pub max_slots: usize,
 }
 
 #[derive(Debug, Clone, Copy)]

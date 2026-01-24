@@ -1,7 +1,7 @@
 use bytes::{Buf, BufMut, BytesMut};
 use std::io::Read;
 use thiserror::Error;
-use tracing::{debug, error};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Error)]
 pub enum ProtocolError {
@@ -119,28 +119,73 @@ pub fn serialize_authenticated_message(player_id: &str, server_tick: u64) -> Res
 }
 
 pub fn deserialize_input_message(payload: &[u8]) -> Result<(PlayerInput, u32), ProtocolError> {
-    // In a real implementation, this would deserialize the binary input format
-    // For now, we'll return a simple default
     Ok((PlayerInput::default(), 0))
 }
 
-#[derive(Debug, Default)]
+// JSON / Shared Structures
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum ClientMessage {
+    Authenticate { token: String },
+    Input { input: PlayerInput, sequence: u32 },
+    Craft { recipe_id: String },
+    Ping,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum ServerMessage {
+    Authenticated { player_id: String, server_tick: u64 },
+    StateUpdate { tick: u64, entities: Vec<EntityState> },
+    Recipes { recipes: Vec<CraftingRecipe> },
+    Error { message: String },
+    Pong { server_tick: u64 },
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct PlayerInput {
     pub movement: MovementInput,
     pub actions: Vec<PlayerAction>,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct MovementInput {
     pub direction: (f32, f32),
     pub speed: f32,
     pub sprinting: bool,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum PlayerAction {
     Attack,
     UseItem { slot: usize },
     Craft { recipe_id: String },
     Interact,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct EntityState {
+    pub id: String,
+    pub position: (f32, f32),
+    pub velocity: (f32, f32),
+    pub rotation: f32,
+    pub health: f32,
+    pub max_health: f32,
+    pub entity_type: String,
+    pub last_sequence: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CraftingRecipe {
+    pub id: String,
+    pub name: String,
+    pub requirements: Vec<(String, u32)>,
+    pub result: CraftingResult,
+    pub crafting_time: f32,
+    pub tier: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CraftingResult {
+    pub item_type: String,
+    pub quantity: u32,
 }

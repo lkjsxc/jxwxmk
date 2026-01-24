@@ -1,10 +1,14 @@
 use actix_web::{web, HttpResponse, Responder, HttpRequest};
 use actix_web_actors::ws;
-use actix::{Actor, StreamHandler, ActorContext};
+use actix::{Actor, StreamHandler, ActorContext, AsyncContext, Message};
 use std::sync::Arc;
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, broadcast};
 use tracing::{info, debug, error};
 use crate::{AppState, simulation::GameEvent};
+use crate::protocol::{
+    self, ClientMessage, ServerMessage, PlayerInput, PlayerAction, EntityState
+};
+use tokio_stream::wrappers::BroadcastStream;
 
 pub fn configure_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(
@@ -14,7 +18,7 @@ pub fn configure_routes(cfg: &mut web::ServiceConfig) {
     );
 }
 
-    async fn health_check() -> impl Responder {
+async fn health_check() -> impl Responder {
     info!("Health check requested");
     HttpResponse::Ok().json(serde_json::json!({"status": "healthy"}))
 }
@@ -26,11 +30,14 @@ async fn websocket_handler(
 ) -> Result<HttpResponse, actix_web::Error> {
     info!("WebSocket connection attempt");
     
+    let rx = data.broadcast_sender.subscribe();
+
     ws::start(
         WebSocketSession {
             id: 0,
             simulation: data.simulation.clone(),
             db_pool: data.db_pool.clone(),
+            broadcast_receiver: Some(rx),
         },
         &req,
         stream,
@@ -41,52 +48,71 @@ pub struct WebSocketSession {
     pub id: u64,
     pub simulation: Arc<Mutex<crate::simulation::GameSimulation>>,
     pub db_pool: sqlx::PgPool,
+    pub broadcast_receiver: Option<broadcast::Receiver<ServerMessage>>,
 }
+
+#[derive(Message)]
+#[rtype(result = "()")]
+struct BroadcastMessage(ServerMessage);
 
 impl Actor for WebSocketSession {
     type Context = ws::WebsocketContext<Self>;
+
+    fn started(&mut self, ctx: &mut Self::Context) {
+        if let Some(rx) = self.broadcast_receiver.take() {
+            let stream = BroadcastStream::new(rx);
+            ctx.add_stream(stream);
+        }
+    }
+}
+
+impl StreamHandler<Result<ServerMessage, tokio_stream::wrappers::errors::BroadcastStreamRecvError>> for WebSocketSession {
+    fn handle(
+        &mut self,
+        msg: Result<ServerMessage, tokio_stream::wrappers::errors::BroadcastStreamRecvError>,
+        ctx: &mut Self::Context,
+    ) {
+        match msg {
+            Ok(server_msg) => {
+                let json = serde_json::to_string(&server_msg).unwrap_or_default();
+                ctx.text(json);
+            }
+            Err(e) => {
+                error!("Broadcast receive error: {}", e);
+            }
+        }
+    }
 }
 
 impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WebSocketSession {
     fn handle(&mut self, msg: Result<ws::Message, ws::ProtocolError>, ctx: &mut Self::Context) {
         match msg {
             Ok(ws::Message::Ping(msg)) => {
-                debug!("Received Ping: {:?}", msg);
                 ctx.pong(&msg);
             }
             Ok(ws::Message::Pong(_)) => {
-                debug!("Received Pong");
             }
              Ok(ws::Message::Text(text)) => {
-                debug!("Received text message: {}", text);
                 self.handle_text_message(text.to_string(), ctx);
             }
             Ok(ws::Message::Binary(bin)) => {
-                debug!("Received binary message: {} bytes", bin.len());
                 self.handle_binary_message(bin.to_vec(), ctx);
             }
             Ok(ws::Message::Close(reason)) => {
                 info!("Client disconnected: {:?}", reason);
                 ctx.stop();
             }
-            Ok(ws::Message::Continuation(_)) => {
-                debug!("Received continuation frame");
-                ctx.stop();
-            }
-            Ok(ws::Message::Nop) => {
-                debug!("Received Nop");
-            }
             Err(err) => {
                 error!("WebSocket protocol error: {}", err);
                 ctx.stop();
             }
+            _ => {}
         }
     }
 }
 
 impl WebSocketSession {
     fn handle_text_message(&self, text: String, ctx: &mut ws::WebsocketContext<Self>) {
-        // Parse JSON message
         match serde_json::from_str::<ClientMessage>(&text) {
             Ok(message) => {
                 self.process_client_message(message, ctx);
@@ -99,10 +125,8 @@ impl WebSocketSession {
     }
     
     fn handle_binary_message(&self, bin: Vec<u8>, ctx: &mut ws::WebsocketContext<Self>) {
-        // Parse binary protocol message
         match crate::protocol::parse_binary_message(&bin) {
             Ok(binary_message) => {
-                // Convert BinaryMessage to ClientMessage
                 let client_message = match binary_message.message_type {
                     crate::protocol::MessageType::Authenticate => {
                         match crate::protocol::deserialize_authenticate_message(&binary_message.payload) {
@@ -116,23 +140,7 @@ impl WebSocketSession {
                     crate::protocol::MessageType::Input => {
                         match crate::protocol::deserialize_input_message(&binary_message.payload) {
                             Ok((protocol_input, _)) => {
-                                // Convert protocol::PlayerInput to network::PlayerInput
-                                let network_input = PlayerInput {
-                                    movement: MovementInput {
-                                        direction: protocol_input.movement.direction,
-                                        speed: protocol_input.movement.speed,
-                                        sprinting: protocol_input.movement.sprinting,
-                                    },
-                                    actions: protocol_input.actions.into_iter().map(|action| {
-                                        match action {
-                                            crate::protocol::PlayerAction::Attack => PlayerAction::Attack,
-                                            crate::protocol::PlayerAction::UseItem { slot } => PlayerAction::UseItem { slot },
-                                            crate::protocol::PlayerAction::Craft { recipe_id } => PlayerAction::Craft { recipe_id },
-                                            crate::protocol::PlayerAction::Interact => PlayerAction::Interact,
-                                        }
-                                    }).collect(),
-                                };
-                                ClientMessage::Input { input: network_input, sequence: binary_message.sequence }
+                                ClientMessage::Input { input: protocol_input, sequence: binary_message.sequence }
                             },
                             Err(e) => {
                                 error!("Failed to deserialize input message: {}", e);
@@ -166,117 +174,102 @@ impl WebSocketSession {
             ClientMessage::Input { input, sequence } => {
                 self.handle_player_input(input, sequence, ctx);
             }
+            ClientMessage::Craft { recipe_id } => {
+                self.handle_craft(recipe_id, ctx);
+            }
             ClientMessage::Ping => {
                 self.handle_ping(ctx);
             }
         }
     }
     
-    async fn handle_authentication(&self, token: String, ctx: &mut ws::WebsocketContext<Self>) {
+    fn handle_authentication(&self, _token: String, ctx: &mut ws::WebsocketContext<Self>) {
         info!("Client authentication attempt");
-        // Validate JWT token
-        // On success, send authentication response
+        
         let response = ServerMessage::Authenticated {
-            player_id: "player_123".to_string(),
-            server_tick: self.simulation.lock().await.current_tick(),
+            player_id: "player_123".to_string(), 
+            server_tick: 0,
+        };
+        ctx.text(serde_json::to_string(&response).unwrap());
+        
+        // Send recipes
+        let recipes = ServerMessage::Recipes {
+            recipes: crate::systems::CraftingSystem::get_default_recipes().into_iter().map(|r| {
+                crate::protocol::CraftingRecipe {
+                    id: r.id,
+                    name: r.name,
+                    requirements: r.requirements,
+                    result: crate::protocol::CraftingResult {
+                        item_type: r.result.item_type,
+                        quantity: r.result.quantity,
+                    },
+                    crafting_time: r.crafting_time,
+                    tier: r.tier,
+                }
+            }).collect(),
+        };
+        ctx.text(serde_json::to_string(&recipes).unwrap());
+        
+        let event = GameEvent::PlayerConnected {
+             player_id: "player_123".to_string(),
         };
         
-        let json_response = serde_json::to_string(&response).unwrap();
-        ctx.text(json_response);
+        let sim = self.simulation.clone();
+        ctx.spawn(actix::fut::wrap_future(async move {
+            let sim = sim.lock().await;
+            sim.event_sender.send(event).await.ok();
+        }));
     }
     
-    async fn handle_player_input(&self, input: PlayerInput, sequence: u32, ctx: &mut ws::WebsocketContext<Self>) {
-        debug!("Received player input: {:?}", input);
-        
-        // Send input to simulation
+    fn handle_player_input(&self, input: PlayerInput, sequence: u32, ctx: &mut ws::WebsocketContext<Self>) {
         let event = GameEvent::PlayerInput {
             player_id: "player_123".to_string(),
-            input: input.into(),
+            input: crate::simulation::PlayerInput {
+                movement: crate::simulation::MovementInput {
+                    direction: input.movement.direction,
+                    speed: input.movement.speed,
+                    sprinting: input.movement.sprinting,
+                },
+                actions: input.actions.into_iter().map(|a| {
+                    match a {
+                        protocol::PlayerAction::Attack => crate::simulation::PlayerAction::Attack,
+                        protocol::PlayerAction::UseItem { slot } => crate::simulation::PlayerAction::UseItem { slot },
+                        protocol::PlayerAction::Craft { recipe_id } => crate::simulation::PlayerAction::Craft { recipe_id },
+                        protocol::PlayerAction::Interact => crate::simulation::PlayerAction::Interact,
+                    }
+                }).collect(),
+                sequence,
+            },
         };
         
-        if let Err(e) = self.simulation.lock().await.event_sender.send(event).await {
-            error!("Failed to send player input to simulation: {}", e);
-        }
+        let sim = self.simulation.clone();
+        ctx.spawn(actix::fut::wrap_future(async move {
+            let sim = sim.lock().await;
+            sim.event_sender.send(event).await.ok();
+        }));
+    }
+
+    fn handle_craft(&self, recipe_id: String, ctx: &mut ws::WebsocketContext<Self>) {
+        let event = GameEvent::PlayerInput {
+            player_id: "player_123".to_string(),
+            input: crate::simulation::PlayerInput {
+                movement: crate::simulation::MovementInput::default(),
+                actions: vec![crate::simulation::PlayerAction::Craft { recipe_id }],
+                sequence: 0,
+            },
+        };
+        
+        let sim = self.simulation.clone();
+        ctx.spawn(actix::fut::wrap_future(async move {
+            let sim = sim.lock().await;
+            sim.event_sender.send(event).await.ok();
+        }));
     }
     
-    async fn handle_ping(&self, ctx: &mut ws::WebsocketContext<Self>) {
-        debug!("Received ping, sending pong");
+    fn handle_ping(&self, ctx: &mut ws::WebsocketContext<Self>) {
         let response = ServerMessage::Pong {
-            server_tick: self.simulation.lock().await.current_tick(),
+            server_tick: 0,
         };
-        
-        let json_response = serde_json::to_string(&response).unwrap();
-        ctx.text(json_response);
-    }
-}
-
-#[derive(Debug, serde::Deserialize)]
-pub enum ClientMessage {
-    Authenticate { token: String },
-    Input { input: PlayerInput, sequence: u32 },
-    Ping,
-}
-
-#[derive(Debug, serde::Serialize)]
-pub enum ServerMessage {
-    Authenticated { player_id: String, server_tick: u64 },
-    StateUpdate { tick: u64, entities: Vec<EntityState> },
-    Error { message: String },
-    Pong { server_tick: u64 },
-}
-
-#[derive(Debug, serde::Deserialize, serde::Serialize)]
-pub struct PlayerInput {
-    pub movement: MovementInput,
-    pub actions: Vec<PlayerAction>,
-}
-
-#[derive(Debug, serde::Deserialize, serde::Serialize)]
-pub struct MovementInput {
-    pub direction: (f32, f32),
-    pub speed: f32,
-    pub sprinting: bool,
-}
-
-#[derive(Debug, serde::Deserialize, serde::Serialize)]
-pub enum PlayerAction {
-    Attack,
-    UseItem { slot: usize },
-    Craft { recipe_id: String },
-    Interact,
-}
-
-#[derive(Debug, serde::Serialize)]
-pub struct EntityState {
-    pub id: String,
-    pub position: (f32, f32),
-    pub velocity: (f32, f32),
-    pub health: f32,
-    pub max_health: f32,
-    pub entity_type: String,
-}
-
-impl From<PlayerInput> for crate::simulation::PlayerInput {
-    fn from(input: PlayerInput) -> Self {
-        Self {
-            movement: crate::simulation::MovementInput {
-                direction: input.movement.direction,
-                speed: input.movement.speed,
-                sprinting: input.movement.sprinting,
-            },
-            actions: input.actions.into_iter().map(|a| a.into()).collect(),
-            sequence: 0, // Will be set by network layer
-        }
-    }
-}
-
-impl From<PlayerAction> for crate::simulation::PlayerAction {
-    fn from(action: PlayerAction) -> Self {
-        match action {
-            PlayerAction::Attack => Self::Attack,
-            PlayerAction::UseItem { slot } => Self::UseItem { slot },
-            PlayerAction::Craft { recipe_id } => Self::Craft { recipe_id },
-            PlayerAction::Interact => Self::Interact,
-        }
+        ctx.text(serde_json::to_string(&response).unwrap());
     }
 }

@@ -1,4 +1,4 @@
-import { GameState } from '../game/GameState';
+import { GameState, CraftingRecipe } from '../game/GameState';
 
 export class UIManager {
     private uiContainer: HTMLElement;
@@ -6,6 +6,9 @@ export class UIManager {
     private gameUI: HTMLElement | null;
     private inventoryUI: HTMLElement | null;
     private craftingUI: HTMLElement | null;
+    private recipes: CraftingRecipe[] = [];
+    
+    public onCraftRequest: ((recipeId: string) => void) | null = null;
     
     constructor() {
         this.uiContainer = document.getElementById('ui-container') || document.createElement('div');
@@ -16,10 +19,7 @@ export class UIManager {
     }
     
     public initialize(): void {
-        // Hide loading screen initially
         this.loadingScreen.style.display = 'none';
-        
-        // Create game UI elements
         this.createGameUI();
         this.createInventoryUI();
         this.createCraftingUI();
@@ -35,18 +35,17 @@ export class UIManager {
         this.gameUI.style.fontFamily = 'Arial, sans-serif';
         this.gameUI.style.pointerEvents = 'none';
         
-        // Player stats
         const statsDiv = document.createElement('div');
         statsDiv.id = 'player-stats';
         statsDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
         statsDiv.style.padding = '10px';
         statsDiv.style.borderRadius = '5px';
         statsDiv.style.marginBottom = '10px';
-        statsDiv.innerHTML = `
-            <div>Health: <span id="health-value">100</span>/<span id="max-health-value">100</span></div>
-            <div>Hunger: <span id="hunger-value">100</span>/<span id="max-hunger-value">100</span></div>
-            <div>Thirst: <span id="thirst-value">100</span>/<span id="max-thirst-value">100</span></div>
-        `;
+        statsDiv.innerHTML = "
+            <div>Health: <span id=\"health-value\">100</span>/<span id=\"max-health-value\">100</span></div>
+            <div>Hunger: <span id=\"hunger-value\">100</span>/<span id=\"max-hunger-value\">100</span></div>
+            <div>Thirst: <span id=\"thirst-value\">100</span>/<span id=\"max-thirst-value\">100</span></div>
+        ";
         
         this.gameUI.appendChild(statsDiv);
         this.uiContainer.appendChild(this.gameUI);
@@ -75,7 +74,6 @@ export class UIManager {
         itemsDiv.style.gridTemplateColumns = 'repeat(5, 50px)';
         itemsDiv.style.gap = '5px';
         
-        // Create 10 inventory slots
         for (let i = 0; i < 10; i++) {
             const slot = document.createElement('div');
             slot.className = 'inventory-slot';
@@ -87,7 +85,8 @@ export class UIManager {
             slot.style.display = 'flex';
             slot.style.justifyContent = 'center';
             slot.style.alignItems = 'center';
-            slot.style.fontSize = '12px';
+            slot.style.fontSize = '10px';
+            slot.style.textAlign = 'center';
             slot.textContent = 'Empty';
             itemsDiv.appendChild(slot);
         }
@@ -123,36 +122,6 @@ export class UIManager {
         recipesDiv.style.overflowY = 'auto';
         recipesDiv.style.marginTop = '10px';
         
-        // Add some example recipes
-        const recipes = [
-            { name: 'Wooden Stick', requirements: 'Wood x2', result: 'Stick x1' },
-            { name: 'Stone Axe', requirements: 'Wood x1, Stone x2', result: 'Axe x1' },
-            { name: 'Campfire', requirements: 'Wood x5, Stone x3', result: 'Campfire x1' },
-        ];
-        
-        recipes.forEach(recipe => {
-            const recipeDiv = document.createElement('div');
-            recipeDiv.className = 'crafting-recipe';
-            recipeDiv.style.padding = '10px';
-            recipeDiv.style.marginBottom = '5px';
-            recipeDiv.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-            recipeDiv.style.borderRadius = '5px';
-            recipeDiv.style.cursor = 'pointer';
-            
-            recipeDiv.innerHTML = `
-                <strong>${recipe.name}</strong><br>
-                <small>Requires: ${recipe.requirements}</small><br>
-                <small>Produces: ${recipe.result}</small>
-            `;
-            
-            recipeDiv.addEventListener('click', () => {
-                console.log(`Crafting: ${recipe.name}`);
-                // In a real implementation, this would send a crafting request to the server
-            });
-            
-            recipesDiv.appendChild(recipeDiv);
-        });
-        
         const closeButton = document.createElement('button');
         closeButton.textContent = 'Close';
         closeButton.style.display = 'block';
@@ -167,43 +136,78 @@ export class UIManager {
         this.craftingUI.appendChild(closeButton);
         this.uiContainer.appendChild(this.craftingUI);
     }
+
+    public setRecipes(recipes: CraftingRecipe[]): void {
+        this.recipes = recipes;
+        this.updateCraftingUI();
+    }
+
+    private updateCraftingUI(): void {
+        const recipesDiv = document.getElementById('crafting-recipes');
+        if (!recipesDiv) return;
+
+        recipesDiv.innerHTML = '';
+        this.recipes.forEach(recipe => {
+            const recipeDiv = document.createElement('div');
+            recipeDiv.className = 'crafting-recipe';
+            recipeDiv.style.padding = '10px';
+            recipeDiv.style.marginBottom = '5px';
+            recipeDiv.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+            recipeDiv.style.borderRadius = '5px';
+            recipeDiv.style.cursor = 'pointer';
+            
+            const reqs = recipe.requirements.map(r => `${r[0]} x${r[1]}`).join(', ');
+            
+            recipeDiv.innerHTML = "
+                <strong>${recipe.name}</strong><br>
+                <small>Requires: ${reqs}</small><br>
+                <small>Produces: ${recipe.result.item_type} x${recipe.result.quantity}</small>
+            ";
+            
+            recipeDiv.addEventListener('click', () => {
+                if (this.onCraftRequest) {
+                    this.onCraftRequest(recipe.id);
+                }
+            });
+            
+            recipesDiv.appendChild(recipeDiv);
+        });
+    }
     
     public showGameUI(): void {
-        if (this.gameUI) {
-            this.gameUI.style.display = 'block';
-        }
+        if (this.gameUI) this.gameUI.style.display = 'block';
     }
     
     public hideGameUI(): void {
-        if (this.gameUI) {
-            this.gameUI.style.display = 'none';
-        }
+        if (this.gameUI) this.gameUI.style.display = 'none';
     }
     
     public showInventoryUI(): void {
-        if (this.inventoryUI) {
-            this.inventoryUI.style.display = 'block';
-        }
+        if (this.inventoryUI) this.inventoryUI.style.display = 'block';
     }
     
     public hideInventoryUI(): void {
-        if (this.inventoryUI) {
-            this.inventoryUI.style.display = 'none';
-        }
+        if (this.inventoryUI) this.inventoryUI.style.display = 'none';
     }
     
     public showCraftingUI(): void {
-        if (this.craftingUI) {
-            this.craftingUI.style.display = 'block';
-        }
+        if (this.craftingUI) this.craftingUI.style.display = 'block';
     }
     
     public hideCraftingUI(): void {
-        if (this.craftingUI) {
-            this.craftingUI.style.display = 'none';
-        }
+        if (this.craftingUI) this.craftingUI.style.display = 'none';
     }
     
+    public toggleCraftingUI(): void {
+        if (this.craftingUI) {
+            if (this.craftingUI.style.display === 'none') {
+                this.showCraftingUI();
+            } else {
+                this.hideCraftingUI();
+            }
+        }
+    }
+
     public showLoading(): void {
         this.loadingScreen.style.display = 'flex';
     }
@@ -224,86 +228,62 @@ export class UIManager {
         errorDiv.style.borderRadius = '5px';
         errorDiv.style.zIndex = '1001';
         errorDiv.textContent = `Error: ${message}`;
-        
-        errorDiv.addEventListener('click', () => {
-            errorDiv.remove();
-        });
-        
+        errorDiv.addEventListener('click', () => errorDiv.remove());
         this.uiContainer.appendChild(errorDiv);
-        
-        // Auto-remove after 5 seconds
-        setTimeout(() => {
-            if (errorDiv.parentNode) {
-                errorDiv.remove();
-            }
-        }, 5000);
+        setTimeout(() => { if (errorDiv.parentNode) errorDiv.remove(); }, 5000);
     }
     
     public showDisconnected(): void {
-        const disconnectedDiv = document.createElement('div');
-        disconnectedDiv.style.position = 'absolute';
-        disconnectedDiv.style.top = '0';
-        disconnectedDiv.style.left = '0';
-        disconnectedDiv.style.width = '100%';
-        disconnectedDiv.style.height = '100%';
-        disconnectedDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
-        disconnectedDiv.style.color = 'white';
-        disconnectedDiv.style.display = 'flex';
-        disconnectedDiv.style.justifyContent = 'center';
-        disconnectedDiv.style.alignItems = 'center';
-        disconnectedDiv.style.zIndex = '1002';
-        disconnectedDiv.style.fontSize = '24px';
-        disconnectedDiv.textContent = 'Disconnected from server. Attempting to reconnect...';
-        
-        disconnectedDiv.id = 'disconnected-overlay';
-        this.uiContainer.appendChild(disconnectedDiv);
+        const div = document.createElement('div');
+        div.id = 'disconnected-overlay';
+        div.style.position = 'absolute';
+        div.style.top = '0';
+        div.style.left = '0';
+        div.style.width = '100%';
+        div.style.height = '100%';
+        div.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+        div.style.color = 'white';
+        div.style.display = 'flex';
+        div.style.justifyContent = 'center';
+        div.style.alignItems = 'center';
+        div.style.zIndex = '1002';
+        div.style.fontSize = '24px';
+        div.textContent = 'Disconnected from server. Attempting to reconnect...';
+        this.uiContainer.appendChild(div);
     }
     
     public hideDisconnected(): void {
         const overlay = document.getElementById('disconnected-overlay');
-        if (overlay) {
-            overlay.remove();
-        }
+        if (overlay) overlay.remove();
     }
     
     public render(gameState: GameState): void {
         if (!gameState.player) return;
         
-        // Update player stats
         if (this.gameUI) {
-            const healthValue = this.gameUI.querySelector('#health-value');
-            const maxHealthValue = this.gameUI.querySelector('#max-health-value');
-            const hungerValue = this.gameUI.querySelector('#hunger-value');
-            const maxHungerValue = this.gameUI.querySelector('#max-hunger-value');
-            const thirstValue = this.gameUI.querySelector('#thirst-value');
-            const maxThirstValue = this.gameUI.querySelector('#max-thirst-value');
+            const h = this.gameUI.querySelector('#health-value');
+            const mh = this.gameUI.querySelector('#max-health-value');
+            const hu = this.gameUI.querySelector('#hunger-value');
+            const mhu = this.gameUI.querySelector('#max-hunger-value');
+            const t = this.gameUI.querySelector('#thirst-value');
+            const mt = this.gameUI.querySelector('#max-thirst-value');
             
-            if (healthValue && maxHealthValue) {
-                healthValue.textContent = Math.round(gameState.player.health).toString();
-                maxHealthValue.textContent = Math.round(gameState.player.maxHealth).toString();
-            }
-            
-            if (hungerValue && maxHungerValue) {
-                hungerValue.textContent = Math.round(gameState.player.hunger).toString();
-                maxHungerValue.textContent = Math.round(gameState.player.maxHunger).toString();
-            }
-            
-            if (thirstValue && maxThirstValue) {
-                thirstValue.textContent = Math.round(gameState.player.thirst).toString();
-                maxThirstValue.textContent = Math.round(gameState.player.maxThirst).toString();
-            }
+            if (h) h.textContent = Math.round(gameState.player.health).toString();
+            if (mh) mh.textContent = Math.round(gameState.player.maxHealth).toString();
+            if (hu) hu.textContent = Math.round(gameState.player.hunger).toString();
+            if (mhu) mhu.textContent = Math.round(gameState.player.maxHunger).toString();
+            if (t) t.textContent = Math.round(gameState.player.thirst).toString();
+            if (mt) mt.textContent = Math.round(gameState.player.maxThirst).toString();
         }
         
-        // Update inventory
         if (this.inventoryUI) {
             const slots = this.inventoryUI.querySelectorAll('.inventory-slot');
-            const inventory = gameState.player.inventory;
+            const items = Array.from(gameState.player.inventory.entries());
             
             slots.forEach((slot, index) => {
-                const items = Array.from(inventory.entries());
                 if (index < items.length) {
-                    const [itemType, quantity] = items[index];
-                    slot.textContent = `${itemType} (${quantity})`;
+                    const [type, qty] = items[index];
+                    slot.textContent = `${type}\n(${qty})`;
                 } else {
                     slot.textContent = 'Empty';
                 }

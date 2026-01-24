@@ -1,6 +1,6 @@
 use actix_web::{web, App, HttpServer};
 use std::sync::Arc;
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, broadcast};
 use tracing::{info, error};
 
 mod config;
@@ -33,7 +33,7 @@ async fn main() -> std::io::Result<()> {
     info!("Configuration loaded: {:?}", config);
     
     // Initialize database connection
-    let db_pool = match db::create_pool(&config.database_url).await {
+    let db_pool = match db::create_pool(&config.database.url).await {
         Ok(pool) => pool,
         Err(e) => {
             error!("Failed to create database pool: {}", e);
@@ -44,14 +44,34 @@ async fn main() -> std::io::Result<()> {
     // Clone config before moving parts of it
     let config_clone = config.clone();
     
+    // Create broadcast channel
+    let (tx, _rx) = broadcast::channel(100);
+    
     // Create game simulation
-    let simulation = Arc::new(Mutex::new(GameSimulation::new(config.game)));
+    let simulation = Arc::new(Mutex::new(GameSimulation::new(config.game, tx.clone())));
+
+    // Spawn simulation loop
+    let sim_clone = simulation.clone();
+    tokio::spawn(async move {
+        loop {
+            {
+                let mut sim = sim_clone.lock().await;
+                if !sim.is_running() {
+                    sim.start();
+                }
+                sim.tick().await;
+            }
+            // Sleep a tiny bit to avoid busy loop if tick returns early
+            tokio::time::sleep(std::time::Duration::from_millis(1)).await;
+        }
+    });
 
     // Create shared application state
     let app_state = web::Data::new(AppState {
         config: config_clone,
         simulation,
         db_pool,
+        broadcast_sender: tx,
     });
     
     // Start HTTP server
@@ -73,4 +93,5 @@ pub struct AppState {
     pub config: ServerConfig,
     pub simulation: Arc<Mutex<GameSimulation>>,
     pub db_pool: sqlx::PgPool,
+    pub broadcast_sender: broadcast::Sender<crate::protocol::ServerMessage>,
 }

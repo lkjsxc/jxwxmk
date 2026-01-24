@@ -10,7 +10,7 @@ actix = "0.13"
 tokio = { version = "1.0", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-sqlx = { version = "0.6", features = ["postgres", "runtime-tokio-native-tls", "uuid", "chrono"] }
+sqlx = { version = "0.6", features = ["postgres", "runtime-tokio-rustls", "uuid", "chrono"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"
 thiserror = "1.0"
@@ -20,6 +20,8 @@ jsonwebtoken = "8.0"
 chrono = { version = "0.4", features = ["serde"] }
 bytes = "1.0"
 futures = "0.3"
+rand = "0.8"
+tokio-stream = { version = "0.1", features = ["sync"] }
 
 [dev-dependencies]
 tokio-test = "0.4"

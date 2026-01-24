@@ -6,11 +6,14 @@ services:
     ports:
       - "${SERVER_PORT}:${SERVER_PORT}"
       - "${SERVER_WS_PORT}:${SERVER_WS_PORT}"
+    env_file:
+      - .env
     environment:
       - SERVER_HOST=${SERVER_HOST}
       - SERVER_PORT=${SERVER_PORT}
       - SERVER_WS_PORT=${SERVER_WS_PORT}
       - SERVER_ENV=${SERVER_ENV}
+      - SERVER__DATABASE__URL=postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}
       - DB_NAME=${DB_NAME}
@@ -32,6 +35,8 @@ services:
 
   postgres:
     image: postgres:15-alpine
+    env_file:
+      - .env
     environment:
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_USER=${DB_USER}

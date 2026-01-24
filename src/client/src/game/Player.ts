@@ -1,5 +1,10 @@
 import { InputState } from '../input/InputState';
 
+interface StateSnapshot {
+    position: { x: number; y: number };
+    sequence: number;
+}
+
 export class Player {
     public id: string;
     public position: { x: number; y: number };
@@ -12,6 +17,9 @@ export class Player {
     public maxThirst: number;
     public inventory: Map<string, number>;
     public equipment: Map<string, string>;
+    
+    private inputBuffer: InputState[] = [];
+    private lastAckSequence: number = -1;
     
     constructor(id: string) {
         this.id = id;
@@ -28,45 +36,50 @@ export class Player {
     }
     
     public update(deltaTime: number, input: InputState): void {
-        // Update movement based on input
+        // Store input for reconciliation
+        this.inputBuffer.push({ ...input });
+        
+        // Apply input locally
+        this.applyInput(deltaTime, input);
+    }
+
+    private applyInput(deltaTime: number, input: InputState): void {
         const speed = input.sprint ? 5.0 : 3.0;
         
         this.velocity.x = input.movement.x * speed;
         this.velocity.y = input.movement.y * speed;
         
-        // Apply velocity to position
         this.position.x += this.velocity.x * deltaTime;
         this.position.y += this.velocity.y * deltaTime;
         
-        // Update survival meters (simplified)
+        // Survival meters updates (approximate prediction)
         this.hunger = Math.max(0, this.hunger - 0.1 * deltaTime);
         this.thirst = Math.max(0, this.thirst - 0.05 * deltaTime);
-        
-        // Health regeneration based on hunger/thirst
-        if (this.hunger > 70 && this.thirst > 70) {
-            this.health = Math.min(this.maxHealth, this.health + 0.2 * deltaTime);
-        } else if (this.hunger < 30 || this.thirst < 30) {
-            this.health = Math.max(0, this.health - 0.3 * deltaTime);
-        }
     }
     
     public reconcile(serverState: any): void {
-        // Reconcile client prediction with server state
+        // Update acknowledged sequence
+        if (serverState.last_sequence !== undefined) {
+            this.lastAckSequence = serverState.last_sequence;
+        }
+
+        // Apply server state as ground truth
         if (serverState.position) {
-            this.position = serverState.position;
+            this.position = { ...serverState.position };
         }
         
-        if (serverState.health !== undefined) {
-            this.health = serverState.health;
-        }
-        
-        if (serverState.hunger !== undefined) {
-            this.hunger = serverState.hunger;
-        }
-        
-        if (serverState.thirst !== undefined) {
-            this.thirst = serverState.thirst;
-        }
+        if (serverState.health !== undefined) this.health = serverState.health;
+        if (serverState.hunger !== undefined) this.hunger = serverState.hunger;
+        if (serverState.thirst !== undefined) this.thirst = serverState.thirst;
+
+        // Discard inputs acknowledged by server
+        this.inputBuffer = this.inputBuffer.filter(input => input.sequence > this.lastAckSequence);
+
+        // Replay unacknowledged inputs
+        const tempDeltaTime = 1.0 / 60.0; // Assume 60fps for re-simulation or store delta in buffer
+        this.inputBuffer.forEach(input => {
+            this.applyInput(tempDeltaTime, input);
+        });
     }
     
     public addToInventory(itemType: string, quantity: number): void {
@@ -76,18 +89,8 @@ export class Player {
     
     public removeFromInventory(itemType: string, quantity: number): boolean {
         const current = this.inventory.get(itemType) || 0;
-        if (current < quantity) {
-            return false;
-        }
+        if (current < quantity) return false;
         this.inventory.set(itemType, current - quantity);
         return true;
-    }
-    
-    public equipItem(slot: string, itemId: string): void {
-        this.equipment.set(slot, itemId);
-    }
-    
-    public unequipItem(slot: string): void {
-        this.equipment.delete(slot);
     }
 }

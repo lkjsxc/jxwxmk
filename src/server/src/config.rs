@@ -6,7 +6,7 @@ use thiserror::Error;
 #[derive(Debug, Deserialize, Clone)]
 pub struct ServerConfig {
     pub server: ServerSettings,
-    pub database_url: String,
+    pub database: DatabaseSettings,
     pub game: GameSettings,
     pub security: SecuritySettings,
 }
@@ -16,6 +16,11 @@ pub struct ServerSettings {
     pub host: String,
     pub port: u16,
     pub workers: usize,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct DatabaseSettings {
+    pub url: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -38,7 +43,7 @@ impl ServerConfig {
         let mut builder = Config::builder()
             .add_source(File::with_name("config/default"))
             .add_source(File::with_name("config/local").required(false))
-            .add_source(Environment::with_prefix("SERVER").prefix_separator("__"));
+            .add_source(Environment::with_prefix("SERVER").prefix_separator("__").separator("__"));
         
         if Path::new("config/production.toml").exists() {
             builder = builder.add_source(File::with_name("config/production"));

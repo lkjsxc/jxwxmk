@@ -5,6 +5,7 @@ export class InputManager {
     private mousePosition: { x: number; y: number };
     private mouseButtons: Map<number, boolean>;
     private currentInputState: InputState;
+    private sequence: number = 0;
     
     constructor() {
         this.keys = new Map();
@@ -103,6 +104,7 @@ export class InputManager {
         this.currentInputState.movement = movement;
         this.currentInputState.actions = actions;
         this.currentInputState.sprint = sprint;
+        this.currentInputState.sequence = this.sequence++;
     }
     
     public getInputState(): InputState {

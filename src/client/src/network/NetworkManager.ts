@@ -131,6 +131,10 @@ export class NetworkManager extends EventEmitter {
                 this.emit('stateUpdate', message);
                 break;
                 
+            case 'recipes':
+                this.emit('recipes', message.recipes);
+                break;
+                
             case 'error':
                 this.emit('error', message.message);
                 break;
@@ -157,6 +161,19 @@ export class NetworkManager extends EventEmitter {
                 sprint: input.sprint
             },
             sequence: this.messageSequence++
+        };
+        
+        this.sendMessage(message);
+    }
+
+    public sendCraftRequest(recipeId: string): void {
+        if (!this.authenticated || !this.socket) {
+            return;
+        }
+        
+        const message = {
+            type: 'craft',
+            recipe_id: recipeId
         };
         
         this.sendMessage(message);

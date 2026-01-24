@@ -1,11 +1,12 @@
 use std::collections::HashMap;
 use tracing::{debug, info};
+use uuid::Uuid;
 
 pub struct GameWorld {
     width: u32,
     height: u32,
-    resources: HashMap<String, ResourceNode>,
-    entities: HashMap<String, WorldEntity>,
+    pub resources: HashMap<String, ResourceNode>,
+    pub entities: HashMap<String, WorldEntity>,
     chunks: HashMap<(i32, i32), WorldChunk>,
 }
 
@@ -26,8 +27,17 @@ pub struct WorldEntity {
     pub entity_type: EntityType,
     pub position: (f32, f32),
     pub velocity: (f32, f32),
+    pub rotation: f32,
     pub health: f32,
     pub max_health: f32,
+    pub inventory: Inventory,
+    pub last_sequence: u32,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct Inventory {
+    pub items: HashMap<String, u32>,
+    pub max_slots: usize,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -74,6 +84,35 @@ impl GameWorld {
             entities: HashMap::new(),
             chunks: HashMap::new(),
         }
+    }
+    
+    pub fn generate_world(&mut self) {
+        use rand::Rng;
+        let mut rng = rand::thread_rng();
+
+        let resource_counts = [
+            (ResourceType::Tree, 200, BiomeType::Forest),
+            (ResourceType::Rock, 100, BiomeType::Mountain),
+            (ResourceType::Bush, 150, BiomeType::Grassland),
+        ];
+
+        for (res_type, count, biome) in resource_counts {
+            for _ in 0..count {
+                 let x = rng.gen_range(0.0..self.width as f32);
+                 let y = rng.gen_range(0.0..self.height as f32);
+                 
+                 self.add_resource(ResourceNode {
+                    id: Uuid::new_v4().to_string(),
+                    resource_type: res_type.clone(),
+                    position: (x, y),
+                    quantity: 100.0,
+                    max_quantity: 100.0,
+                    respawn_time: None,
+                    biome: biome.clone(),
+                });
+            }
+        }
+        info!("Generated world with {} resources", self.resources.len());
     }
     
     pub fn add_resource(&mut self, resource: ResourceNode) {
