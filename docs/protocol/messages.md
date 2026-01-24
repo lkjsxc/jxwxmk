@@ -1,16 +1,14 @@
 # Message Types and Formats
 
 ## Structure
-- All messages: Binary with fields: protocol_version (u32), msg_type (enum), seq (u32), payload.
+- All messages: Binary with fields: protocol_version, msg_type, seq, payload.
 - Client → Server: Inputs (e.g., move, craft).
-- Server → Client: Deltas (e.g., entity updates), snapshots (full state).
+- Server → Client: Snapshots (world state).
 
 ## Types
-- `InputMove`: x, y deltas.
-- `InputAction`: craft_id, target_pos.
-- `DeltaEntity`: entity_id, pos, health.
-- `Snapshot`: tick, entities[].
+- `Input`: player_id, action (string), data (binary).
+- `Snapshot`: server_tick, world_state (binary serialized world).
 
 ## Encoding
-- Use serde for Rust; custom for client.
-- Versioning: Bump on changes; no compat.
+- Use bincode in Rust; manual parse in TS.
+- Versioning: Check in handler; disconnect on mismatch.
