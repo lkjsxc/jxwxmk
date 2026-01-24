@@ -139,15 +139,16 @@ pub async fn static_handler(path: web::Path<String>) -> impl Responder {
     
     match tokio::fs::read(format!("/app/static/{}", filename)).await {
         Ok(content) => {
-            let mut response = HttpResponse::Ok().content_type(content_type);
+            let mut response = HttpResponse::Ok();
+            response.content_type(content_type);
             
             // Add cache busting headers for JS/CSS
             if filename.ends_with(".js") || filename.ends_with(".css") {
-                response = response
+                response
                     .insert_header(("Cache-Control", "public, max-age=31536000, immutable"))
                     .insert_header(("ETag", format!("{:x}", md5::compute(&content))));
             } else {
-                response = response.insert_header(("Cache-Control", "no-cache"));
+                response.insert_header(("Cache-Control", "no-cache"));
             }
             
             response.body(content)
