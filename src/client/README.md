@@ -1,7 +1,8 @@
 # TypeScript Client Code
 
-Planned structure:
+Structure:
 - `index.ts`: Main entry.
-- `game.ts`: Game logic.
-- `render.ts`: Rendering.
+- `game.ts`: Game state.
+- `render.ts`: Canvas rendering.
 - `input.ts`: Input handling.
+- `websocket.ts`: WS client.
