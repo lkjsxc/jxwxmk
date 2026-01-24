@@ -1,0 +1,24 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: starve_game
+      POSTGRES_USER: starve_user
+      POSTGRES_PASSWORD: starve_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  app:
+    build:
+      context: ..
+      dockerfile: src/ops/Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://starve_user:starve_pass@db:5432/starve_game
+volumes:
+  postgres_data:
