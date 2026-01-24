@@ -6,6 +6,13 @@ use std::sync::Arc;
 use tokio::sync::mpsc;
 use crate::world::{WorldState, run_simulation};
 use crate::net::{InputEvent, SnapshotEvent, Message};
+use serde::Deserialize;
+
+#[derive(Deserialize)]
+pub struct LoginRequest {
+    username: String,
+    password: String,
+}
 
 pub type InputTx = mpsc::UnboundedSender<InputEvent>;
 pub type SnapshotRx = mpsc::UnboundedReceiver<SnapshotEvent>;
@@ -67,6 +74,18 @@ pub async fn websocket_handler(
     });
 
     Ok(response)
+}
+
+pub async fn login_handler(
+    req: web::Json<LoginRequest>,
+    state: web::Data<Arc<AppState>>,
+) -> impl Responder {
+    // Placeholder auth
+    if req.username == "test" && req.password == "pass" {
+        HttpResponse::Ok().json(serde_json::json!({ "session_id": "session_123" }))
+    } else {
+        HttpResponse::Unauthorized().finish()
+    }
 }
 
 pub async fn static_handler(path: web::Path<String>) -> impl Responder {

@@ -44,6 +44,10 @@ impl WorldState {
     }
 
     pub fn process_input(&mut self, input: &crate::net::InputEvent) {
+        // Validate session (placeholder)
+        if !self.is_valid_session(&input.session_id) {
+            return;
+        }
         // Add player if new
         self.players.entry(input.session_id.clone()).or_insert(Player {
             id: input.session_id.clone(),
@@ -119,5 +123,10 @@ impl WorldState {
             seq: 0,
             payload: vec![],
         }
+    }
+
+    pub fn is_valid_session(&self, session_id: &str) -> bool {
+        // Placeholder: check against DB or cache
+        session_id.starts_with("session_")
     }
 }

@@ -35,6 +35,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(app_state.clone()))
+            .route("/login", web::post().to(handlers::login_handler))
             .route("/ws", web::get().to(handlers::websocket_handler))
             .route("/static/{filename:.*}", web::get().to(handlers::static_handler))
     })
