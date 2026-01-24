@@ -77,9 +77,10 @@ impl GameWorld {
     }
     
     pub fn add_resource(&mut self, resource: ResourceNode) {
+        let resource_id = resource.id.clone();
         let chunk_pos = self.calculate_chunk_position(resource.position.0, resource.position.1);
         
-        self.resources.insert(resource.id.clone(), resource);
+        self.resources.insert(resource_id.clone(), resource);
         
         let chunk = self.chunks.entry(chunk_pos).or_insert_with(|| WorldChunk {
             x: chunk_pos.0,
@@ -88,13 +89,14 @@ impl GameWorld {
             entities: Vec::new(),
         });
         
-        chunk.resources.push(resource.id);
+        chunk.resources.push(resource_id);
     }
     
     pub fn add_entity(&mut self, entity: WorldEntity) {
+        let entity_id = entity.id.clone();
         let chunk_pos = self.calculate_chunk_position(entity.position.0, entity.position.1);
         
-        self.entities.insert(entity.id.clone(), entity);
+        self.entities.insert(entity_id.clone(), entity);
         
         let chunk = self.chunks.entry(chunk_pos).or_insert_with(|| WorldChunk {
             x: chunk_pos.0,
@@ -103,7 +105,7 @@ impl GameWorld {
             entities: Vec::new(),
         });
         
-        chunk.entities.push(entity.id);
+        chunk.entities.push(entity_id);
     }
     
     pub fn remove_resource(&mut self, resource_id: &str) -> Option<ResourceNode> {

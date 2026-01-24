@@ -41,12 +41,15 @@ async fn main() -> std::io::Result<()> {
         }
     };
     
+    // Clone config before moving parts of it
+    let config_clone = config.clone();
+    
     // Create game simulation
     let simulation = Arc::new(Mutex::new(GameSimulation::new(config.game)));
-    
+
     // Create shared application state
     let app_state = web::Data::new(AppState {
-        config: config.clone(),
+        config: config_clone,
         simulation,
         db_pool,
     });

@@ -1,5 +1,6 @@
 use actix_web::{web, HttpResponse, Responder, HttpRequest};
 use actix_web_actors::ws;
+use actix::{Actor, StreamHandler, ActorContext};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tracing::{info, debug, error};
@@ -13,9 +14,9 @@ pub fn configure_routes(cfg: &mut web::ServiceConfig) {
     );
 }
 
-async fn health_check() -> impl Responder {
+    async fn health_check() -> impl Responder {
     info!("Health check requested");
-    HttpResponse::Ok().json("{"status": "healthy"}")
+    HttpResponse::Ok().json(serde_json::json!({"status": "healthy"}))
 }
 
 async fn websocket_handler(
@@ -56,13 +57,13 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WebSocketSession 
             Ok(ws::Message::Pong(_)) => {
                 debug!("Received Pong");
             }
-            Ok(ws::Message::Text(text)) => {
+             Ok(ws::Message::Text(text)) => {
                 debug!("Received text message: {}", text);
-                self.handle_text_message(text, ctx);
+                self.handle_text_message(text.to_string(), ctx);
             }
             Ok(ws::Message::Binary(bin)) => {
                 debug!("Received binary message: {} bytes", bin.len());
-                self.handle_binary_message(bin, ctx);
+                self.handle_binary_message(bin.to_vec(), ctx);
             }
             Ok(ws::Message::Close(reason)) => {
                 info!("Client disconnected: {:?}", reason);
@@ -92,7 +93,7 @@ impl WebSocketSession {
             }
             Err(e) => {
                 error!("Failed to parse client message: {}", e);
-                ctx.text("{"error": "Invalid message format"}");
+                ctx.text(r#"{"error": "Invalid message format"}"#);
             }
         }
     }
@@ -100,8 +101,52 @@ impl WebSocketSession {
     fn handle_binary_message(&self, bin: Vec<u8>, ctx: &mut ws::WebsocketContext<Self>) {
         // Parse binary protocol message
         match crate::protocol::parse_binary_message(&bin) {
-            Ok(message) => {
-                self.process_client_message(message, ctx);
+            Ok(binary_message) => {
+                // Convert BinaryMessage to ClientMessage
+                let client_message = match binary_message.message_type {
+                    crate::protocol::MessageType::Authenticate => {
+                        match crate::protocol::deserialize_authenticate_message(&binary_message.payload) {
+                            Ok(token) => ClientMessage::Authenticate { token },
+                            Err(e) => {
+                                error!("Failed to deserialize authenticate message: {}", e);
+                                return;
+                            }
+                        }
+                    }
+                    crate::protocol::MessageType::Input => {
+                        match crate::protocol::deserialize_input_message(&binary_message.payload) {
+                            Ok((protocol_input, _)) => {
+                                // Convert protocol::PlayerInput to network::PlayerInput
+                                let network_input = PlayerInput {
+                                    movement: MovementInput {
+                                        direction: protocol_input.movement.direction,
+                                        speed: protocol_input.movement.speed,
+                                        sprinting: protocol_input.movement.sprinting,
+                                    },
+                                    actions: protocol_input.actions.into_iter().map(|action| {
+                                        match action {
+                                            crate::protocol::PlayerAction::Attack => PlayerAction::Attack,
+                                            crate::protocol::PlayerAction::UseItem { slot } => PlayerAction::UseItem { slot },
+                                            crate::protocol::PlayerAction::Craft { recipe_id } => PlayerAction::Craft { recipe_id },
+                                            crate::protocol::PlayerAction::Interact => PlayerAction::Interact,
+                                        }
+                                    }).collect(),
+                                };
+                                ClientMessage::Input { input: network_input, sequence: binary_message.sequence }
+                            },
+                            Err(e) => {
+                                error!("Failed to deserialize input message: {}", e);
+                                return;
+                            }
+                        }
+                    }
+                    crate::protocol::MessageType::Ping => ClientMessage::Ping,
+                    _ => {
+                        error!("Unsupported binary message type: {:?}", binary_message.message_type);
+                        return;
+                    }
+                };
+                self.process_client_message(client_message, ctx);
             }
             Err(e) => {
                 error!("Failed to parse binary message: {}", e);
@@ -112,7 +157,7 @@ impl WebSocketSession {
             }
         }
     }
-    
+
     fn process_client_message(&self, message: ClientMessage, ctx: &mut ws::WebsocketContext<Self>) {
         match message {
             ClientMessage::Authenticate { token } => {
@@ -127,7 +172,7 @@ impl WebSocketSession {
         }
     }
     
-    fn handle_authentication(&self, token: String, ctx: &mut ws::WebsocketContext<Self>) {
+    async fn handle_authentication(&self, token: String, ctx: &mut ws::WebsocketContext<Self>) {
         info!("Client authentication attempt");
         // Validate JWT token
         // On success, send authentication response
@@ -140,7 +185,7 @@ impl WebSocketSession {
         ctx.text(json_response);
     }
     
-    fn handle_player_input(&self, input: PlayerInput, sequence: u32, ctx: &mut ws::WebsocketContext<Self>) {
+    async fn handle_player_input(&self, input: PlayerInput, sequence: u32, ctx: &mut ws::WebsocketContext<Self>) {
         debug!("Received player input: {:?}", input);
         
         // Send input to simulation
@@ -154,7 +199,7 @@ impl WebSocketSession {
         }
     }
     
-    fn handle_ping(&self, ctx: &mut ws::WebsocketContext<Self>) {
+    async fn handle_ping(&self, ctx: &mut ws::WebsocketContext<Self>) {
         debug!("Received ping, sending pong");
         let response = ServerMessage::Pong {
             server_tick: self.simulation.lock().await.current_tick(),

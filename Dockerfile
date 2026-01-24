@@ -1,13 +1,13 @@
 # Multi-stage build for Rust server
 
 # Build stage
-FROM rust:1.70-slim as builder
+FROM rust:1-slim as builder
 
 WORKDIR /usr/src/app
 
 # Copy Cargo files for dependency caching
-COPY src/server/Cargo.toml src/server/Cargo.toml
-COPY src/server/Cargo.lock src/server/Cargo.lock
+COPY src/server/Cargo.toml /usr/src/app/Cargo.toml
+COPY src/server/Cargo.lock /usr/src/app/Cargo.lock
 
 # Build dependencies
 RUN apt-get update && apt-get install -y \
@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy source code
-COPY src/server/src src/server/src
+COPY src/server/src /usr/src/app/src
 
 # Build the application
 RUN cargo build --release
@@ -28,9 +28,10 @@ FROM debian:bullseye-slim
 WORKDIR /usr/src/app
 
 # Install runtime dependencies
-RUN apt-get update && apt-get install -y \
-    libssl1.1 \
-    ca-certificates \
+RUN apt-get update && apt-get install -y 
+    libssl1.1 
+    libssl3 
+    ca-certificates 
     && rm -rf /var/lib/apt/lists/*
 
 # Copy built binary from builder

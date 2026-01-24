@@ -57,11 +57,7 @@ pub enum ConfigError {
     DeserializationError(String),
 }
 
-impl From<config::ConfigError> for ConfigError {
-    fn from(err: config::ConfigError) -> Self {
-        ConfigError::FileError(err)
-    }
-}
+
 
 impl From<serde::de::value::Error> for ConfigError {
     fn from(err: serde::de::value::Error) -> Self {
