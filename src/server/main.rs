@@ -29,7 +29,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(web::Data::new(app_state.clone()))
             .wrap(middleware::DefaultHeaders::new()
-                .add(("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws: wss:"))
+                .add(("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws: wss:; frame-ancestors 'none'"))
                 .add(("X-Content-Type-Options", "nosniff"))
                 .add(("X-Frame-Options", "DENY"))
                 .add(("X-XSS-Protection", "1; mode=block"))
