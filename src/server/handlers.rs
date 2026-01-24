@@ -119,7 +119,15 @@ pub async fn login_handler(
 
 pub async fn index_handler() -> impl Responder {
     match tokio::fs::read("/app/static/index.html").await {
-        Ok(content) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(content),
+        Ok(content) => {
+            HttpResponse::Ok()
+                .content_type("text/html; charset=utf-8")
+                .insert_header(("X-Frame-Options", "DENY"))
+                .insert_header(("X-Content-Type-Options", "nosniff"))
+                .insert_header(("X-XSS-Protection", "1; mode=block"))
+                .insert_header(("Referrer-Policy", "strict-origin-when-cross-origin"))
+                .body(content)
+        },
         Err(_) => HttpResponse::NotFound().finish(),
     }
 }
@@ -141,6 +149,13 @@ pub async fn static_handler(path: web::Path<String>) -> impl Responder {
         Ok(content) => {
             let mut response = HttpResponse::Ok();
             response.content_type(content_type);
+            
+            // Add security headers
+            response
+                .insert_header(("X-Frame-Options", "DENY"))
+                .insert_header(("X-Content-Type-Options", "nosniff"))
+                .insert_header(("X-XSS-Protection", "1; mode=block"))
+                .insert_header(("Referrer-Policy", "strict-origin-when-cross-origin"));
             
             // Add cache busting headers for JS/CSS
             if filename.ends_with(".js") || filename.ends_with(".css") {
