@@ -8,6 +8,7 @@ use crate::world::WorldState;
 mod handlers;
 mod world;
 mod net;
+mod db;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
@@ -25,7 +26,7 @@ async fn main() -> std::io::Result<()> {
     let world = WorldState::new();
 
     // Spawn simulation
-    tokio::spawn(run_simulation(input_rx, snapshot_tx, world));
+    tokio::spawn(run_simulation(input_rx, snapshot_tx, world, pool.clone()));
 
     // App state
     let app_state = Arc::new(AppState { input_tx, snapshot_rx, pool });

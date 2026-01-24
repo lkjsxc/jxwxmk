@@ -89,6 +89,7 @@ pub async fn run_simulation(
     mut input_rx: mpsc::UnboundedReceiver<InputEvent>,
     snapshot_tx: mpsc::UnboundedSender<SnapshotEvent>,
     mut world: WorldState,
+    pool: sqlx::PgPool,
 ) {
     use tokio::time::{interval, Duration};
     let mut interval = interval(Duration::from_millis(50));
@@ -101,7 +102,7 @@ pub async fn run_simulation(
             world.process_input(&input);
         }
 
-        world.tick();
+        world.tick(&pool).await;
 
         for session_id in world.get_sessions() {
             let snapshot = world.create_snapshot(tick);

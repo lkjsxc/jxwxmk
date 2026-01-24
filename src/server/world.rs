@@ -82,7 +82,7 @@ impl WorldState {
         }
     }
 
-    pub fn tick(&mut self) {
+    pub fn tick(&mut self, pool: &sqlx::PgPool) {
         self.tick += 1;
         for player in self.players.values_mut() {
             survival::update_survival(player);
@@ -91,6 +91,17 @@ impl WorldState {
             }
         }
         gathering::update_resources(&mut self.resources, self.tick);
+        if self.tick % 100 == 0 {  // Checkpoint every 100 ticks
+            self.checkpoint(pool);
+        }
+    }
+
+    pub async fn checkpoint(&self, pool: &sqlx::PgPool) {
+        for player in self.players.values() {
+            if let Err(e) = crate::db::save_player(pool, player).await {
+                eprintln!("Save error: {}", e);
+            }
+        }
     }
 
     pub fn get_sessions(&self) -> Vec<String> {

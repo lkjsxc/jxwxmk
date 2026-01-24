@@ -8,6 +8,17 @@ CREATE TABLE accounts (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Players: in-game state per account
+CREATE TABLE players (
+    id VARCHAR(100) PRIMARY KEY,  -- session_id
+    account_id INTEGER REFERENCES accounts(id),
+    position_x REAL NOT NULL DEFAULT 0.0,
+    position_y REAL NOT NULL DEFAULT 0.0,
+    health REAL NOT NULL DEFAULT 100.0,
+    hunger REAL NOT NULL DEFAULT 100.0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Inventory: authoritative player items
 CREATE TABLE inventory (
     id SERIAL PRIMARY KEY,
