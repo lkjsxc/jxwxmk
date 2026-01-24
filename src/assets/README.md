@@ -1,4 +1,5 @@
 # Generated Assets
 
-Contains compiled JS/CSS from TypeScript build.
+Contains compiled JS/HTML from TypeScript build.
 Served by Rust at `/static/*`.
+Built in Docker multi-stage.

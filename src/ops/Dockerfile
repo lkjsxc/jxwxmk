@@ -16,6 +16,6 @@ FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=rust-build /app/target/release/starve-game ./starve-game
-COPY --from=ts-build /app/client/dist ./static  # Compiled TS assets
+COPY --from=ts-build /app/client/dist/* ./static/  # Compiled TS assets
 EXPOSE 8080
 CMD ["./starve-game"]

@@ -71,9 +71,16 @@ pub async fn websocket_handler(
 
 pub async fn static_handler(path: web::Path<String>) -> impl Responder {
     let filename = path.into_inner();
-    // Serve from /static
-    match tokio::fs::read(format!("./static/{}", filename)).await {
-        Ok(content) => HttpResponse::Ok().content_type("text/html").body(content),
+    // Serve from /app/static
+    let content_type = if filename.ends_with(".js") {
+        "application/javascript"
+    } else if filename.ends_with(".html") {
+        "text/html"
+    } else {
+        "text/plain"
+    };
+    match tokio::fs::read(format!("/app/static/{}", filename)).await {
+        Ok(content) => HttpResponse::Ok().content_type(content_type).body(content),
         Err(_) => HttpResponse::NotFound().finish(),
     }
 }
