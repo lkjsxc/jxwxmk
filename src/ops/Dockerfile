@@ -1,14 +1,14 @@
 # Build stage for TypeScript client
 FROM node:18 AS ts-build
 WORKDIR /app/client
-COPY src/client/ ./
+COPY ../src/client/ ./
 RUN npm install && npm run build  # Assume build script compiles TS to JS/CSS
 
 # Build stage for Rust server
 FROM rust:1.70 AS rust-build
 WORKDIR /app
-COPY Cargo.toml Cargo.lock ./
-COPY src/ ./src/
+COPY ../Cargo.toml ./
+COPY ../src/ ./src/
 RUN cargo build --release
 
 # Runtime stage
