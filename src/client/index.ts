@@ -1,7 +1,7 @@
-import { GameClient } from './websocket';
-import { Game } from './game';
-import { Renderer } from './render';
-import { InputHandler } from './input';
+import { GameClient } from './websocket.js';
+import { Game } from './game.js';
+import { Renderer } from './render.js';
+import { InputHandler } from './input.js';
 
 const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
