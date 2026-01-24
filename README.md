@@ -23,6 +23,11 @@ Key features:
 ## Development
 See AGENTS.md for rules and conventions. Commit often; no backward compatibility.
 
+## Build and Run
+- `docker compose up --build` to run the game.
+- Client at http://localhost:8080/static/index.html
+- WS at ws://localhost:8080/ws
+
 ## Directories
 - `docs/`: Documentation (architecture, protocol, gameplay, operations, decisions).
 - `src/`: Source code (server, client, assets, db, ops).
