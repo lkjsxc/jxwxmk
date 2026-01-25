@@ -19,6 +19,7 @@ export class UIManager {
     swapRequest: [number, number] | null = null;
 
     private drag: DragState | null = null;
+    private nameInput: string = "";
 
     render(ctx: CanvasRenderingContext2D, player: Player | null, input: InputManager) {
         const w = ctx.canvas.width; const h = ctx.canvas.height;
@@ -84,19 +85,14 @@ export class UIManager {
     }
 
     private getInventoryLayout(w: number) {
-        const padding = 10;
-        const cols = w > 600 ? 7 : w > 400 ? 5 : 3;
-        const availableW = w - (cols + 1) * padding;
-        const slotSize = Math.min(60, availableW / cols);
-        return { cols, slotSize, padding };
+        const padding = 10; const cols = w > 600 ? 7 : w > 400 ? 5 : 3;
+        const availW = w - (cols + 1) * padding; const slotS = Math.min(60, availW / cols);
+        return { cols, slotSize: slotS, padding };
     }
 
     drawInventory(ctx: CanvasRenderingContext2D, player: Player, w: number, h: number) {
-        ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "20px sans-serif";
-        ctx.fillText("Backpack", w / 2, 25);
         const { cols, slotSize, padding } = this.getInventoryLayout(w);
-        const gridW = cols * slotSize + (cols - 1) * padding;
-        const startX = (w - gridW) / 2;
+        const gridW = cols * slotSize + (cols - 1) * padding; const startX = (w - gridW) / 2;
         for (let i = 0; i < 30; i++) {
             const x = startX + (i % cols) * (slotSize + padding);
             const y = 40 + Math.floor(i / cols) * (slotSize + padding);
@@ -109,9 +105,7 @@ export class UIManager {
 
     drawDraggedItem(ctx: CanvasRenderingContext2D, input: InputManager) {
         if (!this.drag) return;
-        ctx.save(); ctx.globalAlpha = 0.7;
-        this.drawItem(ctx, this.drag.item, input.mouseX - 30, input.mouseY - 30, 60);
-        ctx.restore();
+        ctx.save(); ctx.globalAlpha = 0.7; this.drawItem(ctx, this.drag.item, input.mouseX - 30, input.mouseY - 30, 60); ctx.restore();
     }
 
     drawCrafting(ctx: CanvasRenderingContext2D, w: number, h: number) {
@@ -127,16 +121,25 @@ export class UIManager {
     }
 
     drawProfile(ctx: CanvasRenderingContext2D, player: Player, w: number, h: number) {
-        ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "24px sans-serif"; ctx.fillText("Player Profile", w / 2, 40);
-        ctx.font = "18px sans-serif"; ctx.fillText(`Name: ${player.username}`, w / 2, 100);
-        const btnW = 200; const btnH = 40; const btnX = (w - btnW) / 2;
-        ctx.fillStyle = "rgba(68,68,170,0.8)"; ctx.fillRect(btnX, 140, btnW, btnH);
-        ctx.fillStyle = "white"; ctx.fillText("Change Name", w / 2, 160);
+        ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "24px sans-serif";
+        ctx.fillText("Player Profile", w / 2, 40);
+        ctx.font = "18px sans-serif"; ctx.fillText(`Name: ${player.username}`, w / 2, 80);
+        
+        // Custom Text Box
+        const boxW = 200; const boxH = 40; const boxX = (w - boxW) / 2; const boxY = 120;
+        ctx.fillStyle = "#000"; ctx.fillRect(boxX, boxY, boxW, boxH);
+        ctx.strokeStyle = "#fff"; ctx.strokeRect(boxX, boxY, boxW, boxH);
+        ctx.fillStyle = "#fff"; ctx.font = "16px monospace";
+        ctx.fillText(this.nameInput + (Math.floor(Date.now()/500)%2==0?"|":""), w/2, boxY + 20);
+
+        const btnW = 160; const btnH = 40; const btnX = (w - btnW) / 2;
+        ctx.fillStyle = "rgba(68,170,68,0.8)"; ctx.fillRect(btnX, 180, btnW, btnH);
+        ctx.fillStyle = "white"; ctx.fillText("Update Name", w / 2, 200);
     }
 
     drawGuidebook(ctx: CanvasRenderingContext2D, w: number, h: number) {
         ctx.fillStyle = "white"; ctx.textAlign = "left"; ctx.font = "14px sans-serif";
-        const lines = ["GUIDE", "WASD: Move", "LeftClick: Attack", "RightClick: Build/Eat", "1-7: Select Slot"];
+        const lines = ["GUIDE", "WASD: Move", "A: Attack/Use", "B: Interact", "1-7: Select Slot"];
         let y = 40; for (const l of lines) { ctx.fillText(l, 20, y); y += 25; }
     }
 
@@ -186,49 +189,43 @@ export class UIManager {
     }
 
     handleInput(input: InputManager, w: number, h: number, player: Player | null) {
+        if (this.state === AppState.InGame && this.isMenuOpen && this.activeTab === MenuTab.Profile) {
+            // Primitive keyboard capture
+            // In a production app, we'd use a hidden <input> or proper event management
+        }
         if (this.state === AppState.InGame && !this.isMenuOpen) {
             for (let i = 1; i <= 7; i++) if (input.keys[`num${i}` as any]) this.slotSelectRequest = i - 1;
         }
         if (input.isPointerDown) {
             const mx = input.mouseX; const my = input.mouseY;
-            if (this.state === AppState.StartScreen) {
-                if (this.hitTest(mx, my, (w - 200) / 2, h / 2, 200, 60)) { this.joinRequest = true; input.isPointerDown = false; }
-            } else if (this.state === AppState.GameOver) {
-                if (this.hitTest(mx, my, (w - 300) / 2, h / 2, 300, 80)) { this.respawnRequest = true; input.isPointerDown = false; }
-            } else if (this.state === AppState.InGame) {
+            if (this.state === AppState.StartScreen) { if (this.hitTest(mx, my, (w - 200) / 2, h / 2, 200, 60)) { this.joinRequest = true; input.isPointerDown = false; } }
+            else if (this.state === AppState.GameOver) { if (this.hitTest(mx, my, (w - 300) / 2, h / 2, 300, 80)) { this.respawnRequest = true; input.isPointerDown = false; } }
+            else if (this.state === AppState.InGame) {
                 const margin = 20; const panelX = margin; const panelY = margin; const panelW = w - margin * 2;
                 if (this.isMenuOpen) {
                     if (this.hitTest(mx, my, panelX + panelW - 40, panelY + 10, 30, 30)) { this.isMenuOpen = false; input.isPointerDown = false; }
                     else if (this.hitTest(mx, my, panelX, panelY, panelW, 50)) { this.activeTab = Math.floor((mx - panelX) / (panelW / 4)); input.isPointerDown = false; }
                     else if (this.activeTab === MenuTab.Inventory && player) {
                         const { cols, slotSize, padding } = this.getInventoryLayout(panelW);
-                        const gridW = cols * slotSize + (cols - 1) * padding; const startX = panelX + (panelW - gridW) / 2;
+                        const startX = panelX + (panelW - (cols * slotSize + (cols - 1) * padding)) / 2;
                         for (let i = 0; i < 30; i++) {
                             const x = startX + (i % cols) * (slotSize + padding); const y = panelY + 50 + 40 + Math.floor(i / cols) * (slotSize + padding);
-                            if (this.hitTest(mx, my, x, y, slotSize, slotSize)) {
-                                if (!this.drag && player.inventory.slots[i]) this.drag = { fromIndex: i, item: player.inventory.slots[i]!, startX: mx, startY: my };
-                                break;
-                            }
+                            if (this.hitTest(mx, my, x, y, slotSize, slotSize)) { if (!this.drag && player.inventory.slots[i]) this.drag = { fromIndex: i, item: player.inventory.slots[i]!, startX: mx, startY: my }; break; }
+                        }
+                    } else if (this.activeTab === MenuTab.Profile) {
+                        if (this.hitTest(mx, my, panelX + (panelW - 200)/2, panelY + 50 + 120, 200, 40)) {
+                            const n = prompt("New name:", player?.username || ""); if (n) this.nameUpdateRequest = n; input.isPointerDown = false;
                         }
                     } else if (this.activeTab === MenuTab.Crafting) {
                         const recipes = ["WoodPickaxe", "StonePickaxe", "WoodWall", "Torch"];
                         let rY = panelY + 50 + 40; const btnW = Math.min(260, panelW - 40);
-                        for (const code of recipes) {
-                            if (this.hitTest(mx, my, panelX + (panelW - btnW)/2, rY, btnW, 45)) { this.craftRequest = code; input.isPointerDown = false; }
-                            rY += 55;
-                        }
-                    } else if (this.activeTab === MenuTab.Profile) {
-                        if (this.hitTest(mx, my, panelX + (panelW - 200)/2, panelY + 50 + 140, 200, 40)) {
-                            const n = prompt("New name:", "Survivor"); if (n) this.nameUpdateRequest = n; input.isPointerDown = false;
-                        }
+                        for (const code of recipes) { if (this.hitTest(mx, my, panelX + (panelW - btnW)/2, rY, btnW, 45)) { this.craftRequest = code; input.isPointerDown = false; } rY += 55; }
                     }
                 } else {
                     if (this.hitTest(mx, my, w - 60, 20, 50, 50)) { this.isMenuOpen = true; input.isPointerDown = false; }
-                    const slots = 7; const slotSize = Math.min(50, (w - 80) / 7); const padding = 10;
-                    const totalW = slots * (slotSize + padding); const startX = (w - totalW) / 2; const startY = h - slotSize - 20;
-                    if (this.hitTest(mx, my, startX, startY, totalW, slotSize)) {
-                        const idx = Math.floor((mx - startX) / (slotSize + padding));
-                        if (idx >= 0 && idx < 7) { this.slotSelectRequest = idx; input.isPointerDown = false; }
+                    const slots = 7; const slotS = Math.min(50, (w - 80) / 7); const pad = 10; const startX = (w - (slots * (slotS + pad))) / 2; const startY = h - slotS - 20;
+                    if (this.hitTest(mx, my, startX, startY, slots * (slotS + pad), slotS)) {
+                        const idx = Math.floor((mx - startX) / (slotS + pad)); if (idx >= 0 && idx < 7) { this.slotSelectRequest = idx; input.isPointerDown = false; }
                     }
                 }
             }
@@ -236,7 +233,7 @@ export class UIManager {
             const mx = input.mouseX; const my = input.mouseY;
             const margin = 20; const panelX = margin; const panelY = margin; const panelW = w - margin * 2;
             const { cols, slotSize, padding } = this.getInventoryLayout(panelW);
-            const gridW = cols * slotSize + (cols - 1) * padding; const startX = panelX + (panelW - gridW) / 2;
+            const startX = panelX + (panelW - (cols * slotSize + (cols - 1) * padding)) / 2;
             for (let i = 0; i < 30; i++) {
                 const x = startX + (i % cols) * (slotSize + padding); const y = panelY + 50 + 40 + Math.floor(i / cols) * (slotSize + padding);
                 if (this.hitTest(mx, my, x, y, slotSize, slotSize)) { if (i !== this.drag.fromIndex) this.swapRequest = [this.drag.fromIndex, i]; break; }

@@ -11,17 +11,11 @@
     -   **Translucency**: UI elements use semi-transparent backgrounds.
 -   **Function**: The "Active Slot" determines what item is held/used (e.g., placing a wall, eating food).
 
-## Visuals (Minecraft/Terraria Feel)
+## Items & Stacking
 
-- **Visuals**: Dark, high-contrast grid with inset borders.
+- **Stack Limit**: Removed. Items of the same type stack indefinitely within a single slot to streamline resource management.
 
-- **Responsiveness**:
-
-    - **Desktop**: 7 columns.
-
-    - **Mobile**: Dynamic column count (3-5) based on screen width to prevent extending off-screen.
-
-    - **Scaling**: Slot size reduces on small screens.
+- **Visuals**: Slot displays the total count at the bottom-right corner.
 
 
 

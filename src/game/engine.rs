@@ -42,14 +42,46 @@ impl GameEngine {
         }
     }
     fn tick_world(&mut self) {
-        let mut dead = Vec::new();
-        for (id, p) in self.world.players.iter_mut() { SurvivalSystem::tick(p, &self.config.mechanics); if p.health <= 0.0 { dead.push(*id); } }
-        for id in dead { self.world.players.remove(&id); }
+        let mut dead_p = Vec::new();
+        for (id, p) in self.world.players.iter_mut() { SurvivalSystem::tick(p, &self.config.mechanics); if p.health <= 0.0 { dead_p.push(*id); } }
+        for id in dead_p { self.world.players.remove(&id); }
+
         let mut rng = rand::thread_rng();
-        for m in self.world.mobs.values_mut() {
-            let dx = rng.gen_range(-1.0..1.0); let dy = rng.gen_range(-1.0..1.0);
-            m.x = (m.x + dx).clamp(0.0, self.world.width); m.y = (m.y + dy).clamp(0.0, self.world.height);
+        let player_ids: Vec<Uuid> = self.world.players.keys().cloned().collect();
+        for mob in self.world.mobs.values_mut() {
+            if mob.m_type == MobType::Rabbit {
+                let dx = rng.gen_range(-1.0..1.0); let dy = rng.gen_range(-1.0..1.0);
+                mob.x = (mob.x + dx).clamp(0.0, self.world.width); mob.y = (mob.y + dy).clamp(0.0, self.world.height);
+            } else {
+                // Hostile logic
+                let mut target = None; let mut min_dist = 300.0;
+                for pid in &player_ids {
+                    let p = &self.world.players[pid];
+                    let d = Math::dist(mob.x, mob.y, p.x, p.y);
+                    if d < min_dist { min_dist = d; target = Some(p); }
+                }
+                if let Some(t) = target {
+                    let dx = t.x - mob.x; let dy = t.y - mob.y;
+                    if min_dist > 20.0 { mob.x += dx / min_dist * 2.0; mob.y += dy / min_dist * 2.0; }
+                    else {
+                        // Attack Player
+                        // In a real system we'd track mob attack cooldowns.
+                        // For MVP, we'll let the player's survival system handle it or apply here.
+                    }
+                }
+            }
         }
+        // Mob damage pass
+        let mut dmg_to_apply = Vec::new();
+        for mob in self.world.mobs.values() {
+            if mob.m_type == MobType::Rabbit { continue; }
+            for (pid, p) in self.world.players.iter() {
+                if Math::dist(mob.x, mob.y, p.x, p.y) < 30.0 {
+                    dmg_to_apply.push((*pid, match mob.m_type { MobType::Wolf => 0.5, MobType::Bear => 1.5, _ => 0.0 }));
+                }
+            }
+        }
+        for (pid, d) in dmg_to_apply { if let Some(p) = self.world.players.get_mut(&pid) { p.health -= d; } }
     }
 }
 
@@ -79,11 +111,21 @@ impl Handler<Input> for GameEngine {
     fn handle(&mut self, msg: Input, _: &mut Context<Self>) {
         let range = self.config.game.interact_range;
         let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_millis() as u64;
+        let (px, py, slot) = if let Some(p) = self.world.players.get(&msg.id) { (p.x, p.y, p.active_slot) } else { return; };
+        
         if let Some(player) = self.world.players.get_mut(&msg.id) {
             player.x = (player.x + msg.dx * 5.0).clamp(0.0, self.world.width); player.y = (player.y + msg.dy * 5.0).clamp(0.0, self.world.height);
             if msg.attack && now - player.last_attack_at >= self.config.mechanics.attack_cooldown {
-                player.last_attack_at = now; let mut proc = false; let active = player.active_slot; let mut clear = false;
-                if let Some(item) = &mut player.inventory.slots[active] {
+                player.last_attack_at = now; let mut proc = false; let mut clear = false;
+                
+                let mut tool_dmg = 2.0;
+                let mut rock_mult = 1.0;
+                if let Some(item) = &player.inventory.slots[slot] {
+                    if item.kind == ItemType::WoodPickaxe { tool_dmg = 4.0; rock_mult = 2.0; }
+                    if item.kind == ItemType::StonePickaxe { tool_dmg = 8.0; rock_mult = 3.0; }
+                }
+
+                if let Some(item) = &mut player.inventory.slots[slot] {
                     if item.kind == ItemType::Berry || item.kind == ItemType::Meat || item.kind == ItemType::CookedMeat {
                         player.hunger = (player.hunger + self.config.mechanics.food_value).min(100.0); item.amount -= 1; if item.amount == 0 { clear = true; } proc = true;
                     }
@@ -92,26 +134,41 @@ impl Handler<Input> for GameEngine {
                         if let Some(t) = st { let s = Structure::new(t, player.x, player.y, msg.id); self.world.structures.insert(s.id, s); item.amount -= 1; if item.amount == 0 { clear = true; } proc = true; }
                     }
                 }
-                if clear { player.inventory.slots[active] = None; }
+                if clear { player.inventory.slots[slot] = None; }
                 if !proc {
-                    let mut d = Vec::new(); let mut c = Vec::new();
-                    for (id, r) in self.world.resources.iter_mut() {
-                        if ((player.x - r.x).powi(2) + (player.y - r.y).powi(2)).sqrt() < range {
-                             r.amount -= 1; match r.r_type { ResourceType::Tree => d.push((ItemType::Wood, 1)), ResourceType::Rock => d.push((ItemType::Stone, 1)), ResourceType::Food => d.push((ItemType::Berry, 1)) };
-                             if r.amount <= 0 { c.push(*id); } proc = true; break;
+                    // Try hit resources
+                    let mut res_id = None;
+                    for (id, r) in self.world.resources.iter() { if Math::dist(px, py, r.x, r.y) < range { res_id = Some(*id); break; } }
+                    if let Some(rid) = res_id {
+                        let r = self.world.resources.get_mut(&rid).unwrap();
+                        r.amount -= (tool_dmg * if r.r_type == ResourceType::Rock { rock_mult } else { 1.0 }) as i32;
+                        if r.amount <= 0 {
+                            let drop = match r.r_type { ResourceType::Tree => (ItemType::Wood, 5), ResourceType::Rock => (ItemType::Stone, 3), ResourceType::Food => (ItemType::Berry, 2) };
+                            player.inventory.add(drop.0, drop.1); self.world.resources.remove(&rid);
                         }
+                        proc = true;
                     }
-                    if !proc {
-                        for (id, m) in self.world.mobs.iter_mut() {
-                             if ((player.x - m.x).powi(2) + (player.y - m.y).powi(2)).sqrt() < range {
-                                 m.health -= 5.0; if m.health <= 0.0 { c.push(*id); d.push((ItemType::Meat, 1)); } proc = true; break;
-                             }
-                        }
+                }
+                if !proc {
+                    // Try hit mobs
+                    let mut mid = None;
+                    for (id, m) in self.world.mobs.iter() { if Math::dist(px, py, m.x, m.y) < range { mid = Some(*id); break; } }
+                    if let Some(id) = mid {
+                        let m = self.world.mobs.get_mut(&id).unwrap(); m.health -= tool_dmg;
+                        if m.health <= 0.0 { player.inventory.add(ItemType::Meat, 2); self.world.mobs.remove(&id); }
+                        proc = true;
                     }
-                    for (k, a) in d { player.inventory.add(k, a); }
-                    for id in c { self.world.resources.remove(&id); self.world.mobs.remove(&id); }
+                }
+                if !proc {
+                    // Try hit other players
+                    let mut tid = None;
+                    for (id, p) in self.world.players.iter() { if *id != msg.id && Math::dist(px, py, p.x, p.y) < range { tid = Some(*id); break; } }
+                    if let Some(id) = tid { let p = self.world.players.get_mut(&id).unwrap(); p.health -= tool_dmg; }
                 }
             }
         }
     }
 }
+
+struct Math;
+impl Math { fn dist(x1: f64, y1: f64, x2: f64, y2: f64) -> f64 { ((x1 - x2).powi(2) + (y1 - y2).powi(2)).sqrt() } }
