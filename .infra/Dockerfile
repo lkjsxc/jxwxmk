@@ -38,6 +38,7 @@ COPY --from=backend /app/target/release/kkmypk .
 COPY --from=frontend /app/src/static ./static
 COPY src/client/index.html ./static/index.html
 COPY src/client/styles.css ./static/styles.css
+COPY config.json .
 
 ENV RUST_LOG=info
 EXPOSE 8080
