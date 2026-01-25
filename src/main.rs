@@ -2,7 +2,7 @@ mod server;
 mod game;
 mod db;
 
-use actix_web::{App, HttpServer, web};
+use actix_web::{App, HttpServer, web, middleware};
 use actix_files as fs;
 use actix::Actor;
 use log::info;
@@ -20,6 +20,13 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(game_engine_data.clone())
+            .wrap(middleware::Logger::default())
+            .wrap(
+                middleware::DefaultHeaders::new()
+                    .add(("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws: wss:;"))
+                    .add(("X-Content-Type-Options", "nosniff"))
+                    .add(("X-Frame-Options", "DENY"))
+            )
             .service(server::http::health_check)
             .route("/ws", web::get().to(server::ws::ws_index))
             .service(fs::Files::new("/", "./static").index_file("index.html"))
