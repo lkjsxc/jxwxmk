@@ -24,6 +24,12 @@ export class UIManager {
 
     render(ctx: CanvasRenderingContext2D, player: Player | null, input: InputManager) {
         const w = ctx.canvas.width; const h = ctx.canvas.height;
+        
+        // Sync name buffer if not focused
+        if (player && this.activeTab === MenuTab.Profile && !this.isNameFocused) {
+            this.nameBuffer = player.username;
+        }
+
         if (this.state === AppState.StartScreen) this.drawStartScreen(ctx, w, h);
         else if (this.state === AppState.GameOver) this.drawGameOver(ctx, w, h);
         else if (this.state === AppState.InGame && player) {

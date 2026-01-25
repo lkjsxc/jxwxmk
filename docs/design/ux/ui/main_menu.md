@@ -20,7 +20,7 @@ The central interface for **kkmypk**.
 ### 4. Profile Tab
 - **Stats**: Total time survived, items gathered.
 - **Customization**:
-    - **Name Input Box**: A simulated text field. Clicking it focuses the input.
+    - **Name Input Box**: A simulated text field. Displays the player's current username by default. Clicking it focuses the input for editing.
     - **Keyboard Input**: While focused, typing updates the character buffer in real-time.
     - **Visual**: Displays a blinking cursor (|) when focused.
     - **Action**: "Update Name" button or pressing "Enter" sends the change to the server.
