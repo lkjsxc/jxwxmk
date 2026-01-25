@@ -16,6 +16,7 @@ impl GameSession {
 
 #[derive(Serialize)] struct WelcomeMsg { #[serde(rename = "type")] msg_type: String, id: Uuid, token: String }
 #[derive(Serialize)] struct WorldMsg<T> { #[serde(rename = "type")] msg_type: String, data: T }
+#[derive(Serialize)] struct NotificationPayload { title: String, message: String, color: String }
 
 impl Actor for GameSession {
     type Context = ws::WebsocketContext<Self>;
@@ -66,6 +67,11 @@ impl Handler<ServerMessage> for GameSession {
             }
             ServerMessage::AchievementUnlocked(ach) => {
                 let wrapper = WorldMsg { msg_type: "achievement".to_string(), data: ach };
+                if let Ok(json) = serde_json::to_string(&wrapper) { ctx.text(json); }
+            }
+            ServerMessage::Notification { title, message, color } => {
+                let payload = NotificationPayload { title, message, color };
+                let wrapper = WorldMsg { msg_type: "notification".to_string(), data: payload };
                 if let Ok(json) = serde_json::to_string(&wrapper) { ctx.text(json); }
             }
         }

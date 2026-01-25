@@ -10,7 +10,7 @@ use crate::game::entities::structure::{Structure, StructureType};
 use crate::game::systems::survival::SurvivalSystem;
 use crate::game::systems::crafting::CraftingSystem;
 use crate::game::systems::achievements::{AchievementSystem, Achievement};
-use crate::game::systems::interaction::InteractionSystem;
+use crate::game::systems::interaction::{InteractionSystem, InteractionEvent};
 use crate::game::config::AppConfig;
 use serde::Serialize;
 use rand::Rng;
@@ -19,6 +19,7 @@ use rand::Rng;
 pub enum ServerMessage {
     WorldUpdate(World),
     AchievementUnlocked(Achievement),
+    Notification { title: String, message: String, color: String },
 }
 
 #[derive(Message)] #[rtype(result = "()")] pub struct Tick;
@@ -194,7 +195,20 @@ impl Handler<Input> for GameEngine {
         InteractionSystem::handle_movement(&mut self.world, msg.id, msg.dx, msg.dy);
         if msg.attack {
             let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_millis() as u64;
-            InteractionSystem::handle_attack(&mut self.world, &self.config, msg.id, now);
+            let events = InteractionSystem::handle_attack(&mut self.world, &self.config, msg.id, now);
+            for event in events {
+                match event {
+                    InteractionEvent::LevelUp { tool, level } => {
+                        if let Some(addr) = self.sessions.get(&msg.id) {
+                            addr.do_send(ServerMessage::Notification { 
+                                title: "Tool Level Up!".to_string(), 
+                                message: format!("{} reached level {}", tool, level), 
+                                color: "#4f4".to_string() 
+                            });
+                        }
+                    }
+                }
+            }
         }
         self.check_achievements(msg.id);
     }

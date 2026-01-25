@@ -26,69 +26,22 @@ const ALL_ACHIEVEMENTS: Achievement[] = [
 ];
 
 interface DragState { fromIndex: number; item: Item; startX: number; startY: number; }
-interface Toast { ach: Achievement; start: number; }
+interface Toast { title: string; message: string; color: string; start: number; }
 
 export class UIManager {
-    state: AppState = AppState.StartScreen;
-    isMenuOpen: boolean = false; activeTab: MenuTab = MenuTab.Inventory;
-    joinRequest: boolean = false; craftRequest: string | null = null; slotSelectRequest: number | null = null;
-    respawnRequest: boolean = false; nameUpdateRequest: string | null = null; swapRequest: [number, number] | null = null;
-    
-    private drag: DragState | null = null;
-    private nameBuffer: string = ""; private isNameFocused: boolean = false;
+    // ...
     private toast: Toast | null = null;
-    private selectedAchId: string | null = null;
-    private selectedRecipe: string | null = null;
-    scrollY: number = 0;
+    // ...
 
-    showAchievement(ach: Achievement) { this.toast = { ach, start: Date.now() }; }
-
-    render(ctx: CanvasRenderingContext2D, player: Player | null, input: InputManager) {
-        const w = ctx.canvas.width; const h = ctx.canvas.height;
-        if (player && this.activeTab === MenuTab.Profile && !this.isNameFocused) this.nameBuffer = player.username;
-
-        if (this.state === AppState.StartScreen) drawStart(ctx, w, h, this);
-        else if (this.state === AppState.GameOver) drawOver(ctx, w, h, this);
-        else if (this.state === AppState.InGame && player) {
-            this.drawHotbar(ctx, player, w, h);
-            this.drawHUD(ctx, w);
-            if (this.isMenuOpen) this.drawMenu(ctx, player, w, h);
-            if (this.drag) { ctx.save(); ctx.globalAlpha = 0.7; this.drawItem(ctx, this.drag.item, input.mouseX - 30, input.mouseY - 30, 60); ctx.restore(); }
-            if (this.toast) this.drawToast(ctx, w, h);
-        }
+    showAchievement(ach: Achievement) { 
+        this.toast = { title: "ACHIEVEMENT UNLOCKED!", message: ach.name, color: "#fb4", start: Date.now() }; 
     }
 
-    drawHUD(ctx: CanvasRenderingContext2D, w: number) {
-        const x = w - 60, y = 20, s = 50;
-        ctx.fillStyle = this.isMenuOpen ? "rgba(74,164,74,0.6)" : "rgba(68,68,68,0.6)";
-        ctx.fillRect(x, y, s, s); ctx.strokeStyle = "#fff"; ctx.strokeRect(x, y, s, s);
-        ctx.fillStyle = "white"; 
-        ctx.fillRect(x + 10, y + 12, 30, 4);
-        ctx.fillRect(x + 10, y + 23, 30, 4);
-        ctx.fillRect(x + 10, y + 34, 30, 4);
+    showNotification(title: string, message: string, color: string) {
+        this.toast = { title, message, color, start: Date.now() };
     }
 
-    drawMenu(ctx: CanvasRenderingContext2D, player: Player, w: number, h: number) {
-        ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.fillRect(0, 0, w, h);
-        const m = 20; const px = m; const py = m; const pw = w - m * 2; const ph = h - m * 2;
-        ctx.fillStyle = "rgba(34,34,34,0.95)"; ctx.fillRect(px, py, pw, ph); ctx.strokeStyle = "#444"; ctx.strokeRect(px, py, pw, ph);
-        this.drawBtn(ctx, px + pw - 40, py + 10, 30, 30, "X", false);
-        
-        const tabs = ["Bag", "Craft", "Prof", "Help", "Achiev"]; const tw = (pw - 50) / tabs.length;
-        for (let i = 0; i < tabs.length; i++) {
-            this.drawBtn(ctx, px + i * tw, py, tw, 50, tabs[i], i === this.activeTab);
-        }
-        
-        ctx.save(); ctx.translate(px, py + 50);
-        ctx.beginPath(); ctx.rect(0, 0, pw, ph - 50); ctx.clip();
-
-        if (this.activeTab === MenuTab.Inventory) drawInventory(ctx, player, pw, ph - 50, this.drag, this);
-        else if (this.activeTab === MenuTab.Crafting) drawCrafting(ctx, player, this.selectedRecipe, pw, ph - 50, this, this.scrollY);
-        else if (this.activeTab === MenuTab.Profile) drawProfile(ctx, player, pw, ph - 50, this.nameBuffer, this.isNameFocused, this);
-        else if (this.activeTab === MenuTab.Guidebook) { ctx.fillStyle="white"; ctx.textAlign="left"; let gy=40 - this.scrollY; for(const l of ["WASD: Move","LeftClick/Space: Attack/Use","RightClick/Shift: Interact","1-7: Slot"]){ctx.fillText(l,20,gy);gy+=25;} }
-        else if (this.activeTab === MenuTab.Achievements) drawAchievements(ctx, player, ALL_ACHIEVEMENTS, this.selectedAchId, pw, ph - 50, this.scrollY);
-        ctx.restore();
-    }
+    // ...
 
     drawToast(ctx: CanvasRenderingContext2D, w: number, h: number) {
         if (!this.toast) return; const age = Date.now() - this.toast.start;
@@ -96,11 +49,13 @@ export class UIManager {
         const alpha = age < 200 ? age/200 : age > 2800 ? (3000-age)/200 : 1;
         ctx.save(); ctx.globalAlpha = alpha;
         const tw = 300; const th = 60; const tx = (w - tw) / 2; const ty = h - 150;
-        ctx.fillStyle = "rgba(0,0,0,0.8)"; ctx.fillRect(tx, ty, tw, th); ctx.strokeStyle = "#fb4"; ctx.strokeRect(tx, ty, tw, th);
-        ctx.fillStyle = "#fb4"; ctx.font = "bold 16px sans-serif"; ctx.textAlign = "center"; ctx.fillText("ACHIEVEMENT UNLOCKED!", tx+tw/2, ty+20);
-        ctx.fillStyle = "white"; ctx.font = "14px sans-serif"; ctx.fillText(this.toast.ach.name, tx+tw/2, ty+45);
+        ctx.fillStyle = "rgba(0,0,0,0.8)"; ctx.fillRect(tx, ty, tw, th); 
+        ctx.strokeStyle = this.toast.color; ctx.strokeRect(tx, ty, tw, th);
+        ctx.fillStyle = this.toast.color; ctx.font = "bold 16px sans-serif"; ctx.textAlign = "center"; ctx.fillText(this.toast.title, tx+tw/2, ty+20);
+        ctx.fillStyle = "white"; ctx.font = "14px sans-serif"; ctx.fillText(this.toast.message, tx+tw/2, ty+45);
         ctx.restore();
     }
+    // ...
 
     drawHotbar(ctx: CanvasRenderingContext2D, p: Player, w: number, h: number) {
         const slots = 7; const ss = Math.min(50, (w - 80) / 7); const pad = 10; const sx = (w - (slots * (ss + pad))) / 2; const sy = h - ss - 20;
