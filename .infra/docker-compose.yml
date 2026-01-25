@@ -6,32 +6,5 @@ services:
       target: runtime
     ports:
       - "8080:8080"
-    depends_on:
-      - db
     environment:
-      - DATABASE_URL=postgres://user:password@db:5432/kkmypk_db
       - RUST_LOG=info
-
-  test:
-    build:
-      context: ..
-      dockerfile: .infra/Dockerfile
-      target: tester
-    environment:
-      - DATABASE_URL=postgres://user:password@db:5432/kkmypk_db
-    depends_on:
-      - db
-
-  db:
-    build:
-      context: ..
-      dockerfile: .infra/Dockerfile.db
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: kkmypk_db
-    volumes:
-      - db_data:/var/lib/postgresql/data
-
-volumes:
-  db_data:

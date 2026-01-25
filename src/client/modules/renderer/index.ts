@@ -1,4 +1,4 @@
-import { World, Player } from "../../types";
+import { World, Player, AppState } from "../../types";
 import { InputManager } from "../input";
 import { Camera } from "../camera";
 import { UIManager } from "../ui/index";
@@ -55,9 +55,14 @@ export class Renderer {
         if (!world) {
             this.ctx.fillStyle = "#fff"; this.ctx.font = "20px sans-serif"; this.ctx.fillText("Connecting...", 50, 50);
         } else {
-            this.drawUI(input);
-            this.drawHUD(world, myId);
+            if (ui.state === AppState.InGame) {
+                this.drawUI(input);
+                this.drawHUD(world, myId);
+            }
+            // Allow UI to render its overlays (StartScreen, GameOver, Menus)
+            // ui.render handles state checking internally for what to draw
             if (myId && world.players[myId]) ui.render(this.ctx, world.players[myId], input);
+            else ui.render(this.ctx, null, input);
         }
     }
 

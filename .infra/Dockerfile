@@ -44,11 +44,14 @@ CMD ["cargo", "test"]
 # Stage 3: Runtime
 FROM debian:bookworm-slim as runtime
 WORKDIR /app
-RUN apt-get update && apt-get install -y libssl-dev ca-certificates && rm -rf /var/lib/apt/lists/*
+# Install Postgres and runtime deps
+RUN apt-get update && apt-get install -y libssl-dev ca-certificates postgresql sudo && rm -rf /var/lib/apt/lists/*
 
 COPY --from=backend /app/target/release/kkmypk .
 COPY config.json .
+COPY .infra/start.sh .
 
 ENV RUST_LOG=info
+ENV DATABASE_URL=postgres://user:password@localhost:5432/kkmypk_db
 EXPOSE 8080
-CMD ["./kkmypk"]
+CMD ["./start.sh"]

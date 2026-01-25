@@ -50,13 +50,27 @@ export class InputManager {
         window.addEventListener('mousedown', (e) => {
             this.mouseX = e.clientX; this.mouseY = e.clientY;
             this.isPointerDown = true;
-            if (e.button === 0) this.keys.attack = true;
-            if (e.button === 2) this.keys.interact = true;
+            
+            // Check UI buttons (PC Mouse support)
+            const distA = Math.hypot(e.clientX - this.btnA.x, e.clientY - this.btnA.y);
+            const distB = Math.hypot(e.clientX - this.btnB.x, e.clientY - this.btnB.y);
+            
+            if (distA < this.btnA.radius * 1.2) {
+                this.btnA.active = true;
+            } else if (distB < this.btnB.radius * 1.2) {
+                this.btnB.active = true;
+            } else {
+                // Global actions if not clicking buttons
+                if (e.button === 0) this.keys.attack = true;
+                if (e.button === 2) this.keys.interact = true;
+            }
         });
         window.addEventListener('mouseup', () => { 
             this.isPointerDown = false; 
             this.keys.attack = false; 
             this.keys.interact = false; 
+            this.btnA.active = false;
+            this.btnB.active = false;
         });
         window.addEventListener('mousemove', (e) => { this.mouseX = e.clientX; this.mouseY = e.clientY; });
         window.addEventListener('contextmenu', e => e.preventDefault());

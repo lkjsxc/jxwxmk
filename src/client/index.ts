@@ -51,20 +51,19 @@ function loop() {
     ui.handleInput(input, renderer.canvas.width, renderer.canvas.height, player);
     input.updateAnimations(16);
 
+    const now = Date.now();
+    const alpha = Math.min(1.0, (now - lastUpdateAt) / 50); 
+    renderer.render(world, prevWorld, alpha, input, myId, ui);
+
     if (ui.state === AppState.StartScreen) {
-        ui.render(renderer.ctx, null, input);
-        if (ui.joinRequest) { connect(); ui.joinRequest = false; }
+        if (ui.joinRequest) { ui.state = AppState.InGame; ui.joinRequest = false; }
     } else if (ui.state === AppState.GameOver) {
-        ui.render(renderer.ctx, null, input);
         if (ui.respawnRequest) {
             ui.respawnRequest = false; if (ws) { ws.close(); ws = null; }
             if (inputInterval) { clearInterval(inputInterval); inputInterval = null; }
             localStorage.removeItem(STORAGE_KEY); location.reload();
         }
     } else {
-        const now = Date.now();
-        const alpha = Math.min(1.0, (now - lastUpdateAt) / 50); 
-        renderer.render(world, prevWorld, alpha, input, myId, ui);
         if (ws && ws.readyState === WebSocket.OPEN) {
             if (ui.craftRequest) { ws.send(JSON.stringify({ craft: ui.craftRequest })); ui.craftRequest = null; }
             if (ui.slotSelectRequest !== null) { ws.send(JSON.stringify({ slot: ui.slotSelectRequest })); ui.slotSelectRequest = null; }
@@ -83,4 +82,5 @@ function sendInput() {
         }
     }
 }
+connect();
 loop();

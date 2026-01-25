@@ -32,7 +32,14 @@ pub enum ServerMessage {
 pub struct GameEngine { world: World, sessions: HashMap<Uuid, Recipient<ServerMessage>>, config: AppConfig }
 
 impl GameEngine {
-    pub fn new() -> Self { Self { world: World::new(), sessions: HashMap::new(), config: AppConfig::load() } }
+    pub fn new() -> Self { 
+        let config = AppConfig::load();
+        Self { 
+            world: World::new(config.game.world_width, config.game.world_height), 
+            sessions: HashMap::new(), 
+            config 
+        } 
+    }
     fn broadcast(&self) { let msg = ServerMessage::WorldUpdate(self.world.clone()); for addr in self.sessions.values() { addr.do_send(msg.clone()); } }
     
     fn check_achievements(&mut self, player_id: Uuid) {

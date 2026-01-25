@@ -14,10 +14,10 @@ pub struct World {
 }
 
 impl World {
-    pub fn new() -> Self {
+    pub fn new(width: f64, height: f64) -> Self {
         Self {
-            width: 2000.0,
-            height: 2000.0,
+            width,
+            height,
             players: HashMap::new(),
             resources: HashMap::new(),
             mobs: HashMap::new(),
