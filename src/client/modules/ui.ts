@@ -2,7 +2,7 @@ import { InputManager } from "./input";
 import { Player, Item } from "../types";
 
 export enum AppState { StartScreen, InGame, GameOver }
-export enum MenuTab { Inventory, Crafting, Profile, Guidebook, Settings }
+export enum MenuTab { Inventory, Crafting, Profile, Guidebook }
 
 export class UIManager {
     state: AppState = AppState.StartScreen;
@@ -29,20 +29,20 @@ export class UIManager {
     drawStartScreen(ctx: CanvasRenderingContext2D, w: number, h: number) {
         ctx.fillStyle = "#111"; ctx.fillRect(0, 0, w, h);
         ctx.fillStyle = "#eee"; ctx.font = "bold 60px sans-serif"; ctx.textAlign = "center";
-        ctx.fillText("kkmypk", w / 2, h / 3);
+        ctx.textBaseline = "middle"; ctx.fillText("kkmypk", w / 2, h / 3);
         const btnW = 200; const btnH = 60; const btnX = (w - btnW) / 2; const btnY = h / 2;
         ctx.fillStyle = "#4a4"; ctx.fillRect(btnX, btnY, btnW, btnH);
-        ctx.fillStyle = "white"; ctx.font = "30px sans-serif"; ctx.fillText("PLAY", w / 2, btnY + 40);
+        ctx.fillStyle = "white"; ctx.font = "30px sans-serif"; ctx.fillText("PLAY", w / 2, btnY + btnH / 2);
     }
 
     drawGameOver(ctx: CanvasRenderingContext2D, w: number, h: number) {
         ctx.fillStyle = "rgba(100, 0, 0, 0.8)"; ctx.fillRect(0, 0, w, h);
         ctx.fillStyle = "white"; ctx.font = "bold 60px sans-serif"; ctx.textAlign = "center";
-        ctx.fillText("YOU DIED", w / 2, h / 3);
+        ctx.textBaseline = "middle"; ctx.fillText("YOU DIED", w / 2, h / 3);
         const btnW = 300; const btnH = 80; const btnX = (w - btnW) / 2; const btnY = h / 2;
         ctx.fillStyle = "#a44"; ctx.fillRect(btnX, btnY, btnW, btnH);
         ctx.strokeStyle = "white"; ctx.lineWidth = 4; ctx.strokeRect(btnX, btnY, btnW, btnH);
-        ctx.fillStyle = "white"; ctx.font = "bold 32px sans-serif"; ctx.fillText("RESPAWN", w / 2, btnY + 50);
+        ctx.fillStyle = "white"; ctx.font = "bold 32px sans-serif"; ctx.fillText("RESPAWN", w / 2, btnY + btnH / 2);
     }
 
     drawHUDButtons(ctx: CanvasRenderingContext2D, w: number) {
@@ -50,22 +50,23 @@ export class UIManager {
     }
 
     drawMenuOverlay(ctx: CanvasRenderingContext2D, player: Player, w: number, h: number) {
-        ctx.fillStyle = "rgba(0,0,0,0.8)"; ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.fillRect(0, 0, w, h);
         const margin = 40; const panelX = margin; const panelY = margin;
         const panelW = w - margin * 2; const panelH = h - margin * 2;
-        ctx.fillStyle = "#222"; ctx.fillRect(panelX, panelY, panelW, panelH);
-        ctx.strokeStyle = "#444"; ctx.strokeRect(panelX, panelY, panelW, panelH);
+        ctx.fillStyle = "rgba(34, 34, 34, 0.8)"; ctx.fillRect(panelX, panelY, panelW, panelH);
+        ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.strokeRect(panelX, panelY, panelW, panelH);
         this.drawButton(ctx, panelX + panelW - 40, panelY + 10, 30, 30, "X", false);
 
         const tabs = ["Bag", "Craft", "Prof", "Help"];
         const tabW = (panelW - 50) / tabs.length;
+        ctx.textBaseline = "middle";
         for (let i = 0; i < tabs.length; i++) {
             const tx = panelX + i * tabW;
-            ctx.fillStyle = i === this.activeTab ? "#444" : "#333";
+            ctx.fillStyle = i === this.activeTab ? "rgba(68,68,68,0.8)" : "rgba(51,51,51,0.8)";
             ctx.fillRect(tx, panelY, tabW, 50);
             ctx.fillStyle = i === this.activeTab ? "white" : "#aaa";
             ctx.font = "18px sans-serif"; ctx.textAlign = "center";
-            ctx.fillText(tabs[i], tx + tabW / 2, panelY + 32);
+            ctx.fillText(tabs[i], tx + tabW / 2, panelY + 25);
         }
 
         ctx.save(); ctx.translate(panelX, panelY + 50);
@@ -77,6 +78,7 @@ export class UIManager {
     }
 
     drawInventory(ctx: CanvasRenderingContext2D, player: Player, w: number, h: number) {
+        ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "24px sans-serif"; ctx.fillText("Backpack", w / 2, 30);
         const cols = 5; const slotSize = 60; const padding = 15;
         const gridW = cols * slotSize + (cols - 1) * padding;
         const startX = (w - gridW) / 2;
@@ -92,59 +94,46 @@ export class UIManager {
     drawCrafting(ctx: CanvasRenderingContext2D, w: number, h: number) {
         const recipes = [{ name: "Wood Pick", code: "WoodPickaxe", req: "10 Wood" }, { name: "Stone Pick", code: "StonePickaxe", req: "10W, 10S" }, { name: "Wood Wall", code: "WoodWall", req: "20 Wood" }, { name: "Torch", code: "Torch", req: "2 Wood" }];
         let y = 40; const btnW = 260; const x = (w - btnW) / 2;
+        ctx.textBaseline = "middle";
         for (const r of recipes) {
-            ctx.fillStyle = "#444"; ctx.fillRect(x, y, btnW, 45);
+            ctx.fillStyle = "rgba(68,68,68,0.8)"; ctx.fillRect(x, y, btnW, 45);
             ctx.fillStyle = "white"; ctx.font = "16px sans-serif"; ctx.textAlign = "left";
-            ctx.fillText(r.name, x + 10, y + 28);
-            ctx.fillStyle = "#aaa"; ctx.textAlign = "right"; ctx.fillText(r.req, x + btnW - 10, y + 28);
+            ctx.fillText(r.name, x + 10, y + 22);
+            ctx.fillStyle = "#aaa"; ctx.textAlign = "right"; ctx.fillText(r.req, x + btnW - 10, y + 22);
             y += 55;
         }
     }
 
     drawProfile(ctx: CanvasRenderingContext2D, player: Player, w: number, h: number) {
-        ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "24px sans-serif";
-        ctx.fillText("Player Profile", w / 2, 40);
-        ctx.font = "18px sans-serif";
-        ctx.fillText(`Current Name: ${player.username}`, w / 2, 100);
+        ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "24px sans-serif"; ctx.fillText("Player Profile", w / 2, 40);
+        ctx.font = "18px sans-serif"; ctx.fillText(`Current Name: ${player.username}`, w / 2, 100);
         const btnW = 200; const btnH = 40; const btnX = (w - btnW) / 2;
-        ctx.fillStyle = "#44a"; ctx.fillRect(btnX, 140, btnW, btnH);
-        ctx.fillStyle = "white"; ctx.fillText("Change Name", w / 2, 165);
-        ctx.font = "12px sans-serif"; ctx.fillStyle = "#aaa";
-        ctx.fillText("(Click to enter a random test name)", w / 2, 200);
+        ctx.fillStyle = "rgba(68,68,170,0.8)"; ctx.fillRect(btnX, 140, btnW, btnH);
+        ctx.fillStyle = "white"; ctx.fillText("Change Name", w / 2, 160);
     }
 
     drawGuidebook(ctx: CanvasRenderingContext2D, w: number, h: number) {
         ctx.fillStyle = "white"; ctx.textAlign = "left"; ctx.font = "14px sans-serif";
-        const lines = ["GUIDE", "WASD: Move", "LeftClick: Attack", "RightClick: Build/Eat", "1-9: Select Slot"];
+        const lines = ["GUIDE", "WASD: Move", "LeftClick: Attack", "RightClick: Build/Eat", "1-7: Select Slot"];
         let y = 40; for (const l of lines) { ctx.fillText(l, 20, y); y += 25; }
     }
 
     drawHotbar(ctx: CanvasRenderingContext2D, player: Player, w: number, h: number) {
-        const slotSize = 50; const padding = 10; const startX = (w - (10 * 60)) / 2; const startY = h - 70;
-        for (let i = 0; i < 10; i++) {
+        const slots = 7; const slotSize = 50; const padding = 10;
+        const totalW = slots * 60; const startX = (w - totalW) / 2; const startY = h - 70;
+        for (let i = 0; i < slots; i++) {
             const x = startX + i * 60;
-            ctx.fillStyle = i === player.active_slot ? "rgba(200,200,0,0.5)" : "rgba(0,0,0,0.5)";
+            ctx.fillStyle = i === player.active_slot ? "rgba(200,200,0,0.4)" : "rgba(0,0,0,0.4)";
             ctx.fillRect(x, startY, slotSize, slotSize);
-            ctx.strokeStyle = "white"; ctx.strokeRect(x, startY, slotSize, slotSize);
+            ctx.strokeStyle = "rgba(255,255,255,0.5)"; ctx.strokeRect(x, startY, slotSize, slotSize);
             const item = player.inventory.slots[i];
             if (item) this.drawItem(ctx, item, x, startY, slotSize);
         }
-
-        // Selected Item Name & Action Hint
         const activeItem = player.inventory.slots[player.active_slot];
         if (activeItem) {
-            const name = this.getItemName(activeItem.kind);
-            const action = this.getItemAction(activeItem.kind);
-            
-            ctx.fillStyle = "white";
-            ctx.font = "bold 16px sans-serif";
-            ctx.textAlign = "center";
-            ctx.fillText(`${name} ${action}`, w / 2, startY - 20);
+            ctx.fillStyle = "white"; ctx.font = "bold 16px sans-serif"; ctx.textAlign = "center";
+            ctx.fillText(`${activeItem.kind} ${this.getItemAction(activeItem.kind)}`, w / 2, startY - 20);
         }
-    }
-
-    getItemName(kind: string): string {
-        return kind.replace(/([A-Z])/g, ' $1').trim();
     }
 
     getItemAction(kind: string): string {
@@ -167,14 +156,16 @@ export class UIManager {
     }
 
     drawButton(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, label: string, active: boolean) {
-        ctx.fillStyle = active ? "#4a4" : "#444"; ctx.fillRect(x, y, w, h);
-        ctx.strokeStyle = "white"; ctx.strokeRect(x, y, w, h);
-        ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "12px sans-serif"; ctx.fillText(label, x + w / 2, y + h / 2 + 5);
+        ctx.fillStyle = active ? "rgba(74, 164, 74, 0.6)" : "rgba(68, 68, 68, 0.6)";
+        ctx.fillRect(x, y, w, h);
+        ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.strokeRect(x, y, w, h);
+        ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.font = "12px sans-serif"; ctx.fillText(label, x + w / 2, y + h / 2);
     }
 
     handleInput(input: InputManager, w: number, h: number) {
         if (this.state === AppState.InGame && !this.isMenuOpen) {
-            for (let i = 0; i <= 9; i++) if (input.keys[`num${i}` as any]) this.slotSelectRequest = i === 0 ? 9 : i - 1;
+            for (let i = 1; i <= 7; i++) if (input.keys[`num${i}` as any]) this.slotSelectRequest = i - 1;
         }
         if (input.isPointerDown) {
             const mx = input.mouseX; const my = input.mouseY;
@@ -196,14 +187,16 @@ export class UIManager {
                         }
                     } else if (this.activeTab === MenuTab.Profile) {
                         if (this.hitTest(mx, my, panelX + (panelW - 200)/2, panelY + 50 + 140, 200, 40)) {
-                            const newName = prompt("Enter new name:", "Survivor");
-                            if (newName) this.nameUpdateRequest = newName;
-                            input.isPointerDown = false;
+                            const newName = prompt("Enter new name:", "Survivor"); if (newName) this.nameUpdateRequest = newName; input.isPointerDown = false;
                         }
                     }
                 } else {
                     if (this.hitTest(mx, my, w - 60, 20, 50, 50)) { this.isMenuOpen = true; input.isPointerDown = false; }
-                    // Hotbar click interaction REMOVED
+                    const startX = (w - (7 * 60)) / 2; const startY = h - 70;
+                    if (this.hitTest(mx, my, startX, startY, 7 * 60, 50)) {
+                        const idx = Math.floor((mx - startX) / 60);
+                        if (idx >= 0 && idx < 7) { this.slotSelectRequest = idx; input.isPointerDown = false; }
+                    }
                 }
             }
         }

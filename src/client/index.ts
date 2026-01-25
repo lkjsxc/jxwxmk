@@ -55,6 +55,7 @@ function connect() {
 
 function loop() {
     ui.handleInput(input, renderer.canvas.width, renderer.canvas.height);
+    input.updateAnimations(16); // Approx 60fps dt
 
     if (ui.state === AppState.StartScreen) {
         ui.render(renderer.ctx, null, input);

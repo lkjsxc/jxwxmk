@@ -4,19 +4,19 @@ export class InputManager {
     keys = { 
         w: false, a: false, s: false, d: false, 
         attack: false, interact: false,
-        num0: false, num1: false, num2: false, num3: false, num4: false,
-        num5: false, num6: false, num7: false, num8: false, num9: false
+        num1: false, num2: false, num3: false, num4: false,
+        num5: false, num6: false, num7: false
     };
     joystick: { active: boolean; origin: { x: number; y: number } | null; current: { x: number; y: number } } = {
         active: false, origin: null, current: { x: 0, y: 0 }
     };
-    btnA = { active: false, x: 0, y: 0, radius: 35, label: 'A' };
-    btnB = { active: false, x: 0, y: 0, radius: 25, label: 'B' };
+    btnA = { active: false, x: 0, y: 0, radius: 35, label: 'A', pulse: 0 };
+    btnB = { active: false, x: 0, y: 0, radius: 25, label: 'B', pulse: 0 };
 
     zoomDelta: number = 0;
     mouseX: number = 0;
     mouseY: number = 0;
-    isPointerDown: boolean = false; // Unified flag for UI clicks
+    isPointerDown: boolean = false;
 
     // Cooldowns
     lastAttackAt: number = 0;
@@ -35,13 +35,13 @@ export class InputManager {
             const k = e.key.toLowerCase();
             if (k in this.keys) (this.keys as any)[k] = true;
             if (e.code === 'KeyE') this.keys.interact = true;
-            if (e.key >= '0' && e.key <= '9') (this.keys as any)[`num${e.key}`] = true;
+            if (e.key >= '1' && e.key <= '7') (this.keys as any)[`num${e.key}`] = true;
         });
         window.addEventListener('keyup', (e) => {
             const k = e.key.toLowerCase();
             if (k in this.keys) (this.keys as any)[k] = false;
             if (e.code === 'KeyE') this.keys.interact = false;
-            if (e.key >= '0' && e.key <= '9') (this.keys as any)[`num${e.key}`] = false;
+            if (e.key >= '1' && e.key <= '7') (this.keys as any)[`num${e.key}`] = false;
         });
     }
 
@@ -52,14 +52,8 @@ export class InputManager {
             if (e.button === 0) this.keys.attack = true;
             if (e.button === 2) this.keys.interact = true;
         });
-        window.addEventListener('mouseup', (e) => {
-            this.isPointerDown = false;
-            if (e.button === 0) this.keys.attack = false;
-            if (e.button === 2) this.keys.interact = false;
-        });
-        window.addEventListener('mousemove', (e) => {
-            this.mouseX = e.clientX; this.mouseY = e.clientY;
-        });
+        window.addEventListener('mouseup', () => { this.isPointerDown = false; this.keys.attack = false; this.keys.interact = false; });
+        window.addEventListener('mousemove', (e) => { this.mouseX = e.clientX; this.mouseY = e.clientY; });
         window.addEventListener('contextmenu', e => e.preventDefault());
         window.addEventListener('wheel', (e) => { this.zoomDelta = -Math.sign(e.deltaY) * 0.1; });
     }
@@ -74,8 +68,9 @@ export class InputManager {
 
     private resizeButtons() {
         const w = window.innerWidth; const h = window.innerHeight;
-        this.btnA.x = w - 80; this.btnA.y = h - 80;
-        this.btnB.x = w - 140; this.btnB.y = h - 60;
+        // Moved higher (was h-80, now h-120)
+        this.btnA.x = w - 80; this.btnA.y = h - 120;
+        this.btnB.x = w - 140; this.btnB.y = h - 100;
     }
 
     private handleTouch(e: TouchEvent) {
@@ -85,7 +80,6 @@ export class InputManager {
 
         for (let i = 0; i < e.touches.length; i++) {
             const t = e.touches[i];
-            // Track last touch for UI
             this.mouseX = t.clientX; this.mouseY = t.clientY;
             uiPointerFound = true;
 
@@ -100,7 +94,18 @@ export class InputManager {
                     this.joystick.origin = { x: t.clientX, y: t.clientY };
                     this.joystick.current = { x: t.clientX, y: t.clientY };
                 } else if (this.joystick.origin) {
-                    this.joystick.current = { x: t.clientX, y: t.clientY };
+                    const dx = t.clientX - this.joystick.origin.x;
+                    const dy = t.clientY - this.joystick.origin.y;
+                    const dist = Math.hypot(dx, dy);
+                    const maxDist = 50;
+                    if (dist > maxDist) {
+                        this.joystick.current = {
+                            x: this.joystick.origin.x + (dx / dist) * maxDist,
+                            y: this.joystick.origin.y + (dy / dist) * maxDist
+                        };
+                    } else {
+                        this.joystick.current = { x: t.clientX, y: t.clientY };
+                    }
                 }
                 joystickFound = true;
             }
@@ -117,12 +122,11 @@ export class InputManager {
         if (this.keys.a) dx -= 1; if (this.keys.d) dx += 1;
 
         if (this.joystick.active && this.joystick.origin) {
-            const maxRange = 50;
             let jdx = this.joystick.current.x - this.joystick.origin.x;
             let jdy = this.joystick.current.y - this.joystick.origin.y;
             const dist = Math.hypot(jdx, jdy);
             if (dist > 0) {
-                const speed = Math.min(dist, maxRange) / maxRange;
+                const speed = Math.min(dist, 50) / 50;
                 dx = (jdx / dist) * speed; dy = (jdy / dist) * speed;
             }
         } else if (dx !== 0 && dy !== 0) {
@@ -132,24 +136,21 @@ export class InputManager {
         const now = Date.now();
         let attack = false;
         if ((this.keys.attack || this.btnA.active) && now - this.lastAttackAt >= this.attackCooldown) {
-            attack = true;
-            this.lastAttackAt = now;
+            attack = true; this.lastAttackAt = now; this.btnA.pulse = 1.0;
         }
 
         let interact = false;
         if ((this.keys.interact || this.btnB.active) && now - this.lastInteractAt >= this.interactCooldown) {
-            interact = true;
-            this.lastInteractAt = now;
+            interact = true; this.lastInteractAt = now; this.btnB.pulse = 1.0;
         }
 
-        return {
-            dx, dy,
-            attack,
-            interact
-        };
+        return { dx, dy, attack, interact };
     }
 
-    getZoomDelta(): number {
-        const z = this.zoomDelta; this.zoomDelta = 0; return z;
+    updateAnimations(dt: number) {
+        if (this.btnA.pulse > 0) this.btnA.pulse -= dt / 200;
+        if (this.btnB.pulse > 0) this.btnB.pulse -= dt / 200;
     }
+
+    getZoomDelta(): number { const z = this.zoomDelta; this.zoomDelta = 0; return z; }
 }

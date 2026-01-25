@@ -5,19 +5,21 @@ The persistent on-screen overlay during gameplay.
 ## Elements
 
 1.  **Vitals Bars** (Top Left):
-    -   **Health**: Red bar.
-    -   **Hunger**: Orange bar.
-    -   **Temperature**: Blue/Cyan bar (Cold) to Red (Hot).
-    -   **Thirst**: Blue bar (if implemented).
+    -   **Labels**: "HP", "HG" (Hunger), "TP" (Temp) displayed to the left of each bar.
+    -   **Visual**: Translucent backgrounds and fills (alpha ~0.6).
+    -   **Health**: Red.
+    -   **Hunger**: Orange.
+    -   **Temperature**: Blue to Red.
 
-2.  **Minimap** (Bottom Right):
-    -   Radar view of immediate surroundings.
-    -   Dots for players (White) and resources (Green/Gray).
+2.  **Entity HP Gauges**:
+    -   Displayed above Resources, Mobs, and Structures only when their HP is not at maximum.
+    -   Small, translucent green/red bar.
 
 3.  **Hotbar** (Bottom Center):
-    -   10 Slots (0-9).
-    -   Shows active item.
-    -   Selection via Touch or Number keys.
+    -   **7 Slots** (Keys 1-7).
+    -   Translucent background.
+    -   Selection via Keyboard or Mouse Click.
 
-4.  **Score/Leaderboard** (Top Right):
-    -   Top 5 players by score/survival time.
+4.  **Action Buttons** (Mobile):
+    -   **A/B Buttons**: Translucent, pulse/enlarge when used or during cooldown transition.
+    -   Positioned higher to avoid accidental OS gesture triggers.

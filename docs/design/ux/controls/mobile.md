@@ -6,26 +6,16 @@ Since the game supports smartphones, a Virtual Joystick overlay is required.
 
 ### Left Zone (Movement)
 - **Type**: Dynamic Floating Joystick.
-- **Trigger**: Touch start on left half of screen.
-- **Logic**: 
-    - Center = Initial touch point.
-    - Drag = vector for movement (WASD equivalent).
-    - Deadzone = 10px.
-    - Max Range = 100px.
+- **Constraints**: Inner circle distance is capped to remain within the base circle's influence area.
 
 ### Right Zone (Action)
+- **Positioning**: Buttons are moved higher from the bottom edge for ergonomic comfort and to avoid system navigation interference.
 - **A Button (Action/Attack)**:
     -   Primary interaction button.
-    -   **Contextual Actions**:
-        -   **Holding Food**: Eats the item.
-        -   **Holding Placeable**: Places the structure.
-        -   **Holding Tool/Weapon**: Gathers resources or attacks mobs.
-    -   Hold to auto-repeat.
+    -   Pulse animation on press.
 - **B Button (Interact)**:
     -   Secondary interaction button.
-    -   Used for world-object interactions:
-        -   Opening Doors/Chests.
-        -   Accessing Workbenches/Furnaces.
+    -   Pulse animation on press.
 
 ### UI Overlay
 - **Hotbar**: Centered bottom. Tap to select item.

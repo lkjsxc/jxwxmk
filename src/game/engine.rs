@@ -70,7 +70,14 @@ impl Handler<Join> for GameEngine {
 
 impl Handler<Leave> for GameEngine { type Result = (); fn handle(&mut self, msg: Leave, _: &mut Context<Self>) { self.sessions.remove(&msg.id); } }
 impl Handler<Craft> for GameEngine { type Result = (); fn handle(&mut self, msg: Craft, _: &mut Context<Self>) { if let Some(p) = self.world.players.get_mut(&msg.id) { CraftingSystem::craft(&mut p.inventory, msg.item); } } }
-impl Handler<SelectSlot> for GameEngine { type Result = (); fn handle(&mut self, msg: SelectSlot, _: &mut Context<Self>) { if let Some(p) = self.world.players.get_mut(&msg.id) { if msg.slot < 10 { p.active_slot = msg.slot; } } } }
+impl Handler<SelectSlot> for GameEngine {
+    type Result = ();
+    fn handle(&mut self, msg: SelectSlot, _: &mut Context<Self>) {
+        if let Some(p) = self.world.players.get_mut(&msg.id) {
+            if msg.slot < 7 { p.active_slot = msg.slot; }
+        }
+    }
+}
 impl Handler<UpdateName> for GameEngine { type Result = (); fn handle(&mut self, msg: UpdateName, _: &mut Context<Self>) { if let Some(p) = self.world.players.get_mut(&msg.id) { let mut name = msg.name.trim().to_string(); if name.is_empty() { name = "Guest".to_string(); } if name.len() > 12 { name.truncate(12); } p.username = name; } } }
 
 impl Handler<Input> for GameEngine {
