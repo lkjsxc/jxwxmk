@@ -19,9 +19,7 @@ function connect() {
     const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
     const token = localStorage.getItem(STORAGE_KEY);
     const url = `${protocol}://${location.host}/ws${token ? `?token=${token}` : ''}`;
-    
     ws = new WebSocket(url);
-
     ws.onmessage = (event) => {
         try {
             const msg = JSON.parse(event.data);
@@ -30,25 +28,18 @@ function connect() {
                 if (msg.token) localStorage.setItem(STORAGE_KEY, msg.token);
                 ui.state = AppState.InGame;
             } else if (msg.type === "world") {
-                 prevWorld = world;
-                 world = msg.data;
-                 lastUpdateAt = Date.now();
-                 if (ui.state === AppState.InGame && myId && world && !world.players[myId]) {
-                     ui.state = AppState.GameOver;
-                 }
+                 prevWorld = world; world = msg.data; lastUpdateAt = Date.now();
+                 if (ui.state === AppState.InGame && myId && world && !world.players[myId]) { ui.state = AppState.GameOver; }
             }
         } catch (e) { console.error("Parse error", e); }
     };
-
     ws.onopen = () => {
         console.log("Connected");
         if (inputInterval) clearInterval(inputInterval);
         inputInterval = setInterval(sendInput, 50);
     };
     ws.onclose = () => {
-        console.log("Disconnected");
-        ui.state = AppState.StartScreen;
-        world = null; myId = null;
+        ui.state = AppState.StartScreen; world = null; myId = null;
         if (inputInterval) { clearInterval(inputInterval); inputInterval = null; }
     };
 }
@@ -59,16 +50,24 @@ function loop() {
     input.updateAnimations(16);
 
     if (ui.state === AppState.StartScreen) {
-// ...
-        // Handle Requests
+        ui.render(renderer.ctx, null, input);
+        if (ui.joinRequest) { connect(); ui.joinRequest = false; }
+    } else if (ui.state === AppState.GameOver) {
+        ui.render(renderer.ctx, null, input);
+        if (ui.respawnRequest) {
+            ui.respawnRequest = false; if (ws) { ws.close(); ws = null; }
+            if (inputInterval) { clearInterval(inputInterval); inputInterval = null; }
+            localStorage.removeItem(STORAGE_KEY); location.reload();
+        }
+    } else {
+        const now = Date.now();
+        const alpha = Math.min(1.0, (now - lastUpdateAt) / 50); 
+        renderer.render(world, prevWorld, alpha, input, myId, ui);
         if (ws && ws.readyState === WebSocket.OPEN) {
             if (ui.craftRequest) { ws.send(JSON.stringify({ craft: ui.craftRequest })); ui.craftRequest = null; }
             if (ui.slotSelectRequest !== null) { ws.send(JSON.stringify({ slot: ui.slotSelectRequest })); ui.slotSelectRequest = null; }
             if (ui.nameUpdateRequest) { ws.send(JSON.stringify({ name: ui.nameUpdateRequest })); ui.nameUpdateRequest = null; }
-            if (ui.swapRequest) {
-                ws.send(JSON.stringify({ swapSlots: ui.swapRequest }));
-                ui.swapRequest = null;
-            }
+            if (ui.swapRequest) { ws.send(JSON.stringify({ swapSlots: ui.swapRequest })); ui.swapRequest = null; }
         }
     }
     requestAnimationFrame(loop);
@@ -82,5 +81,4 @@ function sendInput() {
         }
     }
 }
-
 loop();
