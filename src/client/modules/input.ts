@@ -18,6 +18,9 @@ export class InputManager {
     mouseY: number = 0;
     isPointerDown: boolean = false;
 
+    // Key Queue for Text Input
+    keyQueue: string[] = [];
+
     // Cooldowns
     lastAttackAt: number = 0;
     lastInteractAt: number = 0;
@@ -36,6 +39,11 @@ export class InputManager {
             if (k in this.keys) (this.keys as any)[k] = true;
             if (e.code === 'KeyE') this.keys.interact = true;
             if (e.key >= '1' && e.key <= '7') (this.keys as any)[`num${e.key}`] = true;
+
+            // Capture for text input
+            if (e.key.length === 1 || e.key === "Backspace" || e.key === "Enter") {
+                this.keyQueue.push(e.key);
+            }
         });
         window.addEventListener('keyup', (e) => {
             const k = e.key.toLowerCase();

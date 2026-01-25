@@ -19,7 +19,8 @@ export class UIManager {
     swapRequest: [number, number] | null = null;
 
     private drag: DragState | null = null;
-    private nameInput: string = "";
+    private nameBuffer: string = "";
+    private isNameFocused: boolean = false;
 
     render(ctx: CanvasRenderingContext2D, player: Player | null, input: InputManager) {
         const w = ctx.canvas.width; const h = ctx.canvas.height;
@@ -91,6 +92,8 @@ export class UIManager {
     }
 
     drawInventory(ctx: CanvasRenderingContext2D, player: Player, w: number, h: number) {
+        ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "20px sans-serif";
+        ctx.fillText("Backpack", w / 2, 25);
         const { cols, slotSize, padding } = this.getInventoryLayout(w);
         const gridW = cols * slotSize + (cols - 1) * padding; const startX = (w - gridW) / 2;
         for (let i = 0; i < 30; i++) {
@@ -125,16 +128,15 @@ export class UIManager {
         ctx.fillText("Player Profile", w / 2, 40);
         ctx.font = "18px sans-serif"; ctx.fillText(`Name: ${player.username}`, w / 2, 80);
         
-        // Custom Text Box
-        const boxW = 200; const boxH = 40; const boxX = (w - boxW) / 2; const boxY = 120;
-        ctx.fillStyle = "#000"; ctx.fillRect(boxX, boxY, boxW, boxH);
-        ctx.strokeStyle = "#fff"; ctx.strokeRect(boxX, boxY, boxW, boxH);
-        ctx.fillStyle = "#fff"; ctx.font = "16px monospace";
-        ctx.fillText(this.nameInput + (Math.floor(Date.now()/500)%2==0?"|":""), w/2, boxY + 20);
+        const boxW = 240; const boxH = 45; const boxX = (w - boxW) / 2; const boxY = 120;
+        ctx.fillStyle = this.isNameFocused ? "#000" : "#111"; ctx.fillRect(boxX, boxY, boxW, boxH);
+        ctx.strokeStyle = this.isNameFocused ? "#4a4" : "#555"; ctx.lineWidth = 2; ctx.strokeRect(boxX, boxY, boxW, boxH);
+        ctx.fillStyle = "white"; ctx.font = "18px monospace"; ctx.textAlign = "left";
+        let display = this.nameBuffer; if (this.isNameFocused && (Math.floor(Date.now() / 500) % 2 === 0)) display += "|";
+        ctx.fillText(display || (this.isNameFocused ? "" : "Click to type..."), boxX + 10, boxY + boxH / 2);
 
         const btnW = 160; const btnH = 40; const btnX = (w - btnW) / 2;
-        ctx.fillStyle = "rgba(68,170,68,0.8)"; ctx.fillRect(btnX, 180, btnW, btnH);
-        ctx.fillStyle = "white"; ctx.fillText("Update Name", w / 2, 200);
+        this.drawButton(ctx, btnX, 185, btnW, btnH, "Update Name", false);
     }
 
     drawGuidebook(ctx: CanvasRenderingContext2D, w: number, h: number) {
@@ -189,10 +191,15 @@ export class UIManager {
     }
 
     handleInput(input: InputManager, w: number, h: number, player: Player | null) {
-        if (this.state === AppState.InGame && this.isMenuOpen && this.activeTab === MenuTab.Profile) {
-            // Primitive keyboard capture
-            // In a production app, we'd use a hidden <input> or proper event management
-        }
+        if (this.isNameFocused) {
+            while (input.keyQueue.length > 0) {
+                const k = input.keyQueue.shift()!;
+                if (k === "Backspace") this.nameBuffer = this.nameBuffer.slice(0, -1);
+                else if (k === "Enter") { if (this.nameBuffer.trim()) this.nameUpdateRequest = this.nameBuffer; this.isNameFocused = false; }
+                else if (k.length === 1 && this.nameBuffer.length < 12) this.nameBuffer += k;
+            }
+        } else { input.keyQueue = []; }
+
         if (this.state === AppState.InGame && !this.isMenuOpen) {
             for (let i = 1; i <= 7; i++) if (input.keys[`num${i}` as any]) this.slotSelectRequest = i - 1;
         }
@@ -213,9 +220,10 @@ export class UIManager {
                             if (this.hitTest(mx, my, x, y, slotSize, slotSize)) { if (!this.drag && player.inventory.slots[i]) this.drag = { fromIndex: i, item: player.inventory.slots[i]!, startX: mx, startY: my }; break; }
                         }
                     } else if (this.activeTab === MenuTab.Profile) {
-                        if (this.hitTest(mx, my, panelX + (panelW - 200)/2, panelY + 50 + 120, 200, 40)) {
-                            const n = prompt("New name:", player?.username || ""); if (n) this.nameUpdateRequest = n; input.isPointerDown = false;
-                        }
+                        const boxW = 240; const boxH = 45; const boxX = (panelW - boxW) / 2;
+                        if (this.hitTest(mx, my, panelX + boxX, panelY + 50 + 120, boxW, boxH)) { this.isNameFocused = true; this.nameBuffer = player?.username || ""; input.isPointerDown = false; }
+                        else if (this.hitTest(mx, my, panelX + (panelW - 160)/2, panelY + 50 + 185, 160, 40)) { if (this.nameBuffer.trim()) this.nameUpdateRequest = this.nameBuffer; this.isNameFocused = false; input.isPointerDown = false; }
+                        else { this.isNameFocused = false; }
                     } else if (this.activeTab === MenuTab.Crafting) {
                         const recipes = ["WoodPickaxe", "StonePickaxe", "WoodWall", "Torch"];
                         let rY = panelY + 50 + 40; const btnW = Math.min(260, panelW - 40);
