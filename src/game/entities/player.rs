@@ -59,6 +59,7 @@ impl Inventory {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Player {
     pub id: Uuid,
+    pub token: String,
     pub username: String,
     pub x: f64,
     pub y: f64,
@@ -70,9 +71,10 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn new(id: Uuid, username: String, x: f64, y: f64) -> Self {
+    pub fn new(id: Uuid, token: String, username: String, x: f64, y: f64) -> Self {
         Self {
             id,
+            token,
             username,
             x,
             y,

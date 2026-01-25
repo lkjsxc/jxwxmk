@@ -18,9 +18,10 @@ use rand::Rng;
 pub struct Tick;
 
 #[derive(Message)]
-#[rtype(result = "()")]
+#[rtype(result = "Option<(String, Uuid)>")] 
 pub struct Join {
     pub id: Uuid,
+    pub token: Option<String>,
     pub addr: Recipient<WorldUpdate>,
 }
 
@@ -45,6 +46,13 @@ pub struct Input {
 pub struct Craft {
     pub id: Uuid,
     pub item: ItemType,
+}
+
+#[derive(Message)]
+#[rtype(result = "()")]
+pub struct SelectSlot {
+    pub id: Uuid,
+    pub slot: usize,
 }
 
 #[derive(Message, Clone, Serialize)]
@@ -103,8 +111,28 @@ impl GameEngine {
 
     fn tick_world(&mut self) {
         // Players
-        for player in self.world.players.values_mut() {
+        let mut dead_players = Vec::new();
+        for (id, player) in self.world.players.iter_mut() {
             SurvivalSystem::tick(player);
+            if player.health <= 0.0 {
+                dead_players.push(*id);
+            }
+        }
+
+        for id in dead_players {
+            // Remove player entity
+            // Also notify session? 
+            // We can send a specific "GameOver" message wrapper or let the client handle "world update missing my ID".
+            // Ideally explicit message.
+            if let Some(addr) = self.sessions.get(&id) {
+                // We can't send a custom message easily via Recipient<WorldUpdate> unless we change the type or wrap it.
+                // Or we update WorldUpdate to include events.
+                // For now, let's just remove the player. The client will see "myId" is not in "world.players" and trigger Game Over.
+            }
+            self.world.players.remove(&id);
+            // We KEEP the session (so they can respawn/spectate?)
+            // If we keep session but no player, subsequent Inputs might fail or need handling.
+            // Client should show Game Over screen.
         }
 
         // Mobs (Simple AI)
@@ -134,19 +162,38 @@ impl Actor for GameEngine {
 }
 
 impl Handler<Join> for GameEngine {
-    type Result = ();
-    fn handle(&mut self, msg: Join, _: &mut Context<Self>) {
+    type Result = Option<(String, Uuid)>;
+    fn handle(&mut self, msg: Join, _: &mut Context<Self>) -> Self::Result {
+        // Check for reconnection
+        if let Some(token) = msg.token {
+            if let Some(player) = self.world.players.values_mut().find(|p| p.token == token) {
+                let player_id = player.id;
+                self.sessions.insert(player_id, msg.addr);
+                return Some((token, player_id));
+            }
+        }
+
+        // New Player
+        let token = Uuid::new_v4().to_string();
         self.sessions.insert(msg.id, msg.addr);
-        let player = Player::new(msg.id, "Guest".to_string(), 100.0, 100.0);
+        let player = Player::new(msg.id, token.clone(), "Guest".to_string(), 100.0, 100.0);
         self.world.players.insert(msg.id, player);
+        Some((token, msg.id))
     }
 }
 
 impl Handler<Leave> for GameEngine {
     type Result = ();
     fn handle(&mut self, msg: Leave, _: &mut Context<Self>) {
+        // If we treat msg.id as SessionID, we need to know which PlayerID it maps to.
+        // But currently assumed SessionID == PlayerID.
+        // If we reconnect, we might have a mismatch if we didn't update the WS actor's ID.
+        // For simplicity: We will update WS actor's ID to match PlayerID on reconnect?
+        // Or we just remove from sessions.
+        
         self.sessions.remove(&msg.id);
-        self.world.players.remove(&msg.id);
+        // Persistence: Do NOT remove player
+        // self.world.players.remove(&msg.id); 
     }
 }
 
@@ -155,6 +202,19 @@ impl Handler<Craft> for GameEngine {
     fn handle(&mut self, msg: Craft, _: &mut Context<Self>) {
         if let Some(player) = self.world.players.get_mut(&msg.id) {
             CraftingSystem::craft(&mut player.inventory, msg.item);
+        }
+    }
+}
+
+impl Handler<SelectSlot> for GameEngine {
+    type Result = ();
+    fn handle(&mut self, msg: SelectSlot, _: &mut Context<Self>) {
+        if let Some(player) = self.world.players.get_mut(&msg.id) {
+            // Validate slot (0-9 for hotbar, or allow full inventory selection?)
+            // Usually only hotbar is "active". 
+            if msg.slot < 10 {
+                player.active_slot = msg.slot;
+            }
         }
     }
 }

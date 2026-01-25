@@ -1,7 +1,12 @@
 import { InputState } from "../types";
 
 export class InputManager {
-    keys = { w: false, a: false, s: false, d: false, attack: false, interact: false };
+    keys = { 
+        w: false, a: false, s: false, d: false, 
+        attack: false, interact: false,
+        num0: false, num1: false, num2: false, num3: false, num4: false,
+        num5: false, num6: false, num7: false, num8: false, num9: false
+    };
     joystick: { active: boolean; origin: { x: number; y: number } | null; current: { x: number; y: number } } = {
         active: false,
         origin: null,
@@ -27,12 +32,23 @@ export class InputManager {
         window.addEventListener('keydown', (e) => {
             const k = e.key.toLowerCase();
             if (k in this.keys) this.keys[k as keyof typeof this.keys] = true;
-            if (e.code === 'KeyE') this.keys.interact = true; // E for interact
+            if (e.code === 'KeyE') this.keys.interact = true;
+            
+            // Map digits
+            if (e.key >= '0' && e.key <= '9') {
+                const keyName = `num${e.key}` as keyof typeof this.keys;
+                this.keys[keyName] = true;
+            }
         });
         window.addEventListener('keyup', (e) => {
             const k = e.key.toLowerCase();
             if (k in this.keys) this.keys[k as keyof typeof this.keys] = false;
             if (e.code === 'KeyE') this.keys.interact = false;
+            
+            if (e.key >= '0' && e.key <= '9') {
+                const keyName = `num${e.key}` as keyof typeof this.keys;
+                this.keys[keyName] = false;
+            }
         });
         window.addEventListener('mousedown', (e) => {
             if (e.button === 0) {
