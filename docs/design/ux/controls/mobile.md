@@ -14,12 +14,15 @@ Since the game supports smartphones, a Virtual Joystick overlay is required.
     - Max Range = 100px.
 
 ### Right Zone (Action)
-- **Primary Action Button (Attack/Gather)**:
-    - Large circular button (radius 40px) at bottom-right.
-    - Hold to auto-repeat.
-- **Secondary Interaction (Use)**:
-    - Smaller button near Primary.
-    - For opening doors, chests.
+- **A Button (Attack)**:
+    -   Large circular button (radius 40px) at bottom-right.
+    -   Hold to auto-repeat (Gather/Attack).
+- **B Button (Interact/Build)**:
+    -   Smaller button near A Button.
+    -   Used for:
+        -   Opening Doors/Chests.
+        -   Placing the currently selected building item.
+        -   Eating food (if held).
 
 ### UI Overlay
 - **Hotbar**: Centered bottom. Tap to select item.
