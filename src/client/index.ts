@@ -89,7 +89,7 @@ function loop() {
 function sendInput() {
     if (ws && ws.readyState === WebSocket.OPEN && ui.state === AppState.InGame) {
         const state = input.getState();
-        if (state.dx !== 0 || state.dy !== 0 || state.attack || state.interact) {
+        if (state.dx !== 0 || state.dy !== 0 || state.attack || state.interact || input.isPointerDown) {
             ws.send(JSON.stringify(state));
         }
     }

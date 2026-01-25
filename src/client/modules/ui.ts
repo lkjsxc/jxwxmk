@@ -165,27 +165,27 @@ export class UIManager {
         if (this.state === AppState.InGame && !this.isMenuOpen) {
             for (let i = 0; i <= 9; i++) if (input.keys[`num${i}` as any]) this.slotSelectRequest = i === 0 ? 9 : i - 1;
         }
-        if (input.mouseLeftDown) {
+        if (input.isPointerDown) {
             const mx = input.mouseX; const my = input.mouseY;
             if (this.state === AppState.StartScreen) {
-                if (this.hitTest(mx, my, (w - 200) / 2, h / 2, 200, 60)) { this.joinRequest = true; input.mouseLeftDown = false; }
+                if (this.hitTest(mx, my, (w - 200) / 2, h / 2, 200, 60)) { this.joinRequest = true; input.isPointerDown = false; }
             } else if (this.state === AppState.GameOver) {
-                if (this.hitTest(mx, my, (w - 200) / 2, h / 2, 200, 60)) { this.respawnRequest = true; input.mouseLeftDown = false; }
+                if (this.hitTest(mx, my, (w - 200) / 2, h / 2, 200, 60)) { this.respawnRequest = true; input.isPointerDown = false; }
             } else if (this.state === AppState.InGame) {
                 if (this.isMenuOpen) {
                     const margin = 40; const panelX = margin; const panelY = margin; const panelW = w - margin * 2;
-                    if (this.hitTest(mx, my, panelX + panelW - 40, panelY + 10, 30, 30)) { this.isMenuOpen = false; input.mouseLeftDown = false; }
-                    else if (this.hitTest(mx, my, panelX, panelY, panelW, 50)) { this.activeTab = Math.floor((mx - panelX) / (panelW / 4)); input.mouseLeftDown = false; }
+                    if (this.hitTest(mx, my, panelX + panelW - 40, panelY + 10, 30, 30)) { this.isMenuOpen = false; input.isPointerDown = false; }
+                    else if (this.hitTest(mx, my, panelX, panelY, panelW, 50)) { this.activeTab = Math.floor((mx - panelX) / (panelW / 4)); input.isPointerDown = false; }
                     else if (this.activeTab === MenuTab.Crafting) {
                         const recipes = ["WoodPickaxe", "StonePickaxe", "WoodWall", "Torch"];
                         let rY = panelY + 50 + 40;
                         for (const code of recipes) {
-                            if (this.hitTest(mx, my, panelX + (panelW - 260)/2, rY, 260, 45)) { this.craftRequest = code; input.mouseLeftDown = false; }
+                            if (this.hitTest(mx, my, panelX + (panelW - 260)/2, rY, 260, 45)) { this.craftRequest = code; input.isPointerDown = false; }
                             rY += 55;
                         }
                     }
                 } else {
-                    if (this.hitTest(mx, my, w - 60, 20, 50, 50)) { this.isMenuOpen = true; input.mouseLeftDown = false; }
+                    if (this.hitTest(mx, my, w - 60, 20, 50, 50)) { this.isMenuOpen = true; input.isPointerDown = false; }
                     const startX = (w - (10 * 60)) / 2; const startY = h - 70;
                     if (this.hitTest(mx, my, startX, startY, 600, 50)) {
                         const idx = Math.floor((mx - startX) / 60);
