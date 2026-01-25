@@ -1,3 +1,5 @@
+export enum AppState { StartScreen, InGame, GameOver }
+
 export interface Item {
     kind: string; // "Wood", "Stone", etc.
     amount: number;
