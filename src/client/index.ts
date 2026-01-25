@@ -1,5 +1,5 @@
 import { InputManager } from "./modules/input";
-import { Renderer } from "./modules/renderer";
+import { Renderer } from "./modules/renderer/index";
 import { UIManager, AppState } from "./modules/ui/index";
 import { World } from "./types";
 

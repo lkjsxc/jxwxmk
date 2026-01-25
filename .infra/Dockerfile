@@ -9,7 +9,7 @@ RUN mkdir -p ../../static
 RUN npm install
 RUN npm run build
 
-# Stage 2: Backend
+# Stage 2: Backend Builder
 FROM rust:latest as backend
 # Install dependencies
 RUN apt-get update && apt-get install -y pkg-config libssl-dev
@@ -35,8 +35,14 @@ COPY --from=frontend /app/static/game.js ./static/game.js
 RUN touch src/main.rs
 RUN cargo build --release
 
+# Stage 2b: Test Runner
+FROM backend as tester
+COPY src ./src
+# Need to rebuild/test with potentially different profile or just run tests
+CMD ["cargo", "test"]
+
 # Stage 3: Runtime
-FROM debian:bookworm-slim
+FROM debian:bookworm-slim as runtime
 WORKDIR /app
 RUN apt-get update && apt-get install -y libssl-dev ca-certificates && rm -rf /var/lib/apt/lists/*
 
