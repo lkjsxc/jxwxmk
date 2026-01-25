@@ -1,7 +1,12 @@
+export interface Item {
+    kind: string; // "Wood", "Stone", etc.
+    amount: number;
+    max_stack: number;
+}
+
 export interface Inventory {
-    wood: number;
-    stone: number;
-    food: number;
+    slots: (Item | null)[];
+    capacity: number;
 }
 
 export interface Player {
@@ -13,6 +18,7 @@ export interface Player {
     hunger: number;
     cold: number;
     inventory: Inventory;
+    active_slot: number;
 }
 
 export interface Resource {
@@ -31,16 +37,28 @@ export interface Mob {
     health: number;
 }
 
+export interface Structure {
+    id: string;
+    s_type: "Wall" | "Door" | "Torch" | "Workbench";
+    x: number;
+    y: number;
+    health: number;
+    owner_id: string;
+}
+
 export interface World {
     width: number;
     height: number;
     players: Record<string, Player>;
     resources: Record<string, Resource>;
-    // mobs: Record<string, Mob>; // To be added
+    mobs: Record<string, Mob>;
+    structures: Record<string, Structure>;
 }
 
 export interface InputState {
     dx: number;
     dy: number;
     attack: boolean;
+    interact: boolean;
+    craft?: string;
 }

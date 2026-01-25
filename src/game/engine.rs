@@ -5,7 +5,10 @@ use crate::game::state::World;
 use crate::game::entities::player::Player;
 use crate::game::entities::resource::{Resource, ResourceType};
 use crate::game::entities::mob::{Mob, MobType};
+use crate::game::entities::item::{Item, ItemType};
+use crate::game::entities::structure::{Structure, StructureType};
 use crate::game::systems::survival::SurvivalSystem;
+use crate::game::systems::crafting::CraftingSystem;
 use serde::Serialize;
 use rand::Rng;
 
@@ -34,6 +37,14 @@ pub struct Input {
     pub dx: f64,
     pub dy: f64,
     pub attack: bool,
+    pub interact: bool,
+}
+
+#[derive(Message)]
+#[rtype(result = "()")]
+pub struct Craft {
+    pub id: Uuid,
+    pub item: ItemType,
 }
 
 #[derive(Message, Clone, Serialize)]
@@ -139,6 +150,15 @@ impl Handler<Leave> for GameEngine {
     }
 }
 
+impl Handler<Craft> for GameEngine {
+    type Result = ();
+    fn handle(&mut self, msg: Craft, _: &mut Context<Self>) {
+        if let Some(player) = self.world.players.get_mut(&msg.id) {
+            CraftingSystem::craft(&mut player.inventory, msg.item);
+        }
+    }
+}
+
 impl Handler<Input> for GameEngine {
     type Result = ();
     fn handle(&mut self, msg: Input, _: &mut Context<Self>) {
@@ -156,7 +176,7 @@ impl Handler<Input> for GameEngine {
                 let px = player.x;
                 let py = player.y;
                 let mut collected = Vec::new();
-                let mut inventory_update = (0, 0, 0); // wood, stone, food
+                let mut drops = Vec::new();
                 let mut mobs_hit = Vec::new();
 
                 // Check Resources
@@ -165,9 +185,9 @@ impl Handler<Input> for GameEngine {
                     if dist < 40.0 {
                          res.amount -= 1;
                          match res.r_type {
-                             ResourceType::Tree => inventory_update.0 += 1,
-                             ResourceType::Rock => inventory_update.1 += 1,
-                             ResourceType::Food => inventory_update.2 += 1,
+                             ResourceType::Tree => drops.push((ItemType::Wood, 1)),
+                             ResourceType::Rock => drops.push((ItemType::Stone, 1)),
+                             ResourceType::Food => drops.push((ItemType::Berry, 1)),
                          }
                          if res.amount <= 0 {
                              collected.push(*id);
@@ -176,28 +196,68 @@ impl Handler<Input> for GameEngine {
                     }
                 }
 
-                // Check Mobs (Simple Hit)
+                // Check Mobs
                 for (id, mob) in self.world.mobs.iter_mut() {
                      let dist = ((px - mob.x).powi(2) + (py - mob.y).powi(2)).sqrt();
                      if dist < 40.0 {
-                         mob.health -= 5.0; // Basic punch damage
+                         mob.health -= 5.0; 
                          if mob.health <= 0.0 {
                              mobs_hit.push(*id);
-                             inventory_update.2 += 2; // Meat
+                             drops.push((ItemType::Meat, 1));
                          }
                          break;
                      }
                 }
                 
-                player.inventory.wood += inventory_update.0;
-                player.inventory.stone += inventory_update.1;
-                player.inventory.food += inventory_update.2;
+                // Add to inventory
+                for (kind, amt) in drops {
+                    player.inventory.add(kind, amt);
+                }
 
                 for id in collected {
                     self.world.resources.remove(&id);
                 }
                 for id in mobs_hit {
                     self.world.mobs.remove(&id);
+                }
+            }
+            
+            // Interact / Build
+            if msg.interact {
+                // Check if holding a buildable item
+                // For now, assume Slot 0 is hotbar active slot (need to implement slot selection logic)
+                // Actually, let's just use the first valid buildable item in hotbar for MVP or check active_slot
+                // `active_slot` is in Player.
+                
+                let active_slot_idx = player.active_slot;
+                if active_slot_idx < player.inventory.slots.len() {
+                    let should_build = if let Some(item) = &mut player.inventory.slots[active_slot_idx] {
+                         let s_type = match item.kind {
+                             ItemType::WoodWall => Some(StructureType::Wall),
+                             ItemType::Door => Some(StructureType::Door),
+                             ItemType::Torch => Some(StructureType::Torch),
+                             ItemType::Workbench => Some(StructureType::Workbench),
+                             _ => None,
+                         };
+
+                         if let Some(s_type) = s_type {
+                             // Build it
+                             item.amount -= 1;
+                             if item.amount == 0 {
+                                 player.inventory.slots[active_slot_idx] = None;
+                             }
+                             Some(s_type)
+                         } else {
+                             None
+                         }
+                    } else {
+                        None
+                    };
+
+                    if let Some(s_type) = should_build {
+                         let s = Structure::new(s_type, player.x, player.y, msg.id);
+                         self.world.structures.insert(s.id, s);
+                    }
                 }
             }
         }
