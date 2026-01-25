@@ -36,15 +36,17 @@ export class Renderer {
         if (world) {
             this.drawMap(world);
             const me = myId ? world.players[myId] : null;
-            for (const id in world.resources) this.drawResource(world.resources[id], me, world, prevWorld, alpha);
-            for (const id in world.structures) this.drawStructure(world.structures[id], me, world, prevWorld, alpha);
+            const targetId = this.findClosestTarget(world, me);
+
+            for (const id in world.resources) this.drawResource(world.resources[id], id === targetId, world, prevWorld);
+            for (const id in world.structures) this.drawStructure(world.structures[id], id === targetId, world, prevWorld);
             for (const id in world.mobs) {
                 const m = world.mobs[id]; const pM = prevWorld?.mobs[id] || m;
-                this.drawMob(m, this.lerp(pM.x, m.x, alpha), this.lerp(pM.y, m.y, alpha), me, world, prevWorld, alpha);
+                this.drawMob(m, this.lerp(pM.x, m.x, alpha), this.lerp(pM.y, m.y, alpha), id === targetId, world, prevWorld);
             }
             for (const id in world.players) {
                 const p = world.players[id]; const pP = prevWorld?.players[id] || p;
-                this.drawPlayer(p, this.lerp(pP.x, p.x, alpha), this.lerp(pP.y, p.y, alpha), world, prevWorld, alpha);
+                this.drawPlayer(p, this.lerp(pP.x, p.x, alpha), this.lerp(pP.y, p.y, alpha), id === targetId, world, prevWorld);
             }
         }
         this.ctx.restore();
@@ -56,6 +58,25 @@ export class Renderer {
             this.drawHUD(world, myId);
             if (myId && world.players[myId]) ui.render(this.ctx, world.players[myId], input);
         }
+    }
+
+    private findClosestTarget(world: World, me: Player | null): string | null {
+        if (!me) return null;
+        let closestId: string | null = null;
+        let minDist = 60; // Interaction Range
+
+        const check = (id: string, x: number, y: number) => {
+            if (id === me.id) return;
+            const d = Math.hypot(me.x - x, me.y - y);
+            if (d < minDist) { minDist = d; closestId = id; }
+        };
+
+        for (const id in world.resources) check(id, world.resources[id].x, world.resources[id].y);
+        for (const id in world.structures) check(id, world.structures[id].x, world.structures[id].y);
+        for (const id in world.mobs) check(id, world.mobs[id].x, world.mobs[id].y);
+        for (const id in world.players) check(id, world.players[id].x, world.players[id].y);
+
+        return closestId;
     }
 
     private getScale(id: string, world: World | null, prevWorld: World | null): number {
@@ -77,10 +98,9 @@ export class Renderer {
         for (let y = 0; y <= world.height; y += 100) { this.ctx.beginPath(); this.ctx.moveTo(0, y); this.ctx.lineTo(world.width, y); this.ctx.stroke(); }
     }
 
-    drawResource(r: Resource, me: Player | null, w: World, pw: World | null, a: number) {
+    drawResource(r: Resource, isTarget: boolean, w: World, pw: World | null) {
         const scale = this.getScale(r.id, w, pw);
-        const dist = me ? Math.hypot(me.x - r.x, me.y - r.y) : 1000;
-        if (dist < 60) { this.drawOutline(r.x, r.y, 22 * scale, "yellow"); this.drawInteractionTooltip(r.x, r.y, r.r_type, "[A] Gather", ""); }
+        if (isTarget) { this.drawOutline(r.x, r.y, 22 * scale, "yellow"); this.drawInteractionTooltip(r.x, r.y, r.r_type, "[A] Gather", ""); }
         this.ctx.save(); this.ctx.translate(r.x, r.y); this.ctx.scale(scale, scale);
         this.ctx.beginPath();
         if (r.r_type === "Tree") this.ctx.fillStyle = "#2e2"; else if (r.r_type === "Rock") this.ctx.fillStyle = "#888"; else this.ctx.fillStyle = "#ea2";
@@ -91,10 +111,9 @@ export class Renderer {
         if (r.amount < max) this.drawGauge(r.x, r.y - 30, 30, 4, r.amount / max);
     }
 
-    drawStructure(s: Structure, me: Player | null, w: World, pw: World | null, a: number) {
+    drawStructure(s: Structure, isTarget: boolean, w: World, pw: World | null) {
         const scale = this.getScale(s.id, w, pw);
-        const dist = me ? Math.hypot(me.x - s.x, me.y - s.y) : 1000;
-        if (dist < 60) { this.drawOutline(s.x, s.y, 25 * scale, "white"); this.drawInteractionTooltip(s.x, s.y, s.s_type, "[A] Attack", "Use"); }
+        if (isTarget) { this.drawOutline(s.x, s.y, 25 * scale, "white"); this.drawInteractionTooltip(s.x, s.y, s.s_type, "[A] Attack", "Use"); }
         this.ctx.save(); this.ctx.translate(s.x, s.y); this.ctx.scale(scale, scale);
         if (s.s_type === "Torch") { this.ctx.fillStyle = "#fa0"; this.ctx.beginPath(); this.ctx.arc(0, 0, 10, 0, Math.PI*2); this.ctx.fill(); this.ctx.strokeStyle = "#fff"; this.ctx.stroke(); }
         else if (s.s_type === "Wall") { this.ctx.fillStyle = "#642"; this.ctx.fillRect(-20, -20, 40, 40); this.ctx.strokeRect(-20, -20, 40, 40); }
@@ -104,10 +123,9 @@ export class Renderer {
         if (s.health < max) this.drawGauge(s.x, s.y - 35, 40, 4, s.health / max);
     }
 
-    drawMob(m: Mob, ix: number, iy: number, me: Player | null, w: World, pw: World | null, a: number) {
+    drawMob(m: Mob, ix: number, iy: number, isTarget: boolean, w: World, pw: World | null) {
         const scale = this.getScale(m.id, w, pw);
-        const dist = me ? Math.hypot(me.x - ix, me.y - iy) : 1000;
-        if (dist < 60) { this.drawOutline(ix, iy, 15 * scale, "red"); this.drawInteractionTooltip(ix, iy, m.m_type, "[A] Attack", ""); }
+        if (isTarget) { this.drawOutline(ix, iy, 15 * scale, "red"); this.drawInteractionTooltip(ix, iy, m.m_type, "[A] Attack", ""); }
         this.ctx.save(); this.ctx.translate(ix, iy); this.ctx.scale(scale, scale);
         this.ctx.fillStyle = m.m_type === "Wolf" ? "#999" : m.m_type === "Bear" ? "#531" : "#fff";
         this.ctx.beginPath(); this.ctx.arc(0, 0, 12, 0, Math.PI*2); this.ctx.fill();
@@ -117,14 +135,16 @@ export class Renderer {
         if (m.health < max) this.drawGauge(ix, iy - 25, 24, 4, m.health / max);
     }
 
-    drawPlayer(p: Player, ix: number, iy: number, w: World, pw: World | null, a: number) {
+    drawPlayer(p: Player, ix: number, iy: number, isTarget: boolean, w: World, pw: World | null) {
         const scale = this.getScale(p.id, w, pw);
+        if (isTarget) { this.drawOutline(ix, iy, 18 * scale, "red"); this.drawInteractionTooltip(ix, iy, p.username, "[A] Attack", ""); }
         this.ctx.save(); this.ctx.translate(ix, iy); this.ctx.scale(scale, scale);
         this.ctx.fillStyle = "#f00"; this.ctx.beginPath(); this.ctx.arc(0, 0, 15, 0, Math.PI * 2); this.ctx.fill();
         this.ctx.strokeStyle = "#000"; this.ctx.stroke();
         this.ctx.restore();
         this.ctx.fillStyle = "white"; this.ctx.font = "12px sans-serif"; this.ctx.textAlign = "center";
         this.ctx.fillText(p.username, ix, iy - 25);
+        if (p.health < 100) this.drawGauge(ix, iy - 30, 30, 4, p.health / 100);
     }
 
     drawOutline(x: number, y: number, r: number, color: string) {
@@ -141,7 +161,7 @@ export class Renderer {
 
     drawGauge(x: number, y: number, w: number, h: number, pct: number) {
         this.ctx.fillStyle = "rgba(0,0,0,0.5)"; this.ctx.fillRect(x - w/2, y, w, h);
-        this.ctx.fillStyle = "rgba(0,255,0,0.6)"; this.ctx.fillRect(x - w/2, y, w * Math.max(0, pct), h);
+        this.ctx.fillStyle = "rgba(255,0,0,0.6)"; this.ctx.fillRect(x - w/2, y, w * Math.max(0, pct), h);
     }
 
     drawHUD(world: World, myId: string | null) {
@@ -172,7 +192,8 @@ export class Renderer {
         this.ctx.fillStyle = active ? "rgba(255,255,255,0.2)" : color; this.ctx.fill();
         this.ctx.strokeStyle = "white"; this.ctx.stroke();
         if (progress < 1.0) {
-            this.ctx.beginPath(); this.ctx.moveTo(x, y); this.ctx.arc(x, y, r, -Math.PI/2, -Math.PI/2 + (1 - progress) * Math.PI * 2, false);
+            this.ctx.beginPath(); this.ctx.moveTo(x, y);
+            this.ctx.arc(x, y, r, -Math.PI/2, -Math.PI/2 + (1 - progress) * Math.PI * 2, false);
             this.ctx.fillStyle = "rgba(0,0,0,0.4)"; this.ctx.fill();
             this.ctx.fillStyle = "white"; this.ctx.font = "bold 14px sans-serif"; this.ctx.textAlign = "center";
             this.ctx.fillText(((1-progress) * (label === "A" ? 0.5 : 0.3)).toFixed(1), x, y);
