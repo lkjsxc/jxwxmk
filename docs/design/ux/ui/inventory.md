@@ -1,14 +1,15 @@
-# Inventory UI
+# Inventory & Hotbar
 
-Manage held items.
+## Hotbar
+-   **Always Visible**: Bottom center of HUD.
+-   **Slots**: 10 (Keys 0-9).
+-   **Selection**:
+    -   **Click**: Left-click a slot to select.
+    -   **Keys**: Press 1-9, 0 to select.
+    -   **Visual**: Highlight active slot with a yellow border.
+-   **Function**: The "Active Slot" determines what item is held/used (e.g., placing a wall, eating food).
 
-## Visuals
--   **Grid**: 4x5 slot grid (20 slots total) + Hotbar.
--   **Overlay**: Semi-transparent black background centered on screen.
--   **Toggle**: Opened via 'E' (Desktop) or Bag Button (Mobile).
-
-## Interactions
--   **Drag & Drop**: Move items between slots.
--   **Split Stack**: Shift+Click or Long Press to split.
--   **Drop Item**: Drag outside inventory window to drop entity in world.
--   **Equip**: Drag to Hotbar to use.
+## Bag (Main Inventory)
+-   **Location**: Tab 1 of the **Main Menu**.
+-   **Function**: Storage for items not currently needed in the Hotbar.
+-   **Interaction**: Drag and drop to move items to/from the Hotbar.
