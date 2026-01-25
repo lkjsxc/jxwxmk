@@ -4,12 +4,7 @@ import { Player, Item } from "../types";
 export enum AppState { StartScreen, InGame, GameOver }
 export enum MenuTab { Inventory, Crafting, Profile, Guidebook }
 
-interface DragState {
-    fromIndex: number;
-    item: Item;
-    startX: number;
-    startY: number;
-}
+interface DragState { fromIndex: number; item: Item; startX: number; startY: number; }
 
 export class UIManager {
     state: AppState = AppState.StartScreen;
@@ -62,7 +57,7 @@ export class UIManager {
 
     drawMenuOverlay(ctx: CanvasRenderingContext2D, player: Player, w: number, h: number) {
         ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.fillRect(0, 0, w, h);
-        const margin = 40; const panelX = margin; const panelY = margin;
+        const margin = 20; const panelX = margin; const panelY = margin;
         const panelW = w - margin * 2; const panelH = h - margin * 2;
         ctx.fillStyle = "rgba(34, 34, 34, 0.85)"; ctx.fillRect(panelX, panelY, panelW, panelH);
         ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.strokeRect(panelX, panelY, panelW, panelH);
@@ -88,42 +83,40 @@ export class UIManager {
         ctx.restore();
     }
 
+    private getInventoryLayout(w: number) {
+        const padding = 10;
+        const cols = w > 600 ? 7 : w > 400 ? 5 : 3;
+        const availableW = w - (cols + 1) * padding;
+        const slotSize = Math.min(60, availableW / cols);
+        return { cols, slotSize, padding };
+    }
+
     drawInventory(ctx: CanvasRenderingContext2D, player: Player, w: number, h: number) {
-        const slotSize = 60; const padding = 10; const cols = 7;
-        const totalW = cols * (slotSize + padding);
-        const startX = (w - totalW) / 2;
-        
-        // Render 30 slots (7x4 grid roughly)
+        ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "20px sans-serif";
+        ctx.fillText("Backpack", w / 2, 25);
+        const { cols, slotSize, padding } = this.getInventoryLayout(w);
+        const gridW = cols * slotSize + (cols - 1) * padding;
+        const startX = (w - gridW) / 2;
         for (let i = 0; i < 30; i++) {
-            const col = i % cols; const row = Math.floor(i / cols);
-            const x = startX + col * (slotSize + padding);
-            const y = 40 + row * (slotSize + padding);
-            
-            // Minecraft Style
+            const x = startX + (i % cols) * (slotSize + padding);
+            const y = 40 + Math.floor(i / cols) * (slotSize + padding);
             ctx.fillStyle = "#111"; ctx.fillRect(x, y, slotSize, slotSize);
             ctx.strokeStyle = "#555"; ctx.lineWidth = 2; ctx.strokeRect(x, y, slotSize, slotSize);
-            ctx.strokeStyle = "#000"; ctx.lineWidth = 1; ctx.strokeRect(x+2, y+2, slotSize-4, slotSize-4);
-
             const item = player.inventory.slots[i];
-            // Don't draw the item if it's currently being dragged from this slot
-            if (item && (!this.drag || this.drag.fromIndex !== i)) {
-                this.drawItem(ctx, item, x, y, slotSize);
-            }
+            if (item && (!this.drag || this.drag.fromIndex !== i)) this.drawItem(ctx, item, x, y, slotSize);
         }
     }
 
     drawDraggedItem(ctx: CanvasRenderingContext2D, input: InputManager) {
         if (!this.drag) return;
-        ctx.save();
-        ctx.globalAlpha = 0.7;
+        ctx.save(); ctx.globalAlpha = 0.7;
         this.drawItem(ctx, this.drag.item, input.mouseX - 30, input.mouseY - 30, 60);
         ctx.restore();
     }
 
     drawCrafting(ctx: CanvasRenderingContext2D, w: number, h: number) {
         const recipes = [{ name: "Wood Pick", code: "WoodPickaxe", req: "10 Wood" }, { name: "Stone Pick", code: "StonePickaxe", req: "10W, 10S" }, { name: "Wood Wall", code: "WoodWall", req: "20 Wood" }, { name: "Torch", code: "Torch", req: "2 Wood" }];
-        let y = 40; const btnW = 260; const x = (w - btnW) / 2;
-        ctx.textBaseline = "middle";
+        let y = 40; const btnW = Math.min(260, w - 40); const x = (w - btnW) / 2;
         for (const r of recipes) {
             ctx.fillStyle = "rgba(68,68,68,0.8)"; ctx.fillRect(x, y, btnW, 45);
             ctx.fillStyle = "white"; ctx.font = "16px sans-serif"; ctx.textAlign = "left";
@@ -134,9 +127,8 @@ export class UIManager {
     }
 
     drawProfile(ctx: CanvasRenderingContext2D, player: Player, w: number, h: number) {
-        ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "24px sans-serif";
-        ctx.fillText("Player Profile", w / 2, 40);
-        ctx.font = "18px sans-serif"; ctx.fillText(`Current Name: ${player.username}`, w / 2, 100);
+        ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "24px sans-serif"; ctx.fillText("Player Profile", w / 2, 40);
+        ctx.font = "18px sans-serif"; ctx.fillText(`Name: ${player.username}`, w / 2, 100);
         const btnW = 200; const btnH = 40; const btnX = (w - btnW) / 2;
         ctx.fillStyle = "rgba(68,68,170,0.8)"; ctx.fillRect(btnX, 140, btnW, btnH);
         ctx.fillStyle = "white"; ctx.fillText("Change Name", w / 2, 160);
@@ -149,20 +141,20 @@ export class UIManager {
     }
 
     drawHotbar(ctx: CanvasRenderingContext2D, player: Player, w: number, h: number) {
-        const slots = 7; const slotSize = 50; const totalW = slots * 60;
-        const startX = (w - totalW) / 2; const startY = h - 70;
+        const slots = 7; const slotSize = Math.min(50, (w - 80) / 7); const padding = 10;
+        const totalW = slots * (slotSize + padding); const startX = (w - totalW) / 2; const startY = h - slotSize - 20;
         for (let i = 0; i < slots; i++) {
-            const x = startX + i * 60;
+            const x = startX + i * (slotSize + padding);
             ctx.fillStyle = i === player.active_slot ? "rgba(200,200,0,0.4)" : "rgba(0,0,0,0.4)";
             ctx.fillRect(x, startY, slotSize, slotSize);
             ctx.strokeStyle = "rgba(255,255,255,0.5)"; ctx.strokeRect(x, startY, slotSize, slotSize);
             const item = player.inventory.slots[i];
             if (item && (!this.drag || this.drag.fromIndex !== i)) this.drawItem(ctx, item, x, startY, slotSize);
         }
-        const activeItem = player.inventory.slots[player.active_slot];
-        if (activeItem) {
+        const active = player.inventory.slots[player.active_slot];
+        if (active) {
             ctx.fillStyle = "white"; ctx.font = "bold 16px sans-serif"; ctx.textAlign = "center";
-            ctx.fillText(`${activeItem.kind} ${this.getItemAction(activeItem.kind)}`, w / 2, startY - 20);
+            ctx.fillText(`${active.kind} ${this.getItemAction(active.kind)}`, w / 2, startY - 20);
         }
     }
 
@@ -174,7 +166,7 @@ export class UIManager {
 
     drawItem(ctx: CanvasRenderingContext2D, item: Item, x: number, y: number, size: number) {
         ctx.fillStyle = this.getItemColor(item.kind); ctx.beginPath(); ctx.arc(x + size/2, y + size/2, size/3, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = "white"; ctx.font = "bold 12px sans-serif"; ctx.textAlign = "right"; ctx.textBaseline = "alphabetic";
+        ctx.fillStyle = "white"; ctx.font = "bold 12px sans-serif"; ctx.textAlign = "right";
         ctx.fillText(item.amount.toString(), x + size - 4, y + size - 4);
     }
 
@@ -188,10 +180,9 @@ export class UIManager {
 
     drawButton(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, label: string, active: boolean) {
         ctx.fillStyle = active ? "rgba(74, 164, 74, 0.6)" : "rgba(68, 68, 68, 0.6)";
-        ctx.fillRect(x, y, w, h);
-        ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.strokeRect(x, y, w, h);
-        ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-        ctx.font = "12px sans-serif"; ctx.fillText(label, x + w / 2, y + h / 2);
+        ctx.fillRect(x, y, w, h); ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.strokeRect(x, y, w, h);
+        ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = "12px sans-serif";
+        ctx.fillText(label, x + w / 2, y + h / 2);
     }
 
     handleInput(input: InputManager, w: number, h: number, player: Player | null) {
@@ -205,62 +196,50 @@ export class UIManager {
             } else if (this.state === AppState.GameOver) {
                 if (this.hitTest(mx, my, (w - 300) / 2, h / 2, 300, 80)) { this.respawnRequest = true; input.isPointerDown = false; }
             } else if (this.state === AppState.InGame) {
+                const margin = 20; const panelX = margin; const panelY = margin; const panelW = w - margin * 2;
                 if (this.isMenuOpen) {
-                    const margin = 40; const panelX = margin; const panelY = margin; const panelW = w - margin * 2;
                     if (this.hitTest(mx, my, panelX + panelW - 40, panelY + 10, 30, 30)) { this.isMenuOpen = false; input.isPointerDown = false; }
                     else if (this.hitTest(mx, my, panelX, panelY, panelW, 50)) { this.activeTab = Math.floor((mx - panelX) / (panelW / 4)); input.isPointerDown = false; }
                     else if (this.activeTab === MenuTab.Inventory && player) {
-                        const slotSize = 60; const padding = 10; const cols = 7;
-                        const totalW = cols * (slotSize + padding); const startX = panelX + (panelW - totalW) / 2;
+                        const { cols, slotSize, padding } = this.getInventoryLayout(panelW);
+                        const gridW = cols * slotSize + (cols - 1) * padding; const startX = panelX + (panelW - gridW) / 2;
                         for (let i = 0; i < 30; i++) {
-                            const x = startX + (i % cols) * (slotSize + padding);
-                            const y = panelY + 50 + 40 + Math.floor(i / cols) * (slotSize + padding);
+                            const x = startX + (i % cols) * (slotSize + padding); const y = panelY + 50 + 40 + Math.floor(i / cols) * (slotSize + padding);
                             if (this.hitTest(mx, my, x, y, slotSize, slotSize)) {
-                                if (!this.drag && player.inventory.slots[i]) {
-                                    this.drag = { fromIndex: i, item: player.inventory.slots[i]!, startX: mx, startY: my };
-                                }
+                                if (!this.drag && player.inventory.slots[i]) this.drag = { fromIndex: i, item: player.inventory.slots[i]!, startX: mx, startY: my };
                                 break;
                             }
                         }
                     } else if (this.activeTab === MenuTab.Crafting) {
                         const recipes = ["WoodPickaxe", "StonePickaxe", "WoodWall", "Torch"];
-                        let rY = panelY + 50 + 40;
+                        let rY = panelY + 50 + 40; const btnW = Math.min(260, panelW - 40);
                         for (const code of recipes) {
-                            if (this.hitTest(mx, my, panelX + (panelW - 260)/2, rY, 260, 45)) { this.craftRequest = code; input.isPointerDown = false; }
+                            if (this.hitTest(mx, my, panelX + (panelW - btnW)/2, rY, btnW, 45)) { this.craftRequest = code; input.isPointerDown = false; }
                             rY += 55;
                         }
                     } else if (this.activeTab === MenuTab.Profile) {
                         if (this.hitTest(mx, my, panelX + (panelW - 200)/2, panelY + 50 + 140, 200, 40)) {
-                            const newName = prompt("Enter new name:", "Survivor"); if (newName) this.nameUpdateRequest = newName; input.isPointerDown = false;
+                            const n = prompt("New name:", "Survivor"); if (n) this.nameUpdateRequest = n; input.isPointerDown = false;
                         }
                     }
                 } else {
                     if (this.hitTest(mx, my, w - 60, 20, 50, 50)) { this.isMenuOpen = true; input.isPointerDown = false; }
-                    // Hotbar Selection Click check (0-6)
-                    const startX = (w - (7 * 60)) / 2; const startY = h - 70;
-                    if (this.hitTest(mx, my, startX, startY, 7 * 60, 50)) {
-                        const idx = Math.floor((mx - startX) / 60);
+                    const slots = 7; const slotSize = Math.min(50, (w - 80) / 7); const padding = 10;
+                    const totalW = slots * (slotSize + padding); const startX = (w - totalW) / 2; const startY = h - slotSize - 20;
+                    if (this.hitTest(mx, my, startX, startY, totalW, slotSize)) {
+                        const idx = Math.floor((mx - startX) / (slotSize + padding));
                         if (idx >= 0 && idx < 7) { this.slotSelectRequest = idx; input.isPointerDown = false; }
                     }
                 }
             }
         } else if (this.drag) {
-            // Drop logic
             const mx = input.mouseX; const my = input.mouseY;
-            const margin = 40; const panelX = margin; const panelY = margin; const panelW = w - margin * 2;
-            const slotSize = 60; const padding = 10; const cols = 7;
-            const totalW = cols * (slotSize + padding); const startX = panelX + (panelW - totalW) / 2;
-            
-            let dropped = false;
+            const margin = 20; const panelX = margin; const panelY = margin; const panelW = w - margin * 2;
+            const { cols, slotSize, padding } = this.getInventoryLayout(panelW);
+            const gridW = cols * slotSize + (cols - 1) * padding; const startX = panelX + (panelW - gridW) / 2;
             for (let i = 0; i < 30; i++) {
-                const x = startX + (i % cols) * (slotSize + padding);
-                const y = panelY + 50 + 40 + Math.floor(i / cols) * (slotSize + padding);
-                if (this.hitTest(mx, my, x, y, slotSize, slotSize)) {
-                    if (i !== this.drag.fromIndex) {
-                        this.swapRequest = [this.drag.fromIndex, i];
-                    }
-                    dropped = true; break;
-                }
+                const x = startX + (i % cols) * (slotSize + padding); const y = panelY + 50 + 40 + Math.floor(i / cols) * (slotSize + padding);
+                if (this.hitTest(mx, my, x, y, slotSize, slotSize)) { if (i !== this.drag.fromIndex) this.swapRequest = [this.drag.fromIndex, i]; break; }
             }
             this.drag = null;
         }

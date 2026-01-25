@@ -11,7 +11,8 @@ The persistent on-screen overlay during gameplay.
     -   **Labels**: Displayed to the left ("HP", "HG", "TP").
 
 2.  **Target Status**:
-    -   **Object HP**: When hitting a resource or structure, its name and a semi-transparent HP gauge are displayed at the top-center of the screen, "above the user's" view.
+    -   **Object HP**: When an entity (Resource, Mob, Structure) is damaged, a semi-transparent HP gauge is displayed directly above the object in the game world.
+    -   **Fade**: The gauge only appears when HP is below 100% or recently hit.
 
 3.  **Hotbar** (Bottom Center):
     -   **7 Slots** (Keys 1-7).

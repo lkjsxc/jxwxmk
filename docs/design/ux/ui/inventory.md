@@ -11,11 +11,17 @@
     -   **Translucency**: UI elements use semi-transparent backgrounds.
 -   **Function**: The "Active Slot" determines what item is held/used (e.g., placing a wall, eating food).
 
-## Design (Minecraft/Terraria Feel)
+## Visuals (Minecraft/Terraria Feel)
 
-- **Visuals**: Dark, high-contrast grid with inset borders. Items are rendered as distinct shapes within these squares.
+- **Visuals**: Dark, high-contrast grid with inset borders.
 
-- **Tooltip**: Hovering over a slot shows the item name and quantity in a small floating box.
+- **Responsiveness**:
+
+    - **Desktop**: 7 columns.
+
+    - **Mobile**: Dynamic column count (3-5) based on screen width to prevent extending off-screen.
+
+    - **Scaling**: Slot size reduces on small screens.
 
 
 
