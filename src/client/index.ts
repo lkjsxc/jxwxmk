@@ -12,6 +12,7 @@ let prevWorld: World | null = null;
 let lastUpdateAt: number = 0;
 let myId: string | null = null;
 let ws: WebSocket | null = null;
+let inputInterval: any = null;
 const STORAGE_KEY = "kkmypk_token";
 
 function connect() {
@@ -26,29 +27,29 @@ function connect() {
             const msg = JSON.parse(event.data);
             if (msg.type === "welcome") {
                 myId = msg.id;
-                if (msg.token) {
-                    localStorage.setItem(STORAGE_KEY, msg.token);
-                }
+                if (msg.token) localStorage.setItem(STORAGE_KEY, msg.token);
                 ui.state = AppState.InGame;
             } else if (msg.type === "world") {
                  prevWorld = world;
                  world = msg.data;
                  lastUpdateAt = Date.now();
-                 
                  if (ui.state === AppState.InGame && myId && world && !world.players[myId]) {
                      ui.state = AppState.GameOver;
                  }
             }
-        } catch (e) {
-            console.error("Parse error", e);
-        }
+        } catch (e) { console.error("Parse error", e); }
     };
 
-    ws.onopen = () => console.log("Connected");
+    ws.onopen = () => {
+        console.log("Connected");
+        if (inputInterval) clearInterval(inputInterval);
+        inputInterval = setInterval(sendInput, 50);
+    };
     ws.onclose = () => {
+        console.log("Disconnected");
         ui.state = AppState.StartScreen;
-        world = null;
-        myId = null;
+        world = null; myId = null;
+        if (inputInterval) { clearInterval(inputInterval); inputInterval = null; }
     };
 }
 
@@ -57,13 +58,13 @@ function loop() {
 
     if (ui.state === AppState.StartScreen) {
         ui.render(renderer.ctx, null, input);
-        if (ui.joinRequest) {
-            connect();
-            ui.joinRequest = false;
-        }
+        if (ui.joinRequest) { connect(); ui.joinRequest = false; }
     } else if (ui.state === AppState.GameOver) {
         ui.render(renderer.ctx, null, input);
         if (ui.respawnRequest) {
+            ui.respawnRequest = false; // Prevent multiple reloads
+            if (ws) { ws.close(); ws = null; }
+            if (inputInterval) { clearInterval(inputInterval); inputInterval = null; }
             localStorage.removeItem(STORAGE_KEY);
             location.reload();
         }
@@ -72,20 +73,10 @@ function loop() {
         const alpha = Math.min(1.0, (now - lastUpdateAt) / 50); 
         renderer.render(world, prevWorld, alpha, input, myId, ui);
         
-        // Handle Requests
         if (ws && ws.readyState === WebSocket.OPEN) {
-            if (ui.craftRequest) {
-                ws.send(JSON.stringify({ craft: ui.craftRequest }));
-                ui.craftRequest = null;
-            }
-            if (ui.slotSelectRequest !== null) {
-                ws.send(JSON.stringify({ slot: ui.slotSelectRequest }));
-                ui.slotSelectRequest = null;
-            }
-            if (ui.nameUpdateRequest) {
-                ws.send(JSON.stringify({ name: ui.nameUpdateRequest }));
-                ui.nameUpdateRequest = null;
-            }
+            if (ui.craftRequest) { ws.send(JSON.stringify({ craft: ui.craftRequest })); ui.craftRequest = null; }
+            if (ui.slotSelectRequest !== null) { ws.send(JSON.stringify({ slot: ui.slotSelectRequest })); ui.slotSelectRequest = null; }
+            if (ui.nameUpdateRequest) { ws.send(JSON.stringify({ name: ui.nameUpdateRequest })); ui.nameUpdateRequest = null; }
         }
     }
     requestAnimationFrame(loop);
@@ -100,5 +91,4 @@ function sendInput() {
     }
 }
 
-setInterval(sendInput, 50);
 loop();
