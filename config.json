@@ -4,7 +4,16 @@
     "tick_rate": 20
   },
   "game": {
-    "world_width": 10000,
-    "world_height": 10000
+    "world_width": 2000,
+    "world_height": 2000,
+    "interact_range": 60.0
+  },
+  "mechanics": {
+    "hunger_decay": 0.1,
+    "cold_decay": 0.05,
+    "heal_rate": 1.0,
+    "starve_dmg": 5.0,
+    "freeze_dmg": 2.0,
+    "food_value": 20.0
   }
 }

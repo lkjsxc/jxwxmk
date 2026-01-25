@@ -61,4 +61,6 @@ export interface InputState {
     attack: boolean;
     interact: boolean;
     craft?: string;
+    slot?: number;
+    name?: string;
 }

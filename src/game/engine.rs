@@ -5,10 +5,11 @@ use crate::game::state::World;
 use crate::game::entities::player::Player;
 use crate::game::entities::resource::{Resource, ResourceType};
 use crate::game::entities::mob::{Mob, MobType};
-use crate::game::entities::item::{Item, ItemType};
+use crate::game::entities::item::ItemType;
 use crate::game::entities::structure::{Structure, StructureType};
 use crate::game::systems::survival::SurvivalSystem;
 use crate::game::systems::crafting::CraftingSystem;
+use crate::game::config::AppConfig;
 use serde::Serialize;
 use rand::Rng;
 
@@ -55,6 +56,13 @@ pub struct SelectSlot {
     pub slot: usize,
 }
 
+#[derive(Message)]
+#[rtype(result = "()")]
+pub struct UpdateName {
+    pub id: Uuid,
+    pub name: String,
+}
+
 #[derive(Message, Clone, Serialize)]
 #[rtype(result = "()")]
 pub struct WorldUpdate(pub World);
@@ -62,6 +70,7 @@ pub struct WorldUpdate(pub World);
 pub struct GameEngine {
     world: World,
     sessions: HashMap<Uuid, Recipient<WorldUpdate>>,
+    config: AppConfig,
 }
 
 impl GameEngine {
@@ -69,6 +78,7 @@ impl GameEngine {
         Self {
             world: World::new(),
             sessions: HashMap::new(),
+            config: AppConfig::load(),
         }
     }
 
@@ -81,8 +91,6 @@ impl GameEngine {
 
     fn spawn_initial_entities(&mut self) {
         let mut rng = rand::thread_rng();
-        
-        // Resources
         for _ in 0..100 {
             let x = rng.gen_range(0.0..self.world.width);
             let y = rng.gen_range(0.0..self.world.height);
@@ -94,8 +102,6 @@ impl GameEngine {
             let res = Resource::new(r_type, x, y);
             self.world.resources.insert(res.id, res);
         }
-
-        // Mobs
         for _ in 0..20 {
             let x = rng.gen_range(0.0..self.world.width);
             let y = rng.gen_range(0.0..self.world.height);
@@ -110,35 +116,15 @@ impl GameEngine {
     }
 
     fn tick_world(&mut self) {
-        // Players
         let mut dead_players = Vec::new();
         for (id, player) in self.world.players.iter_mut() {
-            SurvivalSystem::tick(player);
-            if player.health <= 0.0 {
-                dead_players.push(*id);
-            }
+            SurvivalSystem::tick(player, &self.config.mechanics);
+            if player.health <= 0.0 { dead_players.push(*id); }
         }
+        for id in dead_players { self.world.players.remove(&id); }
 
-        for id in dead_players {
-            // Remove player entity
-            // Also notify session? 
-            // We can send a specific "GameOver" message wrapper or let the client handle "world update missing my ID".
-            // Ideally explicit message.
-            if let Some(addr) = self.sessions.get(&id) {
-                // We can't send a custom message easily via Recipient<WorldUpdate> unless we change the type or wrap it.
-                // Or we update WorldUpdate to include events.
-                // For now, let's just remove the player. The client will see "myId" is not in "world.players" and trigger Game Over.
-            }
-            self.world.players.remove(&id);
-            // We KEEP the session (so they can respawn/spectate?)
-            // If we keep session but no player, subsequent Inputs might fail or need handling.
-            // Client should show Game Over screen.
-        }
-
-        // Mobs (Simple AI)
         let mut rng = rand::thread_rng();
         for mob in self.world.mobs.values_mut() {
-            // Random wander
             let dx = rng.gen_range(-1.0..1.0);
             let dy = rng.gen_range(-1.0..1.0);
             mob.x = (mob.x + dx).clamp(0.0, self.world.width);
@@ -149,14 +135,10 @@ impl GameEngine {
 
 impl Actor for GameEngine {
     type Context = Context<Self>;
-
     fn started(&mut self, ctx: &mut Self::Context) {
         self.spawn_initial_entities();
-
-        // Start ticking 20 TPS
-        ctx.run_interval(std::time::Duration::from_millis(50), |act, _| {
-            act.tick_world();
-            act.broadcast();
+        ctx.run_interval(std::time::Duration::from_millis(1000 / self.config.server.tick_rate), |act, _| {
+            act.tick_world(); act.broadcast();
         });
     }
 }
@@ -164,7 +146,6 @@ impl Actor for GameEngine {
 impl Handler<Join> for GameEngine {
     type Result = Option<(String, Uuid)>;
     fn handle(&mut self, msg: Join, _: &mut Context<Self>) -> Self::Result {
-        // Check for reconnection
         if let Some(token) = msg.token {
             if let Some(player) = self.world.players.values_mut().find(|p| p.token == token) {
                 let player_id = player.id;
@@ -172,12 +153,9 @@ impl Handler<Join> for GameEngine {
                 return Some((token, player_id));
             }
         }
-
-        // New Player
         let mut rng = rand::thread_rng();
         let spawn_x = rng.gen_range(0.0..self.world.width);
         let spawn_y = rng.gen_range(0.0..self.world.height);
-
         let token = Uuid::new_v4().to_string();
         self.sessions.insert(msg.id, msg.addr);
         let player = Player::new(msg.id, token.clone(), "Guest".to_string(), spawn_x, spawn_y);
@@ -188,17 +166,7 @@ impl Handler<Join> for GameEngine {
 
 impl Handler<Leave> for GameEngine {
     type Result = ();
-    fn handle(&mut self, msg: Leave, _: &mut Context<Self>) {
-        // If we treat msg.id as SessionID, we need to know which PlayerID it maps to.
-        // But currently assumed SessionID == PlayerID.
-        // If we reconnect, we might have a mismatch if we didn't update the WS actor's ID.
-        // For simplicity: We will update WS actor's ID to match PlayerID on reconnect?
-        // Or we just remove from sessions.
-        
-        self.sessions.remove(&msg.id);
-        // Persistence: Do NOT remove player
-        // self.world.players.remove(&msg.id); 
-    }
+    fn handle(&mut self, msg: Leave, _: &mut Context<Self>) { self.sessions.remove(&msg.id); }
 }
 
 impl Handler<Craft> for GameEngine {
@@ -214,11 +182,19 @@ impl Handler<SelectSlot> for GameEngine {
     type Result = ();
     fn handle(&mut self, msg: SelectSlot, _: &mut Context<Self>) {
         if let Some(player) = self.world.players.get_mut(&msg.id) {
-            // Validate slot (0-9 for hotbar, or allow full inventory selection?)
-            // Usually only hotbar is "active". 
-            if msg.slot < 10 {
-                player.active_slot = msg.slot;
-            }
+            if msg.slot < 10 { player.active_slot = msg.slot; }
+        }
+    }
+}
+
+impl Handler<UpdateName> for GameEngine {
+    type Result = ();
+    fn handle(&mut self, msg: UpdateName, _: &mut Context<Self>) {
+        if let Some(player) = self.world.players.get_mut(&msg.id) {
+            let mut name = msg.name.trim().to_string();
+            if name.is_empty() { name = "Guest".to_string(); }
+            if name.len() > 12 { name.truncate(12); }
+            player.username = name;
         }
     }
 }
@@ -226,104 +202,71 @@ impl Handler<SelectSlot> for GameEngine {
 impl Handler<Input> for GameEngine {
     type Result = ();
     fn handle(&mut self, msg: Input, _: &mut Context<Self>) {
+        let interact_range = self.config.game.interact_range;
         if let Some(player) = self.world.players.get_mut(&msg.id) {
             let speed = 5.0;
-            player.x += msg.dx * speed;
-            player.y += msg.dy * speed;
-
-            // Clamp
-            player.x = player.x.max(0.0).min(self.world.width);
-            player.y = player.y.max(0.0).min(self.world.height);
+            player.x = (player.x + msg.dx * speed).clamp(0.0, self.world.width);
+            player.y = (player.y + msg.dy * speed).clamp(0.0, self.world.height);
             
-            // Gather/Attack
             if msg.attack {
-                let px = player.x;
-                let py = player.y;
-                let mut collected = Vec::new();
                 let mut drops = Vec::new();
-                let mut mobs_hit = Vec::new();
-
-                // Check Resources
+                let mut collected = Vec::new();
                 for (id, res) in self.world.resources.iter_mut() {
-                    let dist = ((px - res.x).powi(2) + (py - res.y).powi(2)).sqrt();
-                    if dist < 40.0 {
+                    if Math::dist(player.x, player.y, res.x, res.y) < interact_range {
                          res.amount -= 1;
                          match res.r_type {
                              ResourceType::Tree => drops.push((ItemType::Wood, 1)),
                              ResourceType::Rock => drops.push((ItemType::Stone, 1)),
                              ResourceType::Food => drops.push((ItemType::Berry, 1)),
                          }
-                         if res.amount <= 0 {
-                             collected.push(*id);
-                         }
-                         break; // Hit one per tick
+                         if res.amount <= 0 { collected.push(*id); }
+                         break;
                     }
                 }
-
-                // Check Mobs
                 for (id, mob) in self.world.mobs.iter_mut() {
-                     let dist = ((px - mob.x).powi(2) + (py - mob.y).powi(2)).sqrt();
-                     if dist < 40.0 {
+                     if Math::dist(player.x, player.y, mob.x, mob.y) < interact_range {
                          mob.health -= 5.0; 
-                         if mob.health <= 0.0 {
-                             mobs_hit.push(*id);
-                             drops.push((ItemType::Meat, 1));
-                         }
+                         if mob.health <= 0.0 { collected.push(*id); drops.push((ItemType::Meat, 1)); }
                          break;
                      }
                 }
-                
-                // Add to inventory
-                for (kind, amt) in drops {
-                    player.inventory.add(kind, amt);
-                }
-
-                for id in collected {
-                    self.world.resources.remove(&id);
-                }
-                for id in mobs_hit {
-                    self.world.mobs.remove(&id);
-                }
+                for (kind, amt) in drops { player.inventory.add(kind, amt); }
+                for id in collected { self.world.resources.remove(&id); self.world.mobs.remove(&id); }
             }
             
-            // Interact / Build
             if msg.interact {
-                // Check if holding a buildable item
-                // For now, assume Slot 0 is hotbar active slot (need to implement slot selection logic)
-                // Actually, let's just use the first valid buildable item in hotbar for MVP or check active_slot
-                // `active_slot` is in Player.
-                
                 let active_slot_idx = player.active_slot;
-                if active_slot_idx < player.inventory.slots.len() {
-                    let should_build = if let Some(item) = &mut player.inventory.slots[active_slot_idx] {
-                         let s_type = match item.kind {
-                             ItemType::WoodWall => Some(StructureType::Wall),
-                             ItemType::Door => Some(StructureType::Door),
-                             ItemType::Torch => Some(StructureType::Torch),
-                             ItemType::Workbench => Some(StructureType::Workbench),
-                             _ => None,
-                         };
-
-                         if let Some(s_type) = s_type {
-                             // Build it
-                             item.amount -= 1;
-                             if item.amount == 0 {
-                                 player.inventory.slots[active_slot_idx] = None;
-                             }
-                             Some(s_type)
-                         } else {
-                             None
-                         }
+                if let Some(item) = &mut player.inventory.slots[active_slot_idx] {
+                    // Try Eat
+                    if item.kind == ItemType::Berry || item.kind == ItemType::Meat || item.kind == ItemType::CookedMeat {
+                        player.hunger = (player.hunger + self.config.mechanics.food_value).min(100.0);
+                        item.amount -= 1;
+                        if item.amount == 0 { player.inventory.slots[active_slot_idx] = None; }
                     } else {
-                        None
-                    };
-
-                    if let Some(s_type) = should_build {
-                         let s = Structure::new(s_type, player.x, player.y, msg.id);
-                         self.world.structures.insert(s.id, s);
+                        // Try Build
+                        let s_type = match item.kind {
+                            ItemType::WoodWall => Some(StructureType::Wall),
+                            ItemType::Door => Some(StructureType::Door),
+                            ItemType::Torch => Some(StructureType::Torch),
+                            ItemType::Workbench => Some(StructureType::Workbench),
+                            _ => None,
+                        };
+                        if let Some(s_type) = s_type {
+                            let s = Structure::new(s_type, player.x, player.y, msg.id);
+                            self.world.structures.insert(s.id, s);
+                            item.amount -= 1;
+                            if item.amount == 0 { player.inventory.slots[active_slot_idx] = None; }
+                        }
                     }
                 }
             }
         }
+    }
+}
+
+struct Math;
+impl Math {
+    fn dist(x1: f64, y1: f64, x2: f64, y2: f64) -> f64 {
+        ((x1 - x2).powi(2) + (y1 - y2).powi(2)).sqrt()
     }
 }

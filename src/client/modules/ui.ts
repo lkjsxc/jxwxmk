@@ -1,18 +1,8 @@
 import { InputManager } from "./input";
 import { Player, Item } from "../types";
 
-export enum AppState {
-    StartScreen,
-    InGame,
-    GameOver,
-}
-
-export enum MenuTab {
-    Inventory,
-    Crafting,
-    Guidebook,
-    Settings,
-}
+export enum AppState { StartScreen, InGame, GameOver }
+export enum MenuTab { Inventory, Crafting, Profile, Guidebook, Settings }
 
 export class UIManager {
     state: AppState = AppState.StartScreen;
@@ -23,21 +13,16 @@ export class UIManager {
     craftRequest: string | null = null;
     slotSelectRequest: number | null = null;
     respawnRequest: boolean = false;
+    nameUpdateRequest: string | null = null;
 
     render(ctx: CanvasRenderingContext2D, player: Player | null, input: InputManager) {
-        const w = ctx.canvas.width;
-        const h = ctx.canvas.height;
-
-        if (this.state === AppState.StartScreen) {
-            this.drawStartScreen(ctx, w, h);
-        } else if (this.state === AppState.GameOver) {
-            this.drawGameOver(ctx, w, h);
-        } else if (this.state === AppState.InGame && player) {
+        const w = ctx.canvas.width; const h = ctx.canvas.height;
+        if (this.state === AppState.StartScreen) this.drawStartScreen(ctx, w, h);
+        else if (this.state === AppState.GameOver) this.drawGameOver(ctx, w, h);
+        else if (this.state === AppState.InGame && player) {
             this.drawHotbar(ctx, player, w, h);
             this.drawHUDButtons(ctx, w);
-            if (this.isMenuOpen) {
-                this.drawMenuOverlay(ctx, player, w, h);
-            }
+            if (this.isMenuOpen) this.drawMenuOverlay(ctx, player, w, h);
         }
     }
 
@@ -45,7 +30,6 @@ export class UIManager {
         ctx.fillStyle = "#111"; ctx.fillRect(0, 0, w, h);
         ctx.fillStyle = "#eee"; ctx.font = "bold 60px sans-serif"; ctx.textAlign = "center";
         ctx.fillText("kkmypk", w / 2, h / 3);
-
         const btnW = 200; const btnH = 60; const btnX = (w - btnW) / 2; const btnY = h / 2;
         ctx.fillStyle = "#4a4"; ctx.fillRect(btnX, btnY, btnW, btnH);
         ctx.fillStyle = "white"; ctx.font = "30px sans-serif"; ctx.fillText("PLAY", w / 2, btnY + 40);
@@ -55,7 +39,6 @@ export class UIManager {
         ctx.fillStyle = "rgba(100, 0, 0, 0.8)"; ctx.fillRect(0, 0, w, h);
         ctx.fillStyle = "white"; ctx.font = "bold 60px sans-serif"; ctx.textAlign = "center";
         ctx.fillText("YOU DIED", w / 2, h / 3);
-        
         const btnW = 300; const btnH = 80; const btnX = (w - btnW) / 2; const btnY = h / 2;
         ctx.fillStyle = "#a44"; ctx.fillRect(btnX, btnY, btnW, btnH);
         ctx.strokeStyle = "white"; ctx.lineWidth = 4; ctx.strokeRect(btnX, btnY, btnW, btnH);
@@ -70,14 +53,11 @@ export class UIManager {
         ctx.fillStyle = "rgba(0,0,0,0.8)"; ctx.fillRect(0, 0, w, h);
         const margin = 40; const panelX = margin; const panelY = margin;
         const panelW = w - margin * 2; const panelH = h - margin * 2;
-
         ctx.fillStyle = "#222"; ctx.fillRect(panelX, panelY, panelW, panelH);
         ctx.strokeStyle = "#444"; ctx.strokeRect(panelX, panelY, panelW, panelH);
-
-        // Close Button (Top Right of Panel)
         this.drawButton(ctx, panelX + panelW - 40, panelY + 10, 30, 30, "X", false);
 
-        const tabs = ["Bag", "Craft", "Help", "Sets"];
+        const tabs = ["Bag", "Craft", "Prof", "Help"];
         const tabW = (panelW - 50) / tabs.length;
         for (let i = 0; i < tabs.length; i++) {
             const tx = panelX + i * tabW;
@@ -91,6 +71,7 @@ export class UIManager {
         ctx.save(); ctx.translate(panelX, panelY + 50);
         if (this.activeTab === MenuTab.Inventory) this.drawInventory(ctx, player, panelW, panelH - 50);
         else if (this.activeTab === MenuTab.Crafting) this.drawCrafting(ctx, panelW, panelH - 50);
+        else if (this.activeTab === MenuTab.Profile) this.drawProfile(ctx, player, panelW, panelH - 50);
         else if (this.activeTab === MenuTab.Guidebook) this.drawGuidebook(ctx, panelW, panelH - 50);
         ctx.restore();
     }
@@ -109,12 +90,7 @@ export class UIManager {
     }
 
     drawCrafting(ctx: CanvasRenderingContext2D, w: number, h: number) {
-        const recipes = [
-            { name: "Wood Pick", code: "WoodPickaxe", req: "10 Wood" },
-            { name: "Stone Pick", code: "StonePickaxe", req: "10W, 10S" },
-            { name: "Wood Wall", code: "WoodWall", req: "20 Wood" },
-            { name: "Torch", code: "Torch", req: "2 Wood" },
-        ];
+        const recipes = [{ name: "Wood Pick", code: "WoodPickaxe", req: "10 Wood" }, { name: "Stone Pick", code: "StonePickaxe", req: "10W, 10S" }, { name: "Wood Wall", code: "WoodWall", req: "20 Wood" }, { name: "Torch", code: "Torch", req: "2 Wood" }];
         let y = 40; const btnW = 260; const x = (w - btnW) / 2;
         for (const r of recipes) {
             ctx.fillStyle = "#444"; ctx.fillRect(x, y, btnW, 45);
@@ -125,9 +101,21 @@ export class UIManager {
         }
     }
 
+    drawProfile(ctx: CanvasRenderingContext2D, player: Player, w: number, h: number) {
+        ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "24px sans-serif";
+        ctx.fillText("Player Profile", w / 2, 40);
+        ctx.font = "18px sans-serif";
+        ctx.fillText(`Current Name: ${player.username}`, w / 2, 100);
+        const btnW = 200; const btnH = 40; const btnX = (w - btnW) / 2;
+        ctx.fillStyle = "#44a"; ctx.fillRect(btnX, 140, btnW, btnH);
+        ctx.fillStyle = "white"; ctx.fillText("Change Name", w / 2, 165);
+        ctx.font = "12px sans-serif"; ctx.fillStyle = "#aaa";
+        ctx.fillText("(Click to enter a random test name)", w / 2, 200);
+    }
+
     drawGuidebook(ctx: CanvasRenderingContext2D, w: number, h: number) {
         ctx.fillStyle = "white"; ctx.textAlign = "left"; ctx.font = "14px sans-serif";
-        const lines = ["GUIDE", "WASD: Move", "LeftClick: Attack", "RightClick: Build", "1-9: Select Slot"];
+        const lines = ["GUIDE", "WASD: Move", "LeftClick: Attack", "RightClick: Build/Eat", "1-9: Select Slot"];
         let y = 40; for (const l of lines) { ctx.fillText(l, 20, y); y += 25; }
     }
 
@@ -141,20 +129,14 @@ export class UIManager {
             const item = player.inventory.slots[i];
             if (item) this.drawItem(ctx, item, x, startY, slotSize);
         }
-
-        // Selected Item Name
         const activeItem = player.inventory.slots[player.active_slot];
         if (activeItem) {
-            ctx.fillStyle = "white";
-            ctx.font = "bold 16px sans-serif";
-            ctx.textAlign = "center";
+            ctx.fillStyle = "white"; ctx.font = "bold 16px sans-serif"; ctx.textAlign = "center";
             ctx.fillText(this.getItemName(activeItem.kind), w / 2, startY - 20);
         }
     }
 
-    getItemName(kind: string): string {
-        return kind.replace(/([A-Z])/g, ' $1').trim();
-    }
+    getItemName(kind: string): string { return kind.replace(/([A-Z])/g, ' $1').trim(); }
 
     drawItem(ctx: CanvasRenderingContext2D, item: Item, x: number, y: number, size: number) {
         ctx.fillStyle = this.getItemColor(item.kind); ctx.beginPath(); ctx.arc(x + size/2, y + size/2, size/3, 0, Math.PI*2); ctx.fill();
@@ -182,15 +164,9 @@ export class UIManager {
         if (input.isPointerDown) {
             const mx = input.mouseX; const my = input.mouseY;
             if (this.state === AppState.StartScreen) {
-                if (this.hitTest(mx, my, (w - 200) / 2, h / 2, 200, 60)) { 
-                    console.log("Start button clicked");
-                    this.joinRequest = true; input.isPointerDown = false; 
-                }
+                if (this.hitTest(mx, my, (w - 200) / 2, h / 2, 200, 60)) { this.joinRequest = true; input.isPointerDown = false; }
             } else if (this.state === AppState.GameOver) {
-                if (this.hitTest(mx, my, (w - 300) / 2, h / 2, 300, 80)) { 
-                    console.log("Respawn button clicked");
-                    this.respawnRequest = true; input.isPointerDown = false; 
-                }
+                if (this.hitTest(mx, my, (w - 300) / 2, h / 2, 300, 80)) { this.respawnRequest = true; input.isPointerDown = false; }
             } else if (this.state === AppState.InGame) {
                 if (this.isMenuOpen) {
                     const margin = 40; const panelX = margin; const panelY = margin; const panelW = w - margin * 2;
@@ -202,6 +178,12 @@ export class UIManager {
                         for (const code of recipes) {
                             if (this.hitTest(mx, my, panelX + (panelW - 260)/2, rY, 260, 45)) { this.craftRequest = code; input.isPointerDown = false; }
                             rY += 55;
+                        }
+                    } else if (this.activeTab === MenuTab.Profile) {
+                        if (this.hitTest(mx, my, panelX + (panelW - 200)/2, panelY + 50 + 140, 200, 40)) {
+                            const newName = prompt("Enter new name:", "Survivor");
+                            if (newName) this.nameUpdateRequest = newName;
+                            input.isPointerDown = false;
                         }
                     }
                 } else {

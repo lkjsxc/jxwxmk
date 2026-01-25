@@ -1,35 +1,27 @@
 use crate::game::entities::player::Player;
+use crate::game::config::MechanicsConfig;
 
 pub struct SurvivalSystem;
 
 impl SurvivalSystem {
-    pub fn tick(player: &mut Player) {
-        // Constants (derived from docs)
-        const HUNGER_DECAY: f64 = 0.1 / 20.0; // 0.1 per sec (was 0.5)
-        const HEAL_RATE: f64 = 1.0 / 20.0;
-        const STARVE_DMG: f64 = 5.0 / 20.0;
-        const FREEZE_DMG: f64 = 2.0 / 20.0;
-        const AMBIENT_TEMP: f64 = 20.0; // Assume global for now
+    pub fn tick(player: &mut Player, cfg: &MechanicsConfig) {
+        let hunger_decay = cfg.hunger_decay / 20.0;
+        let heal_rate = cfg.heal_rate / 20.0;
+        let starve_dmg = cfg.starve_dmg / 20.0;
+        let freeze_dmg = cfg.freeze_dmg / 20.0;
 
         // Hunger
-        player.hunger -= HUNGER_DECAY;
+        player.hunger -= hunger_decay;
         if player.hunger < 0.0 {
             player.hunger = 0.0;
-            player.health -= STARVE_DMG;
+            player.health -= starve_dmg;
         } else if player.hunger > 90.0 && player.health < 100.0 {
-            player.health += HEAL_RATE;
+            player.health += heal_rate;
         }
 
-        // Temperature (Simplified linear approach)
-        // Move internal temp towards ambient
-        let diff = AMBIENT_TEMP - player.cold; // player.cold is actually 'Temp' in docs (0-100)
-        // Wait, docs say "0 is Freezing, 100 is Overheat".
-        // Let's assume ambient is effectively mapped to this 0-100 scale.
-        // Let's say 50 is neutral (20C). 0 is -20C. 100 is 60C.
-        // Ambient 50.
+        // Temperature
         let target_temp = 50.0; 
-        
-        let change_rate = 1.0 / 20.0;
+        let change_rate = cfg.cold_decay / 20.0;
         if player.cold < target_temp {
             player.cold += change_rate;
         } else {
@@ -38,10 +30,9 @@ impl SurvivalSystem {
 
         // Freeze Check
         if player.cold <= 0.0 {
-            player.health -= FREEZE_DMG;
+            player.health -= freeze_dmg;
         }
 
-        // Cap Health
         player.health = player.health.clamp(0.0, 100.0);
     }
 }

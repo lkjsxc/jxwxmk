@@ -11,21 +11,29 @@ pub struct ServerConfig {
 pub struct GameConfig {
     pub world_width: f64,
     pub world_height: f64,
+    pub interact_range: f64,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct MechanicsConfig {
+    pub hunger_decay: f64,
+    pub cold_decay: f64,
+    pub heal_rate: f64,
+    pub starve_dmg: f64,
+    pub freeze_dmg: f64,
+    pub food_value: f64,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct AppConfig {
     pub server: ServerConfig,
     pub game: GameConfig,
+    pub mechanics: MechanicsConfig,
 }
 
 impl AppConfig {
     pub fn load() -> Self {
-        let content = fs::read_to_string("config.json").unwrap_or_else(|_| "{
-            \"server\": {\"port\": 8080, \"tick_rate\": 20},
-            \"game\": {\"world_width\": 2000, \"world_height\": 2000}
-        }".to_string());
-        
+        let content = fs::read_to_string("config.json").expect("config.json missing");
         serde_json::from_str(&content).expect("Failed to parse config")
     }
 }

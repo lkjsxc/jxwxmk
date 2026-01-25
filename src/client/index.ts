@@ -72,6 +72,7 @@ function loop() {
         const alpha = Math.min(1.0, (now - lastUpdateAt) / 50); 
         renderer.render(world, prevWorld, alpha, input, myId, ui);
         
+        // Handle Requests
         if (ws && ws.readyState === WebSocket.OPEN) {
             if (ui.craftRequest) {
                 ws.send(JSON.stringify({ craft: ui.craftRequest }));
@@ -80,6 +81,10 @@ function loop() {
             if (ui.slotSelectRequest !== null) {
                 ws.send(JSON.stringify({ slot: ui.slotSelectRequest }));
                 ui.slotSelectRequest = null;
+            }
+            if (ui.nameUpdateRequest) {
+                ws.send(JSON.stringify({ name: ui.nameUpdateRequest }));
+                ui.nameUpdateRequest = null;
             }
         }
     }

@@ -9,3 +9,8 @@ Survival is the primary pressure on the player.
 - **Health (HP)**: 0-100.
 - **Hunger**: 0-100.
 - **Temperature**: 0-100.
+
+## Consumption
+- **Eating**: Players can consume food items (Berry, Meat, Cooked Meat) from their active hotbar slot.
+- **Input**: Triggered by the [B] Button (Interact) when a food item is held.
+- **Effect**: Increases Hunger by a configured amount. Excess hunger does not overflow 100.
