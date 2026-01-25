@@ -16,7 +16,15 @@ export class Renderer {
         window.addEventListener('resize', () => this.resize());
     }
 
-    resize() { this.canvas.width = window.innerWidth; this.canvas.height = window.innerHeight; this.camera.resize(); }
+    resize() { 
+        const dpr = window.devicePixelRatio || 1;
+        this.canvas.width = window.innerWidth * dpr; 
+        this.canvas.height = window.innerHeight * dpr; 
+        this.canvas.style.width = `${window.innerWidth}px`;
+        this.canvas.style.height = `${window.innerHeight}px`;
+        this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        this.camera.resize(); 
+    }
 
     render(world: World | null, prevWorld: World | null, alpha: number, input: InputManager, myId: string | null, ui: UIManager) {
         const zoomDelta = input.getZoomDelta();

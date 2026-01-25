@@ -18,5 +18,5 @@ export function getScale(id: string, world: World | null, prevWorld: World | nul
     if (!curr.lastHitAt) return 1.0;
     const elapsed = Date.now() - curr.lastHitAt;
     if (elapsed > 250) return 1.0;
-    return 1.0 + Math.sin((elapsed / 250) * Math.PI) * 0.2;
+    return 1.0 + Math.sin((elapsed / 250) * Math.PI) * 0.4;
 }

@@ -87,6 +87,7 @@ pub struct Player {
     pub stats: PlayerStats,
     pub achievements: HashSet<String>, // Using String for ID simplicity in JSON
     pub stat_bonuses: HashMap<String, f32>, // e.g. "speed" -> 1.05
+    pub spawned: bool,
 }
 
 impl Player {
@@ -107,6 +108,7 @@ impl Player {
             stats: PlayerStats::default(),
             achievements: HashSet::new(),
             stat_bonuses: HashMap::new(),
+            spawned: false,
         }
     }
 }

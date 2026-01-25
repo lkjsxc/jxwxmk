@@ -9,11 +9,11 @@ const RECIPES = [
     { name: "Door", code: "Door", req: { "Wood": 15 } }
 ];
 
-export function drawCrafting(ctx: CanvasRenderingContext2D, player: Player, selectedRecipe: string | null, w: number, h: number, ui: any) {
+export function drawCrafting(ctx: CanvasRenderingContext2D, player: Player, selectedRecipe: string | null, w: number, h: number, ui: any, scrollY: number) {
     const listW = w * 0.4;
     
     // List
-    let y = 40;
+    let y = 40 - scrollY;
     for (const r of RECIPES) {
         const isSelected = selectedRecipe === r.code;
         if (isSelected) { ctx.fillStyle = "#444"; ctx.fillRect(10, y - 5, listW - 20, 40); }
@@ -22,8 +22,9 @@ export function drawCrafting(ctx: CanvasRenderingContext2D, player: Player, sele
         y += 45;
     }
 
-    // Details
+    // Details (Right side, fixed)
     if (selectedRecipe) {
+        // ... (details logic unchanged, it's on the right side)
         const r = RECIPES.find(x => x.code === selectedRecipe);
         if (r) {
             const dx = listW + 20; let dy = 50;
@@ -59,9 +60,9 @@ function countItem(p: Player, kind: string): number {
     return c;
 }
 
-export function handleCraftInput(mx: number, my: number, w: number, h: number, player: Player, selectedRecipe: string | null): { select?: string, craft?: boolean } {
+export function handleCraftInput(mx: number, my: number, w: number, h: number, player: Player, selectedRecipe: string | null, scrollY: number): { select?: string, craft?: boolean } {
     const listW = w * 0.4;
-    let y = 40;
+    let y = 40 - scrollY;
     for (const r of RECIPES) {
         if (mx >= 10 && mx <= listW - 10 && my >= y - 5 && my < y + 35) {
             return { select: r.code };
@@ -73,10 +74,8 @@ export function handleCraftInput(mx: number, my: number, w: number, h: number, p
         const r = RECIPES.find(x => x.code === selectedRecipe);
         if (r) {
             const dx = listW + 20;
-            // Recalculate dy based on reqs
             let dy = 50 + 40 + 25 + Object.keys(r.req).length * 25 + 20;
             if (mx >= dx && mx <= dx + 120 && my >= dy && my <= dy + 40) {
-                 // Check reqs again? Server validates anyway.
                  return { craft: true };
             }
         }

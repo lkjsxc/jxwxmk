@@ -10,6 +10,7 @@ use crate::game::entities::structure::{Structure, StructureType};
 use crate::game::systems::survival::SurvivalSystem;
 use crate::game::systems::crafting::CraftingSystem;
 use crate::game::systems::achievements::{AchievementSystem, Achievement};
+use crate::game::systems::interaction::InteractionSystem;
 use crate::game::config::AppConfig;
 use serde::Serialize;
 use rand::Rng;
@@ -28,6 +29,7 @@ pub enum ServerMessage {
 #[derive(Message)] #[rtype(result = "()")] pub struct SelectSlot { pub id: Uuid, pub slot: usize }
 #[derive(Message)] #[rtype(result = "()")] pub struct UpdateName { pub id: Uuid, pub name: String }
 #[derive(Message)] #[rtype(result = "()")] pub struct SwapSlots { pub id: Uuid, pub from: usize, pub to: usize }
+#[derive(Message)] #[rtype(result = "()")] pub struct Spawn { pub id: Uuid }
 
 pub struct GameEngine { world: World, sessions: HashMap<Uuid, Recipient<ServerMessage>>, config: AppConfig }
 
@@ -56,7 +58,6 @@ impl GameEngine {
     fn spawn_initial_entities(&mut self) {
         let mut rng = rand::thread_rng();
         let area = self.world.width * self.world.height;
-        // Density is per 10000 sq units (100x100 area)
         let unit_area = 10000.0;
         
         let resource_count = (area / unit_area * self.config.spawning.resource_density) as usize;
@@ -71,22 +72,27 @@ impl GameEngine {
             let x = rng.gen_range(0.0..self.world.width); let y = rng.gen_range(0.0..self.world.height);
             let m_type = match rng.gen_range(0..10) { 0..=5 => MobType::Rabbit, 6..=8 => MobType::Wolf, _ => MobType::Bear };
             let mut mob = Mob::new(m_type, x, y); 
-            // Calculate Mob Level based on distance from center
             let cx = self.world.width / 2.0; let cy = self.world.height / 2.0;
             let dist = ((x - cx).powi(2) + (y - cy).powi(2)).sqrt();
             let level = 1 + (dist * self.config.leveling.mob_level_factor) as u32;
             mob.level = level;
-            mob.health *= 1.0 + (level as f64 * 0.2); // 20% HP per level
+            mob.health *= 1.0 + (level as f64 * 0.2); 
             self.world.mobs.insert(mob.id, mob);
         }
     }
     
     fn tick_world(&mut self) {
         let mut dead_p = Vec::new();
-        for (id, p) in self.world.players.iter_mut() { SurvivalSystem::tick(p, &self.config.mechanics); if p.health <= 0.0 { dead_p.push(*id); } }
+        for (id, p) in self.world.players.iter_mut() { 
+            if !p.spawned { continue; }
+            SurvivalSystem::tick(p, &self.config.mechanics); 
+            if p.health <= 0.0 { dead_p.push(*id); } 
+        }
         for id in dead_p { 
-            if let Some(p) = self.world.players.get_mut(&id) { p.stats.deaths += 1; } // Keep stats? No, player removed. Need persistence.
-            self.world.players.remove(&id); 
+            if let Some(p) = self.world.players.get_mut(&id) { 
+                p.stats.deaths += 1; 
+                p.spawned = false; 
+            }
         }
 
         let mut rng = rand::thread_rng();
@@ -98,9 +104,11 @@ impl GameEngine {
             } else {
                 let mut target = None; let mut min_dist = 300.0;
                 for pid in &player_ids {
-                    let p = &self.world.players[pid];
-                    let d = Math::dist(mob.x, mob.y, p.x, p.y);
-                    if d < min_dist { min_dist = d; target = Some(p); }
+                    if let Some(p) = self.world.players.get(pid) {
+                        if !p.spawned { continue; }
+                        let d = Math::dist(mob.x, mob.y, p.x, p.y);
+                        if d < min_dist { min_dist = d; target = Some(p); }
+                    }
                 }
                 if let Some(t) = target {
                     let dx = t.x - mob.x; let dy = t.y - mob.y;
@@ -108,11 +116,12 @@ impl GameEngine {
                 }
             }
         }
-        // Mob damage
+        
         let mut dmg_to_apply = Vec::new();
         for mob in self.world.mobs.values() {
             if mob.m_type == MobType::Rabbit { continue; }
             for (pid, p) in self.world.players.iter() {
+                if !p.spawned { continue; }
                 if Math::dist(mob.x, mob.y, p.x, p.y) < 30.0 {
                     let base_dmg = match mob.m_type { MobType::Wolf => 0.5, MobType::Bear => 1.5, _ => 0.0 };
                     let level_mult = 1.0 + (mob.level as f64 * 0.1);
@@ -123,7 +132,7 @@ impl GameEngine {
         for (pid, d) in dmg_to_apply { 
             if let Some(p) = self.world.players.get_mut(&pid) { 
                 p.health -= d; p.stats.damage_taken += d; 
-                if p.health <= 0.0 { p.stats.deaths += 1; } // Check ach before death?
+                if p.health <= 0.0 { p.spawned = false; p.stats.deaths += 1; }
             }
             self.check_achievements(pid);
         }
@@ -139,12 +148,27 @@ impl Handler<Join> for GameEngine {
     type Result = Option<(String, Uuid)>;
     fn handle(&mut self, msg: Join, _: &mut Context<Self>) -> Self::Result {
         if let Some(token) = msg.token { if let Some(player) = self.world.players.values_mut().find(|p| p.token == token) { let player_id = player.id; self.sessions.insert(player_id, msg.addr); return Some((token, player_id)); } }
-        let mut rng = rand::thread_rng();
-        let (cx, cy, r) = (self.world.width / 2.0, self.world.height / 2.0, self.config.game.spawn_radius);
-        let angle = rng.gen_range(0.0..std::f64::consts::TAU); let dist = rng.gen_range(0.0..r);
-        let (sx, sy) = (cx + angle.cos() * dist, cy + angle.sin() * dist);
-        let token = Uuid::new_v4().to_string(); self.sessions.insert(msg.id, msg.addr);
-        let player = Player::new(msg.id, token.clone(), "Guest".to_string(), sx, sy); self.world.players.insert(msg.id, player); Some((token, msg.id))
+        let token = Uuid::new_v4().to_string(); 
+        self.sessions.insert(msg.id, msg.addr);
+        let player = Player::new(msg.id, token.clone(), "Guest".to_string(), 0.0, 0.0);
+        self.world.players.insert(msg.id, player); 
+        Some((token, msg.id))
+    }
+}
+
+impl Handler<Spawn> for GameEngine {
+    type Result = ();
+    fn handle(&mut self, msg: Spawn, _: &mut Context<Self>) {
+        if let Some(player) = self.world.players.get_mut(&msg.id) {
+            let mut rng = rand::thread_rng();
+            let (cx, cy, r) = (self.world.width / 2.0, self.world.height / 2.0, self.config.game.spawn_radius);
+            let angle = rng.gen_range(0.0..std::f64::consts::TAU); let dist = rng.gen_range(0.0..r);
+            player.x = cx + angle.cos() * dist;
+            player.y = cy + angle.sin() * dist;
+            player.health = 100.0;
+            player.hunger = 100.0;
+            player.spawned = true;
+        }
     }
 }
 
@@ -163,22 +187,15 @@ impl Handler<SelectSlot> for GameEngine { type Result = (); fn handle(&mut self,
 impl Handler<UpdateName> for GameEngine { type Result = (); fn handle(&mut self, msg: UpdateName, _: &mut Context<Self>) { if let Some(p) = self.world.players.get_mut(&msg.id) { let mut n = msg.name.trim().to_string(); if n.is_empty() { n = "Guest".to_string(); } if n.len() > 12 { n.truncate(12); } p.username = n; } } }
 impl Handler<SwapSlots> for GameEngine { type Result = (); fn handle(&mut self, msg: SwapSlots, _: &mut Context<Self>) { if let Some(p) = self.world.players.get_mut(&msg.id) { if msg.from < p.inventory.slots.len() && msg.to < p.inventory.slots.len() { p.inventory.slots.swap(msg.from, msg.to); } } } }
 
-use crate::game::systems::interaction::InteractionSystem;
-
-// ... (existing imports)
-
 impl Handler<Input> for GameEngine {
     type Result = ();
     fn handle(&mut self, msg: Input, _: &mut Context<Self>) {
-        // Movement
+        if let Some(p) = self.world.players.get(&msg.id) { if !p.spawned { return; } } else { return; }
         InteractionSystem::handle_movement(&mut self.world, msg.id, msg.dx, msg.dy);
-
-        // Attack / Interact
         if msg.attack {
             let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_millis() as u64;
             InteractionSystem::handle_attack(&mut self.world, &self.config, msg.id, now);
         }
-        
         self.check_achievements(msg.id);
     }
 }

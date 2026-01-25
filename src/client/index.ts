@@ -56,7 +56,11 @@ function loop() {
     renderer.render(world, prevWorld, alpha, input, myId, ui);
 
     if (ui.state === AppState.StartScreen) {
-        if (ui.joinRequest) { ui.state = AppState.InGame; ui.joinRequest = false; }
+        if (ui.joinRequest) { 
+            if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ spawn: true }));
+            ui.state = AppState.InGame; 
+            ui.joinRequest = false; 
+        }
     } else if (ui.state === AppState.GameOver) {
         if (ui.respawnRequest) {
             ui.respawnRequest = false; if (ws) { ws.close(); ws = null; }

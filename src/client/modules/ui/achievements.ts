@@ -1,12 +1,12 @@
 import { Achievement, Player } from "../../types";
 
-export function drawAchievements(ctx: CanvasRenderingContext2D, player: Player, allAchievements: Achievement[], selectedAchId: string | null, w: number, h: number) {
+export function drawAchievements(ctx: CanvasRenderingContext2D, player: Player, allAchievements: Achievement[], selectedAchId: string | null, w: number, h: number, scrollY: number) {
     const listW = w / 2;
     // List
     ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "20px sans-serif";
     ctx.fillText("Achievements", listW / 2, 30);
     
-    let y = 60;
+    let y = 60 - scrollY;
     const unlockedSet = new Set(player.achievements);
     
     for (const ach of allAchievements) {
@@ -21,7 +21,7 @@ export function drawAchievements(ctx: CanvasRenderingContext2D, player: Player, 
         y += 35;
     }
 
-    // Details
+    // Details (Right side, fixed)
     if (selectedAchId) {
         const ach = allAchievements.find(a => a.id === selectedAchId);
         if (ach) {
@@ -41,9 +41,9 @@ export function drawAchievements(ctx: CanvasRenderingContext2D, player: Player, 
     }
 }
 
-export function handleAchInput(mx: number, my: number, w: number, h: number, allAchievements: Achievement[]): string | null {
+export function handleAchInput(mx: number, my: number, w: number, h: number, allAchievements: Achievement[], scrollY: number): string | null {
     const listW = w / 2;
-    let y = 60;
+    let y = 60 - scrollY;
     for (const ach of allAchievements) {
         if (mx >= 10 && mx <= listW - 10 && my >= y - 20 && my <= y + 10) {
             return ach.id;

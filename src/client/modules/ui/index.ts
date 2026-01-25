@@ -39,6 +39,7 @@ export class UIManager {
     private toast: Toast | null = null;
     private selectedAchId: string | null = null;
     private selectedRecipe: string | null = null;
+    scrollY: number = 0;
 
     showAchievement(ach: Achievement) { this.toast = { ach, start: Date.now() }; }
 
@@ -58,7 +59,6 @@ export class UIManager {
     }
 
     drawHUD(ctx: CanvasRenderingContext2D, w: number) {
-        // Hamburger Menu
         const x = w - 60, y = 20, s = 50;
         ctx.fillStyle = this.isMenuOpen ? "rgba(74,164,74,0.6)" : "rgba(68,68,68,0.6)";
         ctx.fillRect(x, y, s, s); ctx.strokeStyle = "#fff"; ctx.strokeRect(x, y, s, s);
@@ -80,11 +80,13 @@ export class UIManager {
         }
         
         ctx.save(); ctx.translate(px, py + 50);
+        ctx.beginPath(); ctx.rect(0, 0, pw, ph - 50); ctx.clip();
+
         if (this.activeTab === MenuTab.Inventory) drawInventory(ctx, player, pw, ph - 50, this.drag, this);
-        else if (this.activeTab === MenuTab.Crafting) drawCrafting(ctx, player, this.selectedRecipe, pw, ph - 50, this);
+        else if (this.activeTab === MenuTab.Crafting) drawCrafting(ctx, player, this.selectedRecipe, pw, ph - 50, this, this.scrollY);
         else if (this.activeTab === MenuTab.Profile) drawProfile(ctx, player, pw, ph - 50, this.nameBuffer, this.isNameFocused, this);
-        else if (this.activeTab === MenuTab.Guidebook) { ctx.fillStyle="white"; ctx.textAlign="left"; let gy=40; for(const l of ["WASD: Move","LeftClick/Space: Attack/Use","RightClick/Shift: Interact","1-7: Slot"]){ctx.fillText(l,20,gy);gy+=25;} }
-        else if (this.activeTab === MenuTab.Achievements) drawAchievements(ctx, player, ALL_ACHIEVEMENTS, this.selectedAchId, pw, ph - 50);
+        else if (this.activeTab === MenuTab.Guidebook) { ctx.fillStyle="white"; ctx.textAlign="left"; let gy=40 - this.scrollY; for(const l of ["WASD: Move","LeftClick/Space: Attack/Use","RightClick/Shift: Interact","1-7: Slot"]){ctx.fillText(l,20,gy);gy+=25;} }
+        else if (this.activeTab === MenuTab.Achievements) drawAchievements(ctx, player, ALL_ACHIEVEMENTS, this.selectedAchId, pw, ph - 50, this.scrollY);
         ctx.restore();
     }
 
@@ -108,6 +110,11 @@ export class UIManager {
             ctx.strokeStyle = "#fff"; ctx.strokeRect(x, sy, ss, ss);
             const item = p.inventory.slots[i]; if (item && (!this.drag || this.drag.fromIndex !== i)) this.drawItem(ctx, item, x, sy, ss);
         }
+        const active = p.inventory.slots[p.active_slot];
+        if (active) {
+             ctx.fillStyle = "white"; ctx.font = "bold 16px sans-serif"; ctx.textAlign = "center";
+             ctx.fillText(active.kind, w / 2, sy - 10);
+        }
     }
 
     drawItem(ctx: CanvasRenderingContext2D, item: Item, x: number, y: number, s: number) {
@@ -115,7 +122,7 @@ export class UIManager {
         ctx.beginPath(); ctx.arc(x + s / 2, y + s / 2, s / 3, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = "white"; ctx.font = "12px sans-serif"; ctx.textAlign = "right"; ctx.fillText(item.amount.toString(), x + s - 4, y + s - 4);
         if (item.level && item.level > 1) {
-            ctx.fillStyle = "#fb4"; ctx.textAlign = "left"; ctx.fillText(`L${item.level}`, x + 4, y + s - 4);
+            ctx.fillStyle = "#fb4"; ctx.textAlign = "left"; ctx.fillText(`Lv.${item.level}`, x + 4, y + s - 4);
         }
     }
 
@@ -132,6 +139,11 @@ export class UIManager {
             else if (k && k.length === 1) this.nameBuffer += k;
         } else input.keyQueue = [];
 
+        if (this.isMenuOpen) {
+            const d = input.getZoomDelta();
+            if (d !== 0) { this.scrollY = Math.max(0, this.scrollY + d * 500); }
+        }
+
         if (input.isPointerDown) {
             const mx = input.mouseX; const my = input.mouseY;
             if (this.state === AppState.StartScreen && this.hit(mx, my, (w - 200) / 2, h / 2, 200, 60)) { this.joinRequest = true; }
@@ -140,7 +152,7 @@ export class UIManager {
                 if (this.isMenuOpen) {
                     const m = 20; const px = m; const py = m; const pw = w - m * 2; const ph = h - m * 2;
                     if (this.hit(mx, my, px + pw - 40, py + 10, 30, 30)) this.isMenuOpen = false;
-                    else if (this.hit(mx, my, px, py, pw, 50)) this.activeTab = Math.floor((mx - px) / (pw / 5));
+                    else if (this.hit(mx, my, px, py, pw, 50)) { this.activeTab = Math.floor((mx - px) / (pw / 5)); this.scrollY = 0; }
                     else {
                         const contentX = mx - px; const contentY = my - (py + 50);
                         if (contentX >= 0 && contentY >= 0 && contentX <= pw && contentY <= ph - 50) {
@@ -148,7 +160,7 @@ export class UIManager {
                                 const res = handleInvInput(contentX, contentY, pw, ph - 50, p, this);
                                 if (res) this.drag = res;
                             } else if (this.activeTab === MenuTab.Crafting && p) {
-                                const res = handleCraftInput(contentX, contentY, pw, ph - 50, p, this.selectedRecipe);
+                                const res = handleCraftInput(contentX, contentY, pw, ph - 50, p, this.selectedRecipe, this.scrollY);
                                 if (res.select) this.selectedRecipe = res.select;
                                 if (res.craft) this.craftRequest = this.selectedRecipe;
                             } else if (this.activeTab === MenuTab.Profile && p) {
@@ -157,7 +169,7 @@ export class UIManager {
                                 else if (res.update) { this.nameUpdateRequest = this.nameBuffer; this.isNameFocused = false; }
                                 else this.isNameFocused = false;
                             } else if (this.activeTab === MenuTab.Achievements) {
-                                const res = handleAchInput(contentX, contentY, pw, ph - 50, ALL_ACHIEVEMENTS);
+                                const res = handleAchInput(contentX, contentY, pw, ph - 50, ALL_ACHIEVEMENTS, this.scrollY);
                                 if (res) this.selectedAchId = res;
                             }
                         }
@@ -170,20 +182,22 @@ export class UIManager {
                     if (this.hit(mx, my, sx, sy, slots * (ss + pad), ss)) {
                         const idx = Math.floor((mx - sx) / (ss + pad));
                         if (idx >= 0 && idx < 7) { this.slotSelectRequest = idx; }
-                        // Prevent hotbar click from triggering attack (handled in input manager if isPointerDown is consumed)
                     }
                 }
             }
             input.isPointerDown = false; // Consume click
         }
         if (this.drag && !input.isPointerDown && p) {
-            // Drop logic
-            // ... (Simple swap logic mostly handled in renderer/input loop by drag state check, but we need final swap)
              const mx = input.mouseX; const my = input.mouseY;
-             // Calculate target slot... simplified:
-             // If over inv, swap. 
-             // Ideally reusing getInvLayout. But for brevity, I'll assume we trust the drag visual.
-             // (Full drag drop implementation omitted to keep 200 lines, but swapRequest is available)
+             const m = 20; const px = m; const py = m; const pw = w - m * 2; const ph = h - m * 2;
+             if (this.activeTab === MenuTab.Inventory && this.hit(mx, my, px, py + 50, pw, ph - 50)) {
+                 // Simple drop (swap) if released over inventory
+                 // Re-use handleInvInput to find slot
+                 const res = handleInvInput(mx - px, my - (py+50), pw, ph - 50, p, this);
+                 if (res && res.fromIndex !== this.drag.fromIndex) {
+                     this.swapRequest = [this.drag.fromIndex, res.fromIndex];
+                 }
+             }
             this.drag = null;
         }
     }

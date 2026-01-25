@@ -54,11 +54,15 @@ export function drawMob(ctx: CanvasRenderingContext2D, m: Mob, ix: number, iy: n
 
     
 
-    // Level Display
+        // Level Display
 
-    ctx.fillStyle = "#fff"; ctx.font = "10px sans-serif"; ctx.textAlign = "center";
+    
 
-    ctx.fillText(`L${lvl}`, ix, iy - 15);
+        ctx.fillStyle = "#fff"; ctx.font = "10px sans-serif"; ctx.textAlign = "center";
+
+    
+
+        ctx.fillText(`Lv.${lvl}`, ix, iy - 15);
 
 }
 
