@@ -129,14 +129,29 @@ export class UIManager {
             const item = player.inventory.slots[i];
             if (item) this.drawItem(ctx, item, x, startY, slotSize);
         }
+
+        // Selected Item Name & Action Hint
         const activeItem = player.inventory.slots[player.active_slot];
         if (activeItem) {
-            ctx.fillStyle = "white"; ctx.font = "bold 16px sans-serif"; ctx.textAlign = "center";
-            ctx.fillText(this.getItemName(activeItem.kind), w / 2, startY - 20);
+            const name = this.getItemName(activeItem.kind);
+            const action = this.getItemAction(activeItem.kind);
+            
+            ctx.fillStyle = "white";
+            ctx.font = "bold 16px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(`${name} ${action}`, w / 2, startY - 20);
         }
     }
 
-    getItemName(kind: string): string { return kind.replace(/([A-Z])/g, ' $1').trim(); }
+    getItemName(kind: string): string {
+        return kind.replace(/([A-Z])/g, ' $1').trim();
+    }
+
+    getItemAction(kind: string): string {
+        if (["Berry", "Meat", "CookedMeat"].includes(kind)) return "[A] Eat";
+        if (["WoodWall", "Door", "Torch", "Workbench"].includes(kind)) return "[A] Place";
+        return "[A] Use";
+    }
 
     drawItem(ctx: CanvasRenderingContext2D, item: Item, x: number, y: number, size: number) {
         ctx.fillStyle = this.getItemColor(item.kind); ctx.beginPath(); ctx.arc(x + size/2, y + size/2, size/3, 0, Math.PI*2); ctx.fill();

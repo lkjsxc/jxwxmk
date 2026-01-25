@@ -116,7 +116,7 @@ export class Renderer {
         const dist = me ? Math.hypot(me.x - r.x, me.y - r.y) : 1000;
         if (dist < 60) {
             this.drawOutline(r.x, r.y, 22, "yellow");
-            this.drawInteractionTooltip(r.x, r.y, r.r_type, "[A] Gather", "[B] -");
+            this.drawInteractionTooltip(r.x, r.y, r.r_type, "[A] Gather", "");
         }
 
         this.ctx.beginPath();
@@ -157,7 +157,7 @@ export class Renderer {
         const dist = me ? Math.hypot(me.x - ix, me.y - iy) : 1000;
         if (dist < 60) {
             this.drawOutline(ix, iy, 15, "red");
-            this.drawInteractionTooltip(ix, iy, m.m_type, "[A] Attack", "[B] -");
+            this.drawInteractionTooltip(ix, iy, m.m_type, "[A] Attack", "");
         }
 
         this.ctx.fillStyle = m.m_type === "Wolf" ? "#999" : m.m_type === "Bear" ? "#531" : "#fff";
@@ -171,7 +171,9 @@ export class Renderer {
         this.ctx.textAlign = "center";
         this.ctx.fillText(name, x, y - 45);
         this.ctx.font = "12px sans-serif";
-        this.ctx.fillText(`${aAction} | ${bAction}`, x, y - 30);
+        let actions = aAction;
+        if (bAction) actions += ` | ${bAction}`;
+        this.ctx.fillText(actions, x, y - 30);
     }
 
     drawPlayer(p: Player, ix: number, iy: number) {

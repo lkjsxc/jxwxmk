@@ -14,15 +14,18 @@ Since the game supports smartphones, a Virtual Joystick overlay is required.
     - Max Range = 100px.
 
 ### Right Zone (Action)
-- **A Button (Attack)**:
-    -   Large circular button (radius 40px) at bottom-right.
-    -   Hold to auto-repeat (Gather/Attack).
-- **B Button (Interact/Build)**:
-    -   Smaller button near A Button.
-    -   Used for:
+- **A Button (Action/Attack)**:
+    -   Primary interaction button.
+    -   **Contextual Actions**:
+        -   **Holding Food**: Eats the item.
+        -   **Holding Placeable**: Places the structure.
+        -   **Holding Tool/Weapon**: Gathers resources or attacks mobs.
+    -   Hold to auto-repeat.
+- **B Button (Interact)**:
+    -   Secondary interaction button.
+    -   Used for world-object interactions:
         -   Opening Doors/Chests.
-        -   Placing the currently selected building item.
-        -   Eating food (if held).
+        -   Accessing Workbenches/Furnaces.
 
 ### UI Overlay
 - **Hotbar**: Centered bottom. Tap to select item.
