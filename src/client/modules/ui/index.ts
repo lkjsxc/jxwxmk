@@ -1,4 +1,5 @@
 import { InputManager } from "../input";
+// UIManager handles UI rendering and input
 import { Player, Item, Achievement, AppState } from "../../types";
 import { drawInventory, handleInvInput } from "./inventory";
 import { drawCrafting, handleCraftInput } from "./crafting";
