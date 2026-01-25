@@ -8,9 +8,11 @@ const input = new InputManager();
 const ui = new UIManager();
 
 let world: World | null = null;
+let prevWorld: World | null = null;
+let lastUpdateAt: number = 0;
 let myId: string | null = null;
 let ws: WebSocket | null = null;
-const STORAGE_KEY = "starve_token";
+const STORAGE_KEY = "kkmypk_token";
 
 function connect() {
     const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
@@ -27,31 +29,23 @@ function connect() {
                 if (msg.token) {
                     localStorage.setItem(STORAGE_KEY, msg.token);
                 }
-                console.log("My ID:", myId);
-                // Transition to game when we have ID
                 ui.state = AppState.InGame;
             } else if (msg.type === "world") {
+                 prevWorld = world;
                  world = msg.data;
-                 // Check Death
+                 lastUpdateAt = Date.now();
+                 
                  if (ui.state === AppState.InGame && myId && world && !world.players[myId]) {
-                     alert("Game Over! You died.");
-                     localStorage.removeItem(STORAGE_KEY);
-                     location.reload(); 
+                     ui.state = AppState.GameOver;
                  }
-            } else {
-                if (msg.width) world = msg; 
             }
         } catch (e) {
             console.error("Parse error", e);
         }
     };
 
-    ws.onopen = () => {
-        console.log("Connected");
-    };
-    
+    ws.onopen = () => console.log("Connected");
     ws.onclose = () => {
-        console.log("Disconnected");
         ui.state = AppState.StartScreen;
         world = null;
         myId = null;
@@ -62,17 +56,22 @@ function loop() {
     ui.handleInput(input, renderer.canvas.width, renderer.canvas.height);
 
     if (ui.state === AppState.StartScreen) {
-        // Render Start Screen
         ui.render(renderer.ctx, null, input);
-        
         if (ui.joinRequest) {
             connect();
             ui.joinRequest = false;
         }
+    } else if (ui.state === AppState.GameOver) {
+        ui.render(renderer.ctx, null, input);
+        if (ui.respawnRequest) {
+            localStorage.removeItem(STORAGE_KEY);
+            location.reload();
+        }
     } else {
-        renderer.render(world, input, myId, ui);
+        const now = Date.now();
+        const alpha = Math.min(1.0, (now - lastUpdateAt) / 50); 
+        renderer.render(world, prevWorld, alpha, input, myId, ui);
         
-        // Handle Requests
         if (ws && ws.readyState === WebSocket.OPEN) {
             if (ui.craftRequest) {
                 ws.send(JSON.stringify({ craft: ui.craftRequest }));
@@ -84,7 +83,6 @@ function loop() {
             }
         }
     }
-
     requestAnimationFrame(loop);
 }
 

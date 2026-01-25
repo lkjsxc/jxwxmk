@@ -174,9 +174,13 @@ impl Handler<Join> for GameEngine {
         }
 
         // New Player
+        let mut rng = rand::thread_rng();
+        let spawn_x = rng.gen_range(0.0..self.world.width);
+        let spawn_y = rng.gen_range(0.0..self.world.height);
+
         let token = Uuid::new_v4().to_string();
         self.sessions.insert(msg.id, msg.addr);
-        let player = Player::new(msg.id, token.clone(), "Guest".to_string(), 100.0, 100.0);
+        let player = Player::new(msg.id, token.clone(), "Guest".to_string(), spawn_x, spawn_y);
         self.world.players.insert(msg.id, player);
         Some((token, msg.id))
     }

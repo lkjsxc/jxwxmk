@@ -1,6 +1,6 @@
 # Technical Architecture
 
-Implementation details for the Starve.io clone.
+Implementation details for **kkmypk**.
 
 ## Sections
 
