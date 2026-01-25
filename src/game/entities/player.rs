@@ -29,7 +29,7 @@ impl Player {
             y,
             health: 100.0,
             hunger: 100.0,
-            cold: 0.0,
+            cold: 50.0,
             inventory: Inventory::default(),
         }
     }

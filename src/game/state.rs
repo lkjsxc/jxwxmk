@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use uuid::Uuid;
 use serde::{Serialize, Deserialize};
-use crate::game::entities::{player::Player, resource::Resource};
+use crate::game::entities::{player::Player, resource::Resource, mob::Mob};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct World {
@@ -9,6 +9,7 @@ pub struct World {
     pub height: f64,
     pub players: HashMap<Uuid, Player>,
     pub resources: HashMap<Uuid, Resource>,
+    pub mobs: HashMap<Uuid, Mob>,
 }
 
 impl World {
@@ -18,6 +19,7 @@ impl World {
             height: 2000.0,
             players: HashMap::new(),
             resources: HashMap::new(),
+            mobs: HashMap::new(),
         }
     }
 }
