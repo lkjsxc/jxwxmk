@@ -6,7 +6,7 @@
     "watch": "esbuild index.ts --bundle --outfile=../../static/game.js --watch --target=es2020 --platform=browser"
   },
   "devDependencies": {
-    "esbuild": "^0.19.0",
+    "esbuild": "^0.19.12",
     "typescript": "^5.0.0"
   }
 }
