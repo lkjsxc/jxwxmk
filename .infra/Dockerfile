@@ -33,7 +33,7 @@ FROM debian:bookworm-slim
 WORKDIR /app
 RUN apt-get update && apt-get install -y libssl-dev ca-certificates && rm -rf /var/lib/apt/lists/*
 
-COPY --from=backend /app/target/release/starve_clone .
+COPY --from=backend /app/target/release/kkmypk .
 # Copy static files
 COPY --from=frontend /app/src/static ./static
 COPY src/client/index.html ./static/index.html
@@ -41,4 +41,4 @@ COPY src/client/styles.css ./static/styles.css
 
 ENV RUST_LOG=info
 EXPOSE 8080
-CMD ["./starve_clone"]
+CMD ["./kkmypk"]
