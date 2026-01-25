@@ -114,7 +114,10 @@ export class Renderer {
 
     drawResource(r: Resource, me: Player | null) {
         const dist = me ? Math.hypot(me.x - r.x, me.y - r.y) : 1000;
-        if (dist < 60) this.drawOutline(r.x, r.y, 22, "yellow");
+        if (dist < 60) {
+            this.drawOutline(r.x, r.y, 22, "yellow");
+            this.drawInteractionTooltip(r.x, r.y, r.r_type, "[A] Gather", "[B] -");
+        }
 
         this.ctx.beginPath();
         if (r.r_type === "Tree") this.ctx.fillStyle = "#2e2";
@@ -128,7 +131,10 @@ export class Renderer {
 
     drawStructure(s: Structure, me: Player | null) {
         const dist = me ? Math.hypot(me.x - s.x, me.y - s.y) : 1000;
-        if (dist < 60) this.drawOutline(s.x, s.y, 25, "white");
+        if (dist < 60) {
+            this.drawOutline(s.x, s.y, 25, "white");
+            this.drawInteractionTooltip(s.x, s.y, s.s_type, "[A] Attack", "[B] Use");
+        }
 
         this.ctx.save();
         this.ctx.globalAlpha = 1.0; // Force Opaque
@@ -149,11 +155,23 @@ export class Renderer {
 
     drawMob(m: Mob, ix: number, iy: number, me: Player | null) {
         const dist = me ? Math.hypot(me.x - ix, me.y - iy) : 1000;
-        if (dist < 60) this.drawOutline(ix, iy, 15, "red");
+        if (dist < 60) {
+            this.drawOutline(ix, iy, 15, "red");
+            this.drawInteractionTooltip(ix, iy, m.m_type, "[A] Attack", "[B] -");
+        }
 
         this.ctx.fillStyle = m.m_type === "Wolf" ? "#999" : m.m_type === "Bear" ? "#531" : "#fff";
         this.ctx.beginPath(); this.ctx.arc(ix, iy, 12, 0, Math.PI*2); this.ctx.fill();
         this.ctx.strokeStyle = "#000"; this.ctx.stroke();
+    }
+
+    drawInteractionTooltip(x: number, y: number, name: string, aAction: string, bAction: string) {
+        this.ctx.fillStyle = "white";
+        this.ctx.font = "bold 14px sans-serif";
+        this.ctx.textAlign = "center";
+        this.ctx.fillText(name, x, y - 45);
+        this.ctx.font = "12px sans-serif";
+        this.ctx.fillText(`${aAction} | ${bAction}`, x, y - 30);
     }
 
     drawPlayer(p: Player, ix: number, iy: number) {

@@ -56,9 +56,10 @@ export class UIManager {
         ctx.fillStyle = "white"; ctx.font = "bold 60px sans-serif"; ctx.textAlign = "center";
         ctx.fillText("YOU DIED", w / 2, h / 3);
         
-        const btnW = 200; const btnH = 60; const btnX = (w - btnW) / 2; const btnY = h / 2;
+        const btnW = 300; const btnH = 80; const btnX = (w - btnW) / 2; const btnY = h / 2;
         ctx.fillStyle = "#a44"; ctx.fillRect(btnX, btnY, btnW, btnH);
-        ctx.fillStyle = "white"; ctx.font = "24px sans-serif"; ctx.fillText("RESPAWN", w / 2, btnY + 40);
+        ctx.strokeStyle = "white"; ctx.lineWidth = 4; ctx.strokeRect(btnX, btnY, btnW, btnH);
+        ctx.fillStyle = "white"; ctx.font = "bold 32px sans-serif"; ctx.fillText("RESPAWN", w / 2, btnY + 50);
     }
 
     drawHUDButtons(ctx: CanvasRenderingContext2D, w: number) {
@@ -140,6 +141,19 @@ export class UIManager {
             const item = player.inventory.slots[i];
             if (item) this.drawItem(ctx, item, x, startY, slotSize);
         }
+
+        // Selected Item Name
+        const activeItem = player.inventory.slots[player.active_slot];
+        if (activeItem) {
+            ctx.fillStyle = "white";
+            ctx.font = "bold 16px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(this.getItemName(activeItem.kind), w / 2, startY - 20);
+        }
+    }
+
+    getItemName(kind: string): string {
+        return kind.replace(/([A-Z])/g, ' $1').trim();
     }
 
     drawItem(ctx: CanvasRenderingContext2D, item: Item, x: number, y: number, size: number) {
@@ -168,9 +182,15 @@ export class UIManager {
         if (input.isPointerDown) {
             const mx = input.mouseX; const my = input.mouseY;
             if (this.state === AppState.StartScreen) {
-                if (this.hitTest(mx, my, (w - 200) / 2, h / 2, 200, 60)) { this.joinRequest = true; input.isPointerDown = false; }
+                if (this.hitTest(mx, my, (w - 200) / 2, h / 2, 200, 60)) { 
+                    console.log("Start button clicked");
+                    this.joinRequest = true; input.isPointerDown = false; 
+                }
             } else if (this.state === AppState.GameOver) {
-                if (this.hitTest(mx, my, (w - 200) / 2, h / 2, 200, 60)) { this.respawnRequest = true; input.isPointerDown = false; }
+                if (this.hitTest(mx, my, (w - 300) / 2, h / 2, 300, 80)) { 
+                    console.log("Respawn button clicked");
+                    this.respawnRequest = true; input.isPointerDown = false; 
+                }
             } else if (this.state === AppState.InGame) {
                 if (this.isMenuOpen) {
                     const margin = 40; const panelX = margin; const panelY = margin; const panelW = w - margin * 2;

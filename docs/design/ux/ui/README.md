@@ -6,3 +6,4 @@ Visual elements for player interaction.
 - [Inventory](inventory.md)
 - [Main Menu](main_menu.md)
 - [Crafting Menu](crafting_menu.md)
+- [Tooltips](tooltips.md)

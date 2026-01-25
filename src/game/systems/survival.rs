@@ -5,7 +5,7 @@ pub struct SurvivalSystem;
 impl SurvivalSystem {
     pub fn tick(player: &mut Player) {
         // Constants (derived from docs)
-        const HUNGER_DECAY: f64 = 0.5 / 20.0; // 0.5 per sec
+        const HUNGER_DECAY: f64 = 0.1 / 20.0; // 0.1 per sec (was 0.5)
         const HEAL_RATE: f64 = 1.0 / 20.0;
         const STARVE_DMG: f64 = 5.0 / 20.0;
         const FREEZE_DMG: f64 = 2.0 / 20.0;

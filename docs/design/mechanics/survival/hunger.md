@@ -2,10 +2,10 @@
 
 ## Decay Logic
 
-- **Base Decay**: -0.5 Hunger / second.
+- **Base Decay**: -0.1 Hunger / second (Reduced for better experience).
 - **Action Penalty**: 
-    - Walking: -0.1 / sec
-    - Attacking/Gathering: -1.0 / action
+    - Walking: -0.02 / sec
+    - Attacking/Gathering: -0.2 / action
 - **Cold Penalty**: If Temperature < 20, Decay * 1.5x.
 
 ## Effects
