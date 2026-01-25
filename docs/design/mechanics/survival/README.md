@@ -3,7 +3,9 @@
 Survival is the primary pressure on the player.
 
 ## Spawning
-- **Random Location**: Players spawn at a random coordinate `(x, y)` within the world bounds (0,0 to Width,Height) to prevent camping and spread population.
+- **Location**: Players spawn randomly within a circular area at the center of the world.
+- **Center**: `(WorldWidth / 2, WorldHeight / 2)`.
+- **Radius**: Configurable via `spawn_radius` in `config.json`. This ensures new players start in a concentrated zone (e.g., a "safe" or "starting" area).
 
 ## Vitals
 - **Health (HP)**: 0-100.

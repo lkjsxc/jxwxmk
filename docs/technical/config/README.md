@@ -13,7 +13,8 @@ The `config.json` file serves as the single source of truth for game balance.
   "game": {
     "world_width": 2000,
     "world_height": 2000,
-    "interact_range": 60.0
+    "interact_range": 60.0,
+    "spawn_radius": 200.0
   },
   "mechanics": {
     "hunger_decay": 0.1,

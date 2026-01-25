@@ -94,7 +94,18 @@ impl Handler<Join> for GameEngine {
     type Result = Option<(String, Uuid)>;
     fn handle(&mut self, msg: Join, _: &mut Context<Self>) -> Self::Result {
         if let Some(token) = msg.token { if let Some(player) = self.world.players.values_mut().find(|p| p.token == token) { let player_id = player.id; self.sessions.insert(player_id, msg.addr); return Some((token, player_id)); } }
-        let mut rng = rand::thread_rng(); let spawn_x = rng.gen_range(0.0..self.world.width); let spawn_y = rng.gen_range(0.0..self.world.height);
+        let mut rng = rand::thread_rng();
+        
+        let center_x = self.world.width / 2.0;
+        let center_y = self.world.height / 2.0;
+        let radius = self.config.game.spawn_radius;
+        
+        // Random point in circle
+        let angle = rng.gen_range(0.0..std::f64::consts::TAU);
+        let dist = rng.gen_range(0.0..radius);
+        let spawn_x = center_x + angle.cos() * dist;
+        let spawn_y = center_y + angle.sin() * dist;
+
         let token = Uuid::new_v4().to_string(); self.sessions.insert(msg.id, msg.addr);
         let player = Player::new(msg.id, token.clone(), "Guest".to_string(), spawn_x, spawn_y); self.world.players.insert(msg.id, player); Some((token, msg.id))
     }

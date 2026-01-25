@@ -12,6 +12,7 @@ pub struct GameConfig {
     pub world_width: f64,
     pub world_height: f64,
     pub interact_range: f64,
+    pub spawn_radius: f64,
 }
 
 #[derive(Debug, Deserialize, Clone)]
