@@ -2,7 +2,7 @@ use actix::{Actor, StreamHandler, AsyncContext, Handler, Addr, ActorContext, Run
 use actix_web::{web, HttpRequest, HttpResponse, Error};
 use actix_web_actors::ws;
 use uuid::Uuid;
-use crate::game::engine::{GameEngine, Join, Leave, Input, WorldUpdate, Craft, SelectSlot, UpdateName, SwapSlots};
+use crate::game::engine::{GameEngine, Join, Leave, Input, ServerMessage, Craft, SelectSlot, UpdateName, SwapSlots};
 use crate::game::entities::item::ItemType;
 use serde::{Serialize, Deserialize};
 
@@ -55,11 +55,19 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for GameSession {
     }
 }
 
-impl Handler<WorldUpdate> for GameSession {
+impl Handler<ServerMessage> for GameSession {
     type Result = ();
-    fn handle(&mut self, msg: WorldUpdate, ctx: &mut Self::Context) {
-        let wrapper = WorldMsg { msg_type: "world".to_string(), data: msg.0 };
-        if let Ok(json) = serde_json::to_string(&wrapper) { ctx.text(json); }
+    fn handle(&mut self, msg: ServerMessage, ctx: &mut Self::Context) {
+        match msg {
+            ServerMessage::WorldUpdate(world) => {
+                let wrapper = WorldMsg { msg_type: "world".to_string(), data: world };
+                if let Ok(json) = serde_json::to_string(&wrapper) { ctx.text(json); }
+            }
+            ServerMessage::AchievementUnlocked(ach) => {
+                let wrapper = WorldMsg { msg_type: "achievement".to_string(), data: ach };
+                if let Ok(json) = serde_json::to_string(&wrapper) { ctx.text(json); }
+            }
+        }
     }
 }
 

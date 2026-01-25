@@ -30,6 +30,8 @@ function connect() {
             } else if (msg.type === "world") {
                  prevWorld = world; world = msg.data; lastUpdateAt = Date.now();
                  if (ui.state === AppState.InGame && myId && world && !world.players[myId]) { ui.state = AppState.GameOver; }
+            } else if (msg.type === "achievement") {
+                ui.showAchievement(msg.data);
             }
         } catch (e) { console.error("Parse error", e); }
     };

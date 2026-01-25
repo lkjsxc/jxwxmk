@@ -9,6 +9,13 @@ export interface Inventory {
     capacity: number;
 }
 
+export interface Achievement {
+    id: string;
+    name: string;
+    description: string;
+    stat_bonus: [string, number];
+}
+
 export interface Player {
     id: string;
     username: string;
@@ -20,6 +27,8 @@ export interface Player {
     inventory: Inventory;
     active_slot: number;
     lastHitAt?: number;
+    achievements: string[];
+    stat_bonuses: Record<string, number>;
 }
 
 export interface Resource {

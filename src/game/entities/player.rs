@@ -1,6 +1,18 @@
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
+use std::collections::{HashSet, HashMap};
 use crate::game::entities::item::{Item, ItemType};
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct PlayerStats {
+    pub steps_taken: u32,
+    pub mobs_killed: u32,
+    pub items_crafted: u32,
+    pub resources_gathered: u32,
+    pub structures_placed: u32,
+    pub damage_taken: f64,
+    pub deaths: u32,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Inventory {
@@ -70,6 +82,9 @@ pub struct Player {
     pub active_slot: usize,
     pub last_attack_at: u64,
     pub last_interact_at: u64,
+    pub stats: PlayerStats,
+    pub achievements: HashSet<String>, // Using String for ID simplicity in JSON
+    pub stat_bonuses: HashMap<String, f32>, // e.g. "speed" -> 1.05
 }
 
 impl Player {
@@ -87,6 +102,9 @@ impl Player {
             active_slot: 0,
             last_attack_at: 0,
             last_interact_at: 0,
+            stats: PlayerStats::default(),
+            achievements: HashSet::new(),
+            stat_bonuses: HashMap::new(),
         }
     }
 }
