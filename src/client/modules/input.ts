@@ -134,8 +134,15 @@ export class InputManager {
         }
 
         const now = Date.now();
+        
+        // Exclude hotbar area from PC clicks (Hotbar is approx centered bottom, 7 slots * 60px)
+        const hotbarW = 7 * 60;
+        const hotbarX = (window.innerWidth - hotbarW) / 2;
+        const hotbarY = window.innerHeight - 70;
+        const isClickingHotbar = this.mouseX >= hotbarX && this.mouseX <= hotbarX + hotbarW && this.mouseY >= hotbarY;
+
         let attack = false;
-        if ((this.keys.attack || this.btnA.active) && now - this.lastAttackAt >= this.attackCooldown) {
+        if ((this.keys.attack || this.btnA.active) && !isClickingHotbar && now - this.lastAttackAt >= this.attackCooldown) {
             attack = true; this.lastAttackAt = now; this.btnA.pulse = 1.0;
         }
 

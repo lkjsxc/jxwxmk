@@ -19,6 +19,7 @@ export interface Player {
     cold: number;
     inventory: Inventory;
     active_slot: number;
+    lastHitAt?: number;
 }
 
 export interface Resource {
@@ -27,6 +28,7 @@ export interface Resource {
     x: number;
     y: number;
     amount: number;
+    lastHitAt?: number;
 }
 
 export interface Mob {
@@ -35,6 +37,7 @@ export interface Mob {
     x: number;
     y: number;
     health: number;
+    lastHitAt?: number;
 }
 
 export interface Structure {
@@ -44,6 +47,7 @@ export interface Structure {
     y: number;
     health: number;
     owner_id: string;
+    lastHitAt?: number;
 }
 
 export interface World {
@@ -63,4 +67,5 @@ export interface InputState {
     craft?: string;
     slot?: number;
     name?: string;
+    swapSlots?: { from: number; to: number };
 }

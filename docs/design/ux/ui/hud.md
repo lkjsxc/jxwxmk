@@ -5,15 +5,13 @@ The persistent on-screen overlay during gameplay.
 ## Elements
 
 1.  **Vitals Bars** (Top Left):
-    -   **Labels**: "HP", "HG" (Hunger), "TP" (Temp) displayed to the left of each bar.
-    -   **Visual**: Translucent backgrounds and fills (alpha ~0.6).
-    -   **Health**: Red.
-    -   **Hunger**: Orange.
-    -   **Temperature**: Blue to Red.
+    -   **Health**: Semi-transparent Red (`rgba(255, 0, 0, 0.5)`).
+    -   **Hunger**: Semi-transparent Orange (`rgba(255, 165, 0, 0.5)`).
+    -   **Temperature**: Semi-transparent Blue/Red based on state.
+    -   **Labels**: Displayed to the left ("HP", "HG", "TP").
 
-2.  **Entity HP Gauges**:
-    -   Displayed above Resources, Mobs, and Structures only when their HP is not at maximum.
-    -   Small, translucent green/red bar.
+2.  **Target Status**:
+    -   **Object HP**: When hitting a resource or structure, its name and a semi-transparent HP gauge are displayed at the top-center of the screen, "above the user's" view.
 
 3.  **Hotbar** (Bottom Center):
     -   **7 Slots** (Keys 1-7).

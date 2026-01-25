@@ -11,7 +11,24 @@
     -   **Translucency**: UI elements use semi-transparent backgrounds.
 -   **Function**: The "Active Slot" determines what item is held/used (e.g., placing a wall, eating food).
 
-## Bag (Main Inventory)
--   **Location**: Tab 1 of the **Main Menu**.
--   **Function**: Storage for items not currently needed in the Hotbar.
--   **Interaction**: Drag and drop to move items to/from the Hotbar.
+## Design (Minecraft/Terraria Feel)
+
+- **Visuals**: Dark, high-contrast grid with inset borders. Items are rendered as distinct shapes within these squares.
+
+- **Tooltip**: Hovering over a slot shows the item name and quantity in a small floating box.
+
+
+
+## Drag & Drop (D&D)
+
+- **Mechanics**:
+
+    - **Click & Drag**: Left-click an item and hold to move it. The item follows the cursor.
+
+    - **Drop**: Releasing over another slot swaps the items.
+
+    - **Split**: (Future) Right-click or modifier keys.
+
+- **Hotbar Sync**: The hotbar is the first row of the inventory. Moving items within the menu automatically updates the hotbar.
+
+- **Server Sync**: Drag-and-drop actions send a `SwapSlots(from, to)` message to the server to maintain authority.

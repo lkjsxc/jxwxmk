@@ -13,7 +13,6 @@ use crate::game::config::AppConfig;
 use serde::Serialize;
 use rand::Rng;
 
-// Messages
 #[derive(Message)] #[rtype(result = "()")] pub struct Tick;
 #[derive(Message)] #[rtype(result = "Option<(String, Uuid)>")] pub struct Join { pub id: Uuid, pub token: Option<String>, pub addr: Recipient<WorldUpdate> }
 #[derive(Message)] #[rtype(result = "()")] pub struct Leave { pub id: Uuid }
@@ -21,6 +20,7 @@ use rand::Rng;
 #[derive(Message)] #[rtype(result = "()")] pub struct Craft { pub id: Uuid, pub item: ItemType }
 #[derive(Message)] #[rtype(result = "()")] pub struct SelectSlot { pub id: Uuid, pub slot: usize }
 #[derive(Message)] #[rtype(result = "()")] pub struct UpdateName { pub id: Uuid, pub name: String }
+#[derive(Message)] #[rtype(result = "()")] pub struct SwapSlots { pub id: Uuid, pub from: usize, pub to: usize }
 #[derive(Message, Clone, Serialize)] #[rtype(result = "()")] pub struct WorldUpdate(pub World);
 
 pub struct GameEngine { world: World, sessions: HashMap<Uuid, Recipient<WorldUpdate>>, config: AppConfig }
@@ -42,13 +42,13 @@ impl GameEngine {
         }
     }
     fn tick_world(&mut self) {
-        let mut dead_players = Vec::new();
-        for (id, player) in self.world.players.iter_mut() { SurvivalSystem::tick(player, &self.config.mechanics); if player.health <= 0.0 { dead_players.push(*id); } }
-        for id in dead_players { self.world.players.remove(&id); }
+        let mut dead = Vec::new();
+        for (id, p) in self.world.players.iter_mut() { SurvivalSystem::tick(p, &self.config.mechanics); if p.health <= 0.0 { dead.push(*id); } }
+        for id in dead { self.world.players.remove(&id); }
         let mut rng = rand::thread_rng();
-        for mob in self.world.mobs.values_mut() {
+        for m in self.world.mobs.values_mut() {
             let dx = rng.gen_range(-1.0..1.0); let dy = rng.gen_range(-1.0..1.0);
-            mob.x = (mob.x + dx).clamp(0.0, self.world.width); mob.y = (mob.y + dy).clamp(0.0, self.world.height);
+            m.x = (m.x + dx).clamp(0.0, self.world.width); m.y = (m.y + dy).clamp(0.0, self.world.height);
         }
     }
 }
@@ -70,97 +70,48 @@ impl Handler<Join> for GameEngine {
 
 impl Handler<Leave> for GameEngine { type Result = (); fn handle(&mut self, msg: Leave, _: &mut Context<Self>) { self.sessions.remove(&msg.id); } }
 impl Handler<Craft> for GameEngine { type Result = (); fn handle(&mut self, msg: Craft, _: &mut Context<Self>) { if let Some(p) = self.world.players.get_mut(&msg.id) { CraftingSystem::craft(&mut p.inventory, msg.item); } } }
-impl Handler<SelectSlot> for GameEngine {
-    type Result = ();
-    fn handle(&mut self, msg: SelectSlot, _: &mut Context<Self>) {
-        if let Some(p) = self.world.players.get_mut(&msg.id) {
-            if msg.slot < 7 { p.active_slot = msg.slot; }
-        }
-    }
-}
-impl Handler<UpdateName> for GameEngine { type Result = (); fn handle(&mut self, msg: UpdateName, _: &mut Context<Self>) { if let Some(p) = self.world.players.get_mut(&msg.id) { let mut name = msg.name.trim().to_string(); if name.is_empty() { name = "Guest".to_string(); } if name.len() > 12 { name.truncate(12); } p.username = name; } } }
+impl Handler<SelectSlot> for GameEngine { type Result = (); fn handle(&mut self, msg: SelectSlot, _: &mut Context<Self>) { if let Some(p) = self.world.players.get_mut(&msg.id) { if msg.slot < 7 { p.active_slot = msg.slot; } } } }
+impl Handler<UpdateName> for GameEngine { type Result = (); fn handle(&mut self, msg: UpdateName, _: &mut Context<Self>) { if let Some(p) = self.world.players.get_mut(&msg.id) { let mut n = msg.name.trim().to_string(); if n.is_empty() { n = "Guest".to_string(); } if n.len() > 12 { n.truncate(12); } p.username = n; } } }
+impl Handler<SwapSlots> for GameEngine { type Result = (); fn handle(&mut self, msg: SwapSlots, _: &mut Context<Self>) { if let Some(p) = self.world.players.get_mut(&msg.id) { if msg.from < p.inventory.slots.len() && msg.to < p.inventory.slots.len() { p.inventory.slots.swap(msg.from, msg.to); } } } }
 
 impl Handler<Input> for GameEngine {
     type Result = ();
     fn handle(&mut self, msg: Input, _: &mut Context<Self>) {
-        let interact_range = self.config.game.interact_range;
-        let now = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_millis() as u64;
-
+        let range = self.config.game.interact_range;
+        let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_millis() as u64;
         if let Some(player) = self.world.players.get_mut(&msg.id) {
-            let speed = 5.0;
-            player.x = (player.x + msg.dx * speed).clamp(0.0, self.world.width);
-            player.y = (player.y + msg.dy * speed).clamp(0.0, self.world.height);
-            
-            if msg.attack {
-                // Cooldown check
-                if now - player.last_attack_at >= self.config.mechanics.attack_cooldown {
-                    player.last_attack_at = now;
-                    let mut processed = false;
-                    let active_slot_idx = player.active_slot;
-                    
-                    let mut should_clear_slot = false;
-                    // 1. Try Use Held Item (A Button)
-                    if let Some(item) = &mut player.inventory.slots[active_slot_idx] {
-                        // Eat
-                        if item.kind == ItemType::Berry || item.kind == ItemType::Meat || item.kind == ItemType::CookedMeat {
-                            player.hunger = (player.hunger + self.config.mechanics.food_value).min(100.0);
-                            item.amount -= 1; if item.amount == 0 { should_clear_slot = true; }
-                            processed = true;
-                        }
-                        // Build
-                        if !processed {
-                            let s_type = match item.kind {
-                                ItemType::WoodWall => Some(StructureType::Wall), ItemType::Door => Some(StructureType::Door),
-                                ItemType::Torch => Some(StructureType::Torch), ItemType::Workbench => Some(StructureType::Workbench),
-                                _ => None,
-                            };
-                            if let Some(st) = s_type {
-                                let s = Structure::new(st, player.x, player.y, msg.id);
-                                self.world.structures.insert(s.id, s);
-                                item.amount -= 1; if item.amount == 0 { should_clear_slot = true; }
-                                processed = true;
-                            }
-                        }
+            player.x = (player.x + msg.dx * 5.0).clamp(0.0, self.world.width); player.y = (player.y + msg.dy * 5.0).clamp(0.0, self.world.height);
+            if msg.attack && now - player.last_attack_at >= self.config.mechanics.attack_cooldown {
+                player.last_attack_at = now; let mut proc = false; let active = player.active_slot; let mut clear = false;
+                if let Some(item) = &mut player.inventory.slots[active] {
+                    if item.kind == ItemType::Berry || item.kind == ItemType::Meat || item.kind == ItemType::CookedMeat {
+                        player.hunger = (player.hunger + self.config.mechanics.food_value).min(100.0); item.amount -= 1; if item.amount == 0 { clear = true; } proc = true;
                     }
-                    if should_clear_slot { player.inventory.slots[active_slot_idx] = None; }
-
-                    // 2. Fallback to Attack/Gather (A Button)
-                    if !processed {
-                        let mut drops = Vec::new(); let mut collected = Vec::new();
-                        for (id, res) in self.world.resources.iter_mut() {
-                            if Math::dist(player.x, player.y, res.x, res.y) < interact_range {
-                                 res.amount -= 1;
-                                 match res.r_type { ResourceType::Tree => drops.push((ItemType::Wood, 1)), ResourceType::Rock => drops.push((ItemType::Stone, 1)), ResourceType::Food => drops.push((ItemType::Berry, 1)) }
-                                 if res.amount <= 0 { collected.push(*id); }
-                                 processed = true; break;
-                            }
-                        }
-                        if !processed {
-                            for (id, mob) in self.world.mobs.iter_mut() {
-                                 if Math::dist(player.x, player.y, mob.x, mob.y) < interact_range {
-                                     mob.health -= 5.0; if mob.health <= 0.0 { collected.push(*id); drops.push((ItemType::Meat, 1)); }
-                                     processed = true; break;
-                                 }
-                            }
-                        }
-                        for (kind, amt) in drops { player.inventory.add(kind, amt); }
-                        for id in collected { self.world.resources.remove(&id); self.world.mobs.remove(&id); }
+                    if !proc {
+                        let st = match item.kind { ItemType::WoodWall => Some(StructureType::Wall), ItemType::Door => Some(StructureType::Door), ItemType::Torch => Some(StructureType::Torch), ItemType::Workbench => Some(StructureType::Workbench), _ => None };
+                        if let Some(t) = st { let s = Structure::new(t, player.x, player.y, msg.id); self.world.structures.insert(s.id, s); item.amount -= 1; if item.amount == 0 { clear = true; } proc = true; }
                     }
                 }
-            }
-            if msg.interact {
-                // Cooldown check
-                if now - player.last_interact_at >= self.config.mechanics.interact_cooldown {
-                    player.last_interact_at = now;
-                    /* B Button Interactions (Open Door etc) */
+                if clear { player.inventory.slots[active] = None; }
+                if !proc {
+                    let mut d = Vec::new(); let mut c = Vec::new();
+                    for (id, r) in self.world.resources.iter_mut() {
+                        if ((player.x - r.x).powi(2) + (player.y - r.y).powi(2)).sqrt() < range {
+                             r.amount -= 1; match r.r_type { ResourceType::Tree => d.push((ItemType::Wood, 1)), ResourceType::Rock => d.push((ItemType::Stone, 1)), ResourceType::Food => d.push((ItemType::Berry, 1)) };
+                             if r.amount <= 0 { c.push(*id); } proc = true; break;
+                        }
+                    }
+                    if !proc {
+                        for (id, m) in self.world.mobs.iter_mut() {
+                             if ((player.x - m.x).powi(2) + (player.y - m.y).powi(2)).sqrt() < range {
+                                 m.health -= 5.0; if m.health <= 0.0 { c.push(*id); d.push((ItemType::Meat, 1)); } proc = true; break;
+                             }
+                        }
+                    }
+                    for (k, a) in d { player.inventory.add(k, a); }
+                    for id in c { self.world.resources.remove(&id); self.world.mobs.remove(&id); }
                 }
             }
         }
     }
 }
-
-struct Math;
-impl Math { fn dist(x1: f64, y1: f64, x2: f64, y2: f64) -> f64 { ((x1 - x2).powi(2) + (y1 - y2).powi(2)).sqrt() } }

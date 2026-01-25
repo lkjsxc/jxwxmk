@@ -1,19 +1,12 @@
-# Visual Effects
+# Visual Effects & Animations
 
-Enhancements for game clarity and aesthetics.
+Advanced visual feedback for player actions and game events.
 
-## Interactable Outlines
-To assist player recognition of interactable objects (Resources, Chests, Doors):
-- **Condition**: Distance < InteractionRadius (e.g., 50px).
-- **Effect**: Draw a 2px colored outline around the entity.
-    - **Yellow**: Resources (Gatherable).
-    - **White**: Structures (Interactable).
-    - **Red**: Mobs (Attackable).
+## Damage Feedback
+- **Animation**: When an entity (Resource, Mob, Structure) takes damage, it scales up by 20% and then returns to its original size over 0.25 seconds.
+- **Implementation**: Entities track a `lastHitAt` timestamp and calculate scale using a quadratic or linear curve.
 
-## Interpolation (Anti-Jitter)
-To solve movement stutter caused by the difference between Server Tick Rate (20Hz) and Client Frame Rate (60Hz+):
-- **Technique**: Linear Interpolation (Lerp).
-- **Logic**:
-    - Store `previous_world_state` and `current_world_state`.
-    - Calculate `alpha` based on time since last packet.
-    - `RenderPos = Lerp(PrevPos, CurrPos, alpha)`.
+## Cooldown Visuals (A/B Buttons)
+- **Pie Chart Overlay**: A semi-transparent dark circle that shrinks (clock-like) to represent the remaining cooldown time.
+- **Countdown**: The remaining seconds (e.g., "0.4") are displayed in the center of the button instead of the button label ("A" or "B") during the cooldown phase.
+- **Transparency**: Buttons use a base alpha of 0.4, increasing to 0.8 when pressed.
