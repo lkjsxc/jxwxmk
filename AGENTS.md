@@ -2,7 +2,7 @@
 
 ## 0. Prime Directive
 
-Build and evolve a **starve.io-like** multiplayer survival game as a **single integrated solution**:
+Build and evolve a multiplayer survival game as a **single integrated solution**:
 - **Runtime processes**: **Rust game server** + **PostgreSQL** only.
 - **TypeScript** is used for **build-time** generation of client assets (compiled to JS/CSS) that are **served by Rust**.
 - No long-running Node/JS service in production.
@@ -171,7 +171,7 @@ Prefer periodic checkpoint + event/delta persistence where needed.
 
 ---
 
-## 5. Content Targets (Starve.io-like)
+## 5. Content Targets
 
 The game must prioritize **systemic depth** (“rich content”) with simple visuals.
 

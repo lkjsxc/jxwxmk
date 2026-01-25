@@ -1,4 +1,4 @@
-# Starve.io-like Multiplayer Survival Game (Rust + Postgres)
+# Multiplayer Survival Game (Rust + Postgres)
 
 Server-authoritative, deterministic(ish) multiplayer survival game inspired by *starve.io*.
 

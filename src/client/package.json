@@ -1,5 +1,5 @@
 {
-  "name": "starve-client",
+  "name": "kkmypk-client",
   "version": "1.0.0",
   "scripts": {
     "build": "esbuild index.ts --bundle --outfile=../static/game.js --minify --target=es2020 --platform=browser",
