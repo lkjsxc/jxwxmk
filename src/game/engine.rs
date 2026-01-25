@@ -77,65 +77,80 @@ impl Handler<Input> for GameEngine {
     type Result = ();
     fn handle(&mut self, msg: Input, _: &mut Context<Self>) {
         let interact_range = self.config.game.interact_range;
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_millis() as u64;
+
         if let Some(player) = self.world.players.get_mut(&msg.id) {
             let speed = 5.0;
             player.x = (player.x + msg.dx * speed).clamp(0.0, self.world.width);
             player.y = (player.y + msg.dy * speed).clamp(0.0, self.world.height);
             
             if msg.attack {
-                let mut processed = false;
-                let active_slot_idx = player.active_slot;
-                
-                let mut should_clear_slot = false;
-                // 1. Try Use Held Item (A Button)
-                if let Some(item) = &mut player.inventory.slots[active_slot_idx] {
-                    // Eat
-                    if item.kind == ItemType::Berry || item.kind == ItemType::Meat || item.kind == ItemType::CookedMeat {
-                        player.hunger = (player.hunger + self.config.mechanics.food_value).min(100.0);
-                        item.amount -= 1; if item.amount == 0 { should_clear_slot = true; }
-                        processed = true;
-                    }
-                    // Build
-                    if !processed {
-                        let s_type = match item.kind {
-                            ItemType::WoodWall => Some(StructureType::Wall), ItemType::Door => Some(StructureType::Door),
-                            ItemType::Torch => Some(StructureType::Torch), ItemType::Workbench => Some(StructureType::Workbench),
-                            _ => None,
-                        };
-                        if let Some(st) = s_type {
-                            let s = Structure::new(st, player.x, player.y, msg.id);
-                            self.world.structures.insert(s.id, s);
+                // Cooldown check
+                if now - player.last_attack_at >= self.config.mechanics.attack_cooldown {
+                    player.last_attack_at = now;
+                    let mut processed = false;
+                    let active_slot_idx = player.active_slot;
+                    
+                    let mut should_clear_slot = false;
+                    // 1. Try Use Held Item (A Button)
+                    if let Some(item) = &mut player.inventory.slots[active_slot_idx] {
+                        // Eat
+                        if item.kind == ItemType::Berry || item.kind == ItemType::Meat || item.kind == ItemType::CookedMeat {
+                            player.hunger = (player.hunger + self.config.mechanics.food_value).min(100.0);
                             item.amount -= 1; if item.amount == 0 { should_clear_slot = true; }
                             processed = true;
                         }
+                        // Build
+                        if !processed {
+                            let s_type = match item.kind {
+                                ItemType::WoodWall => Some(StructureType::Wall), ItemType::Door => Some(StructureType::Door),
+                                ItemType::Torch => Some(StructureType::Torch), ItemType::Workbench => Some(StructureType::Workbench),
+                                _ => None,
+                            };
+                            if let Some(st) = s_type {
+                                let s = Structure::new(st, player.x, player.y, msg.id);
+                                self.world.structures.insert(s.id, s);
+                                item.amount -= 1; if item.amount == 0 { should_clear_slot = true; }
+                                processed = true;
+                            }
+                        }
                     }
-                }
-                if should_clear_slot { player.inventory.slots[active_slot_idx] = None; }
+                    if should_clear_slot { player.inventory.slots[active_slot_idx] = None; }
 
-                // 2. Fallback to Attack/Gather (A Button)
-                if !processed {
-                    let mut drops = Vec::new(); let mut collected = Vec::new();
-                    for (id, res) in self.world.resources.iter_mut() {
-                        if Math::dist(player.x, player.y, res.x, res.y) < interact_range {
-                             res.amount -= 1;
-                             match res.r_type { ResourceType::Tree => drops.push((ItemType::Wood, 1)), ResourceType::Rock => drops.push((ItemType::Stone, 1)), ResourceType::Food => drops.push((ItemType::Berry, 1)) }
-                             if res.amount <= 0 { collected.push(*id); }
-                             processed = true; break;
-                        }
-                    }
+                    // 2. Fallback to Attack/Gather (A Button)
                     if !processed {
-                        for (id, mob) in self.world.mobs.iter_mut() {
-                             if Math::dist(player.x, player.y, mob.x, mob.y) < interact_range {
-                                 mob.health -= 5.0; if mob.health <= 0.0 { collected.push(*id); drops.push((ItemType::Meat, 1)); }
+                        let mut drops = Vec::new(); let mut collected = Vec::new();
+                        for (id, res) in self.world.resources.iter_mut() {
+                            if Math::dist(player.x, player.y, res.x, res.y) < interact_range {
+                                 res.amount -= 1;
+                                 match res.r_type { ResourceType::Tree => drops.push((ItemType::Wood, 1)), ResourceType::Rock => drops.push((ItemType::Stone, 1)), ResourceType::Food => drops.push((ItemType::Berry, 1)) }
+                                 if res.amount <= 0 { collected.push(*id); }
                                  processed = true; break;
-                             }
+                            }
                         }
+                        if !processed {
+                            for (id, mob) in self.world.mobs.iter_mut() {
+                                 if Math::dist(player.x, player.y, mob.x, mob.y) < interact_range {
+                                     mob.health -= 5.0; if mob.health <= 0.0 { collected.push(*id); drops.push((ItemType::Meat, 1)); }
+                                     processed = true; break;
+                                 }
+                            }
+                        }
+                        for (kind, amt) in drops { player.inventory.add(kind, amt); }
+                        for id in collected { self.world.resources.remove(&id); self.world.mobs.remove(&id); }
                     }
-                    for (kind, amt) in drops { player.inventory.add(kind, amt); }
-                    for id in collected { self.world.resources.remove(&id); self.world.mobs.remove(&id); }
                 }
             }
-            if msg.interact { /* B Button Interactions (Open Door etc) */ }
+            if msg.interact {
+                // Cooldown check
+                if now - player.last_interact_at >= self.config.mechanics.interact_cooldown {
+                    player.last_interact_at = now;
+                    /* B Button Interactions (Open Door etc) */
+                }
+            }
         }
     }
 }

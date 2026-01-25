@@ -68,6 +68,8 @@ pub struct Player {
     pub cold: f64,
     pub inventory: Inventory,
     pub active_slot: usize,
+    pub last_attack_at: u64,
+    pub last_interact_at: u64,
 }
 
 impl Player {
@@ -83,6 +85,8 @@ impl Player {
             cold: 50.0, // Neutral
             inventory: Inventory::default(),
             active_slot: 0,
+            last_attack_at: 0,
+            last_interact_at: 0,
         }
     }
 }

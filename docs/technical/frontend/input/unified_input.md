@@ -6,6 +6,10 @@ Unified handling of Mouse and Touch events for cross-platform support.
 
 ### InputManager
 -   **Abstraction**: Maps hardware events (Keyboard, Mouse, Touch) to a logical `InputState`.
+-   **Cooldown Enforcement**: 
+    -   Prevents sending rapid-fire actions to the server.
+    -   **A Button (Attack/Use)**: Default 500ms cooldown.
+    -   **B Button (Interact)**: Default 300ms cooldown.
 -   **Pointer Tracking**:
     -   `mouseX / mouseY`: Tracks the primary interaction point.
     -   `isPointerDown`: Unified flag for `mousedown` or `touchstart`.

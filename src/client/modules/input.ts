@@ -18,6 +18,12 @@ export class InputManager {
     mouseY: number = 0;
     isPointerDown: boolean = false; // Unified flag for UI clicks
 
+    // Cooldowns
+    lastAttackAt: number = 0;
+    lastInteractAt: number = 0;
+    attackCooldown: number = 500;
+    interactCooldown: number = 300;
+
     constructor() {
         this.setupKeyboard();
         this.setupTouch();
@@ -123,10 +129,23 @@ export class InputManager {
             dx *= 0.707; dy *= 0.707;
         }
 
+        const now = Date.now();
+        let attack = false;
+        if ((this.keys.attack || this.btnA.active) && now - this.lastAttackAt >= this.attackCooldown) {
+            attack = true;
+            this.lastAttackAt = now;
+        }
+
+        let interact = false;
+        if ((this.keys.interact || this.btnB.active) && now - this.lastInteractAt >= this.interactCooldown) {
+            interact = true;
+            this.lastInteractAt = now;
+        }
+
         return {
             dx, dy,
-            attack: this.keys.attack || this.btnA.active,
-            interact: this.keys.interact || this.btnB.active
+            attack,
+            interact
         };
     }
 

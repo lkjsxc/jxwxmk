@@ -14,6 +14,8 @@
     "heal_rate": 1.0,
     "starve_dmg": 5.0,
     "freeze_dmg": 2.0,
-    "food_value": 20.0
+    "food_value": 20.0,
+    "attack_cooldown": 500,
+    "interact_cooldown": 300
   }
 }

@@ -20,7 +20,9 @@ The `config.json` file serves as the single source of truth for game balance.
     "cold_decay": 0.05,
     "heal_rate": 1.0,
     "starve_dmg": 5.0,
-    "freeze_dmg": 2.0
+    "freeze_dmg": 2.0,
+    "attack_cooldown": 500,
+    "interact_cooldown": 300
   },
   "items": {
     "food_value": 20.0,

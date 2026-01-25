@@ -203,11 +203,7 @@ export class UIManager {
                     }
                 } else {
                     if (this.hitTest(mx, my, w - 60, 20, 50, 50)) { this.isMenuOpen = true; input.isPointerDown = false; }
-                    const startX = (w - (10 * 60)) / 2; const startY = h - 70;
-                    if (this.hitTest(mx, my, startX, startY, 600, 50)) {
-                        const idx = Math.floor((mx - startX) / 60);
-                        if (idx >= 0 && idx < 10) this.slotSelectRequest = idx;
-                    }
+                    // Hotbar click interaction REMOVED
                 }
             }
         }

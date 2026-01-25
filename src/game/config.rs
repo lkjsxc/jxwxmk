@@ -22,6 +22,8 @@ pub struct MechanicsConfig {
     pub starve_dmg: f64,
     pub freeze_dmg: f64,
     pub food_value: f64,
+    pub attack_cooldown: u64,
+    pub interact_cooldown: u64,
 }
 
 #[derive(Debug, Deserialize, Clone)]
