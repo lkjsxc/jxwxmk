@@ -14,12 +14,25 @@ pub enum AchievementId {
     Pacifist, ResourceTycoon,
 }
 
-// ...
+impl AchievementId {
+    pub fn to_string(&self) -> String {
+        format!("{:?}", self)
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct Achievement {
+    pub id: AchievementId,
+    pub name: String,
+    pub description: String,
+    pub stat_bonus: (String, f32), // (StatName, MultiplierAdd) e.g. ("speed", 0.01)
+}
+
+pub struct AchievementSystem;
 
 impl AchievementSystem {
     pub fn get_all() -> Vec<Achievement> {
         vec![
-            // ... existing ...
             Achievement { id: AchievementId::NoviceWalker, name: "Novice Walker".into(), description: "Walk 1,000 steps".into(), stat_bonus: ("speed".into(), 0.01) },
             Achievement { id: AchievementId::MarathonRunner, name: "Marathon Runner".into(), description: "Walk 100,000 steps".into(), stat_bonus: ("speed".into(), 0.05) },
             Achievement { id: AchievementId::FirstBlood, name: "First Blood".into(), description: "Kill 1 mob".into(), stat_bonus: ("damage".into(), 0.01) },
@@ -33,7 +46,6 @@ impl AchievementSystem {
             Achievement { id: AchievementId::MasterSmith, name: "Master Smith".into(), description: "Craft 1,000 items".into(), stat_bonus: ("craft".into(), 0.05) },
             Achievement { id: AchievementId::Builder, name: "Builder".into(), description: "Place 50 structures".into(), stat_bonus: ("max_hp".into(), 5.0) },
             Achievement { id: AchievementId::Architect, name: "Architect".into(), description: "Place 500 structures".into(), stat_bonus: ("max_hp".into(), 20.0) },
-            
             Achievement { id: AchievementId::SeasonedVeteran, name: "Seasoned Veteran".into(), description: "Tool Level 5".into(), stat_bonus: ("damage".into(), 0.05) },
             Achievement { id: AchievementId::LegendarySmith, name: "Legendary Smith".into(), description: "Tool Level 10".into(), stat_bonus: ("damage".into(), 0.10) },
             Achievement { id: AchievementId::Pacifist, name: "Pacifist".into(), description: "5,000 steps, 0 kills".into(), stat_bonus: ("max_hp".into(), 10.0) },
@@ -76,7 +88,7 @@ impl AchievementSystem {
             if completed {
                 player.achievements.insert(key.clone());
                 let (stat, bonus) = &ach.stat_bonus;
-                *player.stat_bonuses.entry(stat.clone()).or_insert(0.0) += *bonus;
+                *player.stat_bonuses.entry(stat.clone()).or_insert(0.0f32) += *bonus; // Fixed 0.0f32
                 unlocked.push(ach);
             }
         }

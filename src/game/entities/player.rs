@@ -56,6 +56,8 @@ impl Inventory {
                     kind: kind.clone(),
                     amount: to_add,
                     max_stack,
+                    level: 1,
+                    xp: 0.0,
                 });
                 amount -= to_add;
                 if amount == 0 {
