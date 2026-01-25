@@ -1,15 +1,11 @@
 # Survival Mechanics
 
-Survival is the primary loop. Players must maintain their vitals.
+Survival is the primary pressure on the player.
+
+## Spawning
+- **Random Location**: Players spawn at a random coordinate `(x, y)` within the world bounds (0,0 to Width,Height) to prevent camping and spread population.
 
 ## Vitals
-
 - **Health (HP)**: 0-100.
 - **Hunger**: 0-100.
-- **Temperature**: 0-100 (Where 0 is Freezing, 100 is Overheat).
-- **Thirst**: 0-100.
-
-## Modules
-
-- [Hunger System](hunger.md)
-- [Temperature System](temperature.md)
+- **Temperature**: 0-100.

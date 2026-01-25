@@ -12,7 +12,7 @@ use game::engine::GameEngine;
 async fn main() -> std::io::Result<()> {
     std::env::set_var("RUST_LOG", "info");
     env_logger::init();
-    info!("Starting Starve Clone Server...");
+    info!("Starting kkmypk Server...");
 
     let game_engine = GameEngine::new().start();
     let game_engine_data = web::Data::new(game_engine);

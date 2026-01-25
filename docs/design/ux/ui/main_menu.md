@@ -1,23 +1,20 @@
 # Main Menu (The Hub)
 
-The central interface for the game.
+The central interface for **kkmypk**.
 
 ## States
 
-### 1. Start Screen (Login)
-- **Play**: Connects using stored token.
-- **Reset**: Clears token to start fresh (Generate new ID).
-- **Token Display**: Shows current ID for manual backup.
+### 1. Start Screen
+- **Play**: Join the world.
+- **Reset**: Clear local data.
 
 ### 2. In-Game Hub
-- **Resume**: Closes menu (Return to Game).
+- **Close Button**: 'X' icon in top-right corner to resume game immediately.
 - **Tabs**: Inventory, Crafting, Guidebook, Settings.
 
-### 3. Game Over
-- Triggered when HP reaches 0.
-- **Message**: "You Died".
-- **Stats**: Time Survived.
-- **Respawn**: Creates new character (New Token).
-
-## Navigation
-- **Closing**: Clicking "Resume" or pressing 'E'/'Esc' closes the menu if in-game.
+### 3. Game Over Screen
+A dedicated overlay when `HP <= 0`.
+- **Header**: "GAME OVER".
+- **Details**: "You survived for X minutes".
+- **Action**: "Respawn" button (reloads page/resets session).
+- **Visual**: Dark red overlay, blocking all other input.

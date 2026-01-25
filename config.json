@@ -4,7 +4,7 @@
     "tick_rate": 20
   },
   "game": {
-    "world_width": 2000,
-    "world_height": 2000
+    "world_width": 10000,
+    "world_height": 10000
   }
 }

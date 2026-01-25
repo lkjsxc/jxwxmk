@@ -3,10 +3,12 @@
 ## Strategy
 Docker Compose for all environments (Dev/Prod).
 
-## Containers
-- **App**: Rust Binary + Static Files (Multi-stage build).
-- **DB**: PostgreSQL 16 (Alpine).
+## Networking
+- **Services**: `app` and `db` share the default bridge network `kkmypk_default`.
+- **Database**:
+    - Port `5432` is **NOT** exposed to the host for security.
+    - The `app` container connects via the hostname `db`.
 
-## CI/CD
-- GitHub Actions to build Docker image.
-- Watchtower or simple `docker-compose pull && up -d` for updates on VPS.
+## Containers
+- **App**: Rust Binary + Static Files.
+- **DB**: PostgreSQL 16 (Alpine).

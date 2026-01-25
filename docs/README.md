@@ -1,6 +1,6 @@
 # Documentation Root
 
-This is the comprehensive documentation for the Starve.io clone project.
+This is the comprehensive documentation for the **kkmypk** project.
 
 ## Structure
 
