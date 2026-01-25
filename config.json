@@ -4,10 +4,10 @@
     "tick_rate": 20
   },
   "game": {
-    "world_width": 100000,
-    "world_height": 100000,
+    "world_width": 2000,
+    "world_height": 2000,
     "interact_range": 60.0,
-    "spawn_radius": 1000.0
+    "spawn_radius": 800.0
   },
   "mechanics": {
     "hunger_decay": 0.1,
@@ -20,11 +20,11 @@
     "interact_cooldown": 300
   },
   "spawning": {
-    "resource_density": 50.0,
-    "mob_density": 10.0
+    "resource_density": 1.0,
+    "mob_density": 0.2
   },
   "leveling": {
-    "mob_level_factor": 0.001,
+    "mob_level_factor": 0.005,
     "tool_xp_per_use": 10.0
   }
 }

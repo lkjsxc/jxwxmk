@@ -26,7 +26,7 @@ function connect() {
             if (msg.type === "welcome") {
                 myId = msg.id;
                 if (msg.token) localStorage.setItem(STORAGE_KEY, msg.token);
-                ui.state = AppState.InGame;
+                // Keep state as StartScreen until player clicks Play
             } else if (msg.type === "world") {
                  prevWorld = world; world = msg.data; lastUpdateAt = Date.now();
                  if (ui.state === AppState.InGame && myId && world && !world.players[myId]) { ui.state = AppState.GameOver; }
