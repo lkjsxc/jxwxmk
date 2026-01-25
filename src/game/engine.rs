@@ -180,8 +180,13 @@ impl Handler<Input> for GameEngine {
                 }
                 if clear { player.inventory.slots[slot] = None; }
                 if !proc {
+                    // Try hit resources
                     let mut res_id = None;
-                    for (id, r) in self.world.resources.iter() { if Math::dist(px, py, r.x, r.y) < range { res_id = Some(*id); break; } }
+                    let mut min_dist = range;
+                    for (id, r) in self.world.resources.iter() { 
+                        let d = Math::dist(px, py, r.x, r.y);
+                        if d < min_dist { min_dist = d; res_id = Some(*id); } 
+                    }
                     if let Some(rid) = res_id {
                         let r = self.world.resources.get_mut(&rid).unwrap();
                         let gather_mult = if r.r_type == ResourceType::Rock { rock_mult } else { 1.0 };
@@ -195,11 +200,16 @@ impl Handler<Input> for GameEngine {
                     }
                 }
                 if !proc {
+                    // Try hit mobs
                     let mut mid = None;
-                    for (id, m) in self.world.mobs.iter() { if Math::dist(px, py, m.x, m.y) < range { mid = Some(*id); break; } }
+                    let mut min_dist = range;
+                    for (id, m) in self.world.mobs.iter() { 
+                        let d = Math::dist(px, py, m.x, m.y);
+                        if d < min_dist { min_dist = d; mid = Some(*id); }
+                    }
                     if let Some(id) = mid {
                         let m = self.world.mobs.get_mut(&id).unwrap(); m.health -= tool_dmg;
-                        if m.health <= 0.0 { 
+                        if m.health <= 0.0; { 
                             player.inventory.add(ItemType::Meat, 2); self.world.mobs.remove(&id); 
                             player.stats.mobs_killed += 1;
                         }
@@ -207,8 +217,15 @@ impl Handler<Input> for GameEngine {
                     }
                 }
                 if !proc {
+                    // Try hit other players
                     let mut tid = None;
-                    for (id, p) in self.world.players.iter() { if *id != msg.id && Math::dist(px, py, p.x, p.y) < range { tid = Some(*id); break; } }
+                    let mut min_dist = range;
+                    for (id, p) in self.world.players.iter() { 
+                        if *id != msg.id {
+                            let d = Math::dist(px, py, p.x, p.y);
+                            if d < min_dist { min_dist = d; tid = Some(*id); }
+                        }
+                    }
                     if let Some(id) = tid { let p = self.world.players.get_mut(&id).unwrap(); p.health -= tool_dmg; p.stats.damage_taken += tool_dmg; }
                 }
             }

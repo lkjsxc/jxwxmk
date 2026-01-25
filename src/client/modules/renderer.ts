@@ -1,7 +1,7 @@
 import { World, Player, Resource, Mob, Structure } from "../types";
 import { InputManager } from "./input";
 import { Camera } from "./camera";
-import { UIManager } from "./ui";
+import { UIManager } from "./ui/index";
 
 export class Renderer {
     canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D; camera: Camera;
@@ -100,7 +100,7 @@ export class Renderer {
 
     drawResource(r: Resource, isTarget: boolean, w: World, pw: World | null) {
         const scale = this.getScale(r.id, w, pw);
-        if (isTarget) { this.drawOutline(r.x, r.y, 22 * scale, "yellow"); this.drawInteractionTooltip(r.x, r.y, r.r_type, "[A] Gather", ""); }
+        if (isTarget) { this.drawOutline(r.x, r.y, 22 * scale, "yellow"); this.drawInteractionTooltip(r.x, r.y, r.r_type, "Gather", ""); }
         this.ctx.save(); this.ctx.translate(r.x, r.y); this.ctx.scale(scale, scale);
         this.ctx.beginPath();
         if (r.r_type === "Tree") this.ctx.fillStyle = "#2e2"; else if (r.r_type === "Rock") this.ctx.fillStyle = "#888"; else this.ctx.fillStyle = "#ea2";
@@ -113,7 +113,7 @@ export class Renderer {
 
     drawStructure(s: Structure, isTarget: boolean, w: World, pw: World | null) {
         const scale = this.getScale(s.id, w, pw);
-        if (isTarget) { this.drawOutline(s.x, s.y, 25 * scale, "white"); this.drawInteractionTooltip(s.x, s.y, s.s_type, "[A] Attack", "Use"); }
+        if (isTarget) { this.drawOutline(s.x, s.y, 25 * scale, "white"); this.drawInteractionTooltip(s.x, s.y, s.s_type, "Attack", "Use"); }
         this.ctx.save(); this.ctx.translate(s.x, s.y); this.ctx.scale(scale, scale);
         if (s.s_type === "Torch") { this.ctx.fillStyle = "#fa0"; this.ctx.beginPath(); this.ctx.arc(0, 0, 10, 0, Math.PI*2); this.ctx.fill(); this.ctx.strokeStyle = "#fff"; this.ctx.stroke(); }
         else if (s.s_type === "Wall") { this.ctx.fillStyle = "#642"; this.ctx.fillRect(-20, -20, 40, 40); this.ctx.strokeRect(-20, -20, 40, 40); }
@@ -125,7 +125,7 @@ export class Renderer {
 
     drawMob(m: Mob, ix: number, iy: number, isTarget: boolean, w: World, pw: World | null) {
         const scale = this.getScale(m.id, w, pw);
-        if (isTarget) { this.drawOutline(ix, iy, 15 * scale, "red"); this.drawInteractionTooltip(ix, iy, m.m_type, "[A] Attack", ""); }
+        if (isTarget) { this.drawOutline(ix, iy, 15 * scale, "red"); this.drawInteractionTooltip(ix, iy, m.m_type, "Attack", ""); }
         this.ctx.save(); this.ctx.translate(ix, iy); this.ctx.scale(scale, scale);
         this.ctx.fillStyle = m.m_type === "Wolf" ? "#999" : m.m_type === "Bear" ? "#531" : "#fff";
         this.ctx.beginPath(); this.ctx.arc(0, 0, 12, 0, Math.PI*2); this.ctx.fill();
@@ -137,7 +137,7 @@ export class Renderer {
 
     drawPlayer(p: Player, ix: number, iy: number, isTarget: boolean, w: World, pw: World | null) {
         const scale = this.getScale(p.id, w, pw);
-        if (isTarget) { this.drawOutline(ix, iy, 18 * scale, "red"); this.drawInteractionTooltip(ix, iy, p.username, "[A] Attack", ""); }
+        if (isTarget) { this.drawOutline(ix, iy, 18 * scale, "red"); this.drawInteractionTooltip(ix, iy, p.username, "Attack", ""); }
         this.ctx.save(); this.ctx.translate(ix, iy); this.ctx.scale(scale, scale);
         this.ctx.fillStyle = "#f00"; this.ctx.beginPath(); this.ctx.arc(0, 0, 15, 0, Math.PI * 2); this.ctx.fill();
         this.ctx.strokeStyle = "#000"; this.ctx.stroke();
@@ -155,13 +155,13 @@ export class Renderer {
     drawInteractionTooltip(x: number, y: number, name: string, aAction: string, bAction: string) {
         this.ctx.fillStyle = "white"; this.ctx.font = "bold 14px sans-serif"; this.ctx.textAlign = "center";
         this.ctx.fillText(name, x, y - 55);
-        this.ctx.font = "12px sans-serif"; let actions = aAction; if (bAction) actions += ` | [B] ${bAction}`;
+        this.ctx.font = "12px sans-serif"; let actions = `[A/Click] ${aAction}`; if (bAction) actions += ` | [B/KeyE] ${bAction}`;
         this.ctx.fillText(actions, x, y - 40);
     }
 
     drawGauge(x: number, y: number, w: number, h: number, pct: number) {
         this.ctx.fillStyle = "rgba(0,0,0,0.5)"; this.ctx.fillRect(x - w/2, y, w, h);
-        this.ctx.fillStyle = "rgba(255,0,0,0.6)"; this.ctx.fillRect(x - w/2, y, w * Math.max(0, pct), h);
+        this.ctx.fillStyle = "rgba(255,0,0,0.5)"; this.ctx.fillRect(x - w/2, y, w * Math.max(0, pct), h);
     }
 
     drawHUD(world: World, myId: string | null) {

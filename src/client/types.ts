@@ -16,6 +16,16 @@ export interface Achievement {
     stat_bonus: [string, number];
 }
 
+export interface PlayerStats {
+    steps_taken: number;
+    mobs_killed: number;
+    items_crafted: number;
+    resources_gathered: number;
+    structures_placed: number;
+    damage_taken: number;
+    deaths: number;
+}
+
 export interface Player {
     id: string;
     username: string;
@@ -29,6 +39,7 @@ export interface Player {
     lastHitAt?: number;
     achievements: string[];
     stat_bonuses: Record<string, number>;
+    stats?: PlayerStats;
 }
 
 export interface Resource {

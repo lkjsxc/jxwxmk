@@ -1,6 +1,6 @@
 import { InputManager } from "./modules/input";
 import { Renderer } from "./modules/renderer";
-import { UIManager, AppState } from "./modules/ui";
+import { UIManager, AppState } from "./modules/ui/index";
 import { World } from "./types";
 
 const renderer = new Renderer();
