@@ -1,20 +1,15 @@
 # Documentation Root
 
-This directory contains all documentation for the Starve.io clone project.
+This is the comprehensive documentation for the Starve.io clone project.
 
 ## Structure
 
-- [Game Design](game_design/README.md)
-  - Core mechanics, survival, crafting, and entities.
-- [Architecture](architecture/README.md)
-  - Technical stack, server, client, and database design.
+- [Design](design/README.md)
+  - [Mechanics](design/mechanics/README.md) (Survival, Combat, Crafting)
+  - [Content](design/content/README.md) (Entities, Biomes)
+  - [UX](design/ux/README.md) (Controls, Mobile Support)
+- [Technical](technical/README.md)
+  - [Backend](technical/backend/README.md) (Server, DB)
+  - [Frontend](technical/frontend/README.md) (Rendering, Input)
+  - [Deployment](technical/deployment/README.md) (Docker, CI/CD)
 - [Setup](setup/README.md)
-  - Development environment, Docker, and deployment.
-
-## Project Goal
-
-Create a multiplayer survival game using Rust, Actix Web, and TypeScript.
-Key constraints:
-- Single integrated solution (Server serves Client).
-- High performance (Rust/Tokio).
-- Rich content, simple graphics.
