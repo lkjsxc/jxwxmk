@@ -3,6 +3,7 @@ mod game;
 mod db;
 
 use actix_web::{App, HttpServer, web, middleware};
+use actix::Actor;
 use log::info;
 use game::engine::GameEngine;
 

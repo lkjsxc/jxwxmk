@@ -149,14 +149,14 @@ impl Handler<Input> for GameEngine {
         
         if let Some(player) = self.world.players.get_mut(&msg.id) {
             if msg.dx != 0.0 || msg.dy != 0.0 { player.stats.steps_taken += 1; }
-            let bonus_speed = *player.stat_bonuses.get("speed").unwrap_or(&0.0);
+            let bonus_speed = *player.stat_bonuses.get("speed").unwrap_or(&0.0) as f64;
             let speed = 5.0 * (1.0 + bonus_speed);
             player.x = (player.x + msg.dx * speed).clamp(0.0, self.world.width); player.y = (player.y + msg.dy * speed).clamp(0.0, self.world.height);
             
             if msg.attack && now - player.last_attack_at >= self.config.mechanics.attack_cooldown {
                 player.last_attack_at = now; let mut proc = false; let mut clear = false;
-                let bonus_dmg = *player.stat_bonuses.get("damage").unwrap_or(&0.0);
-                let bonus_gather = *player.stat_bonuses.get("gather").unwrap_or(&0.0);
+                let bonus_dmg = *player.stat_bonuses.get("damage").unwrap_or(&0.0) as f64;
+                let bonus_gather = *player.stat_bonuses.get("gather").unwrap_or(&0.0) as f64;
 
                 let mut tool_dmg = 2.0; let mut rock_mult = 1.0;
                 if let Some(item) = &player.inventory.slots[slot] {

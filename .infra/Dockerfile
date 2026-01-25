@@ -1,30 +1,37 @@
 # Stage 1: Frontend
 FROM node:20-slim as frontend
 WORKDIR /app
+# Copy client source
 COPY src/client ./src/client
 WORKDIR /app/src/client
-# Create output dir
-RUN mkdir -p ../static
+# Create output directory for esbuild (it writes to ../../static)
+RUN mkdir -p ../../static
 RUN npm install
 RUN npm run build
 
 # Stage 2: Backend
 FROM rust:latest as backend
+# Install dependencies
 RUN apt-get update && apt-get install -y pkg-config libssl-dev
 WORKDIR /app
+
+# Build dependencies - this is the caching layer
 COPY Cargo.toml ./
-# Create dummy main to build deps layer
 RUN mkdir src && echo "fn main() {}" > src/main.rs
 RUN cargo build --release
 RUN rm -rf src
 
-# Copy real source
+# Copy source code
 COPY src ./src
-# Copy frontend artifacts to where backend expects them (if embedding) or just for next stage
-COPY --from=frontend /app/src/static ./src/static
 
-# Build final binary
-# Touch main.rs to ensure rebuild
+# Copy static assets from host (index.html, styles.css)
+COPY static ./static
+
+# Copy built assets from frontend (game.js)
+COPY --from=frontend /app/static/game.js ./static/game.js
+
+# Build final binary with embedded assets
+# Touch main.rs to force rebuild
 RUN touch src/main.rs
 RUN cargo build --release
 
@@ -34,10 +41,6 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y libssl-dev ca-certificates && rm -rf /var/lib/apt/lists/*
 
 COPY --from=backend /app/target/release/kkmypk .
-# Copy static files
-COPY --from=frontend /app/src/static ./static
-COPY src/client/index.html ./static/index.html
-COPY src/client/styles.css ./static/styles.css
 COPY config.json .
 
 ENV RUST_LOG=info
