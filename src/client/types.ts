@@ -4,6 +4,8 @@ export interface Item {
     kind: string; // "Wood", "Stone", etc.
     amount: number;
     max_stack: number;
+    level?: number;
+    xp?: number;
 }
 
 export interface Inventory {
@@ -60,6 +62,7 @@ export interface Mob {
     y: number;
     health: number;
     lastHitAt?: number;
+    level?: number;
 }
 
 export interface Structure {

@@ -23,6 +23,8 @@ pub struct Item {
     pub kind: ItemType,
     pub amount: u32,
     pub max_stack: u32,
+    pub level: u32,
+    pub xp: f64,
 }
 
 impl Item {
@@ -31,6 +33,8 @@ impl Item {
             kind,
             amount,
             max_stack: u32::MAX,
+            level: 1,
+            xp: 0.0,
         }
     }
 }

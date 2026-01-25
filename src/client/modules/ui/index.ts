@@ -114,6 +114,9 @@ export class UIManager {
         ctx.fillStyle = item.kind.includes("Wood") ? "#852" : item.kind.includes("Stone") ? "#888" : item.kind.includes("Meat") ? "#f88" : "#e22";
         ctx.beginPath(); ctx.arc(x + s / 2, y + s / 2, s / 3, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = "white"; ctx.font = "12px sans-serif"; ctx.textAlign = "right"; ctx.fillText(item.amount.toString(), x + s - 4, y + s - 4);
+        if (item.level && item.level > 1) {
+            ctx.fillStyle = "#fb4"; ctx.textAlign = "left"; ctx.fillText(`L${item.level}`, x + 4, y + s - 4);
+        }
     }
 
     drawBtn(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, l: string, a: boolean) {

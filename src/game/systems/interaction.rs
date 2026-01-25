@@ -25,11 +25,13 @@ impl InteractionSystem {
                 let bd = *p.stat_bonuses.get("damage").unwrap_or(&0.0) as f64;
                 let bg = *p.stat_bonuses.get("gather").unwrap_or(&0.0) as f64;
                 let mut td = 2.0; let mut rm = 1.0;
+                let mut level_bonus = 0.0;
                 if let Some(item) = &p.inventory.slots[p.active_slot] {
                     if item.kind == ItemType::WoodPickaxe { td = 4.0; rm = 2.0; }
                     if item.kind == ItemType::StonePickaxe { td = 8.0; rm = 3.0; }
+                    level_bonus = (item.level as f64 - 1.0) * 0.1; // 10% per level above 1
                 }
-                (p.x, p.y, p.active_slot, td * (1.0 + bd), rm, bg)
+                (p.x, p.y, p.active_slot, td * (1.0 + bd + level_bonus), rm, bg)
             } else { return; }
         };
 
@@ -60,6 +62,20 @@ impl InteractionSystem {
         // Raycast / Hit Detection
         let range = config.game.interact_range;
         
+        // Helper to update tool XP
+        let update_tool_xp = |p: &mut crate::game::entities::player::Player, slot: usize, xp_gain: f64| {
+            if let Some(item) = &mut p.inventory.slots[slot] {
+                if matches!(item.kind, ItemType::WoodPickaxe | ItemType::StonePickaxe) {
+                    item.xp += xp_gain;
+                    let threshold = 100.0 * (item.level as f64);
+                    if item.xp >= threshold {
+                        item.level += 1;
+                        item.xp -= threshold;
+                    }
+                }
+            }
+        };
+
         // Resources
         let mut target_res = None;
         let mut min_d = range;
@@ -71,6 +87,9 @@ impl InteractionSystem {
             if let Some(r) = world.resources.get_mut(&rid) {
                 let gm = if r.r_type == ResourceType::Rock { rock_mult } else { 1.0 };
                 r.amount -= (tool_dmg * gm * (1.0 + bonus_gather)) as i32;
+                if let Some(p) = world.players.get_mut(&player_id) {
+                    update_tool_xp(p, slot, config.leveling.tool_xp_per_use);
+                }
                 if r.amount <= 0 {
                     let drop = match r.r_type { ResourceType::Tree => (ItemType::Wood, 5), ResourceType::Rock => (ItemType::Stone, 3), ResourceType::Food => (ItemType::Berry, 2) };
                     if let Some(p) = world.players.get_mut(&player_id) { 
@@ -93,6 +112,9 @@ impl InteractionSystem {
         if let Some(mid) = target_mob {
             if let Some(m) = world.mobs.get_mut(&mid) {
                 m.health -= tool_dmg;
+                if let Some(p) = world.players.get_mut(&player_id) {
+                    update_tool_xp(p, slot, config.leveling.tool_xp_per_use * 2.0); // More XP for combat?
+                }
                 if m.health <= 0.0 {
                     if let Some(p) = world.players.get_mut(&player_id) {
                          p.inventory.add(ItemType::Meat, 2); 

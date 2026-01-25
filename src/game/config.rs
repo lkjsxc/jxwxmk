@@ -28,10 +28,24 @@ pub struct MechanicsConfig {
 }
 
 #[derive(Debug, Deserialize, Clone)]
+pub struct SpawnConfig {
+    pub resource_density: f64, // Resources per 10000 sq units
+    pub mob_density: f64,      // Mobs per 10000 sq units
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct LevelingConfig {
+    pub mob_level_factor: f64,  // Level increase per unit distance from center
+    pub tool_xp_per_use: f64,   // XP gained per tool use
+}
+
+#[derive(Debug, Deserialize, Clone)]
 pub struct AppConfig {
     pub server: ServerConfig,
     pub game: GameConfig,
     pub mechanics: MechanicsConfig,
+    pub spawning: SpawnConfig,
+    pub leveling: LevelingConfig,
 }
 
 impl AppConfig {

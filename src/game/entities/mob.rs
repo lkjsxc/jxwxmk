@@ -15,6 +15,7 @@ pub struct Mob {
     pub x: f64,
     pub y: f64,
     pub health: f64,
+    pub level: u32,
     pub target_id: Option<Uuid>, // For aggression
 }
 
@@ -31,6 +32,7 @@ impl Mob {
             x,
             y,
             health,
+            level: 1,
             target_id: None,
         }
     }

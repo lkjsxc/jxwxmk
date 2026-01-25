@@ -23,13 +23,43 @@ export function drawStructure(ctx: CanvasRenderingContext2D, s: Structure, isTar
 }
 
 export function drawMob(ctx: CanvasRenderingContext2D, m: Mob, ix: number, iy: number, isTarget: boolean, scale: number) {
+
     if (isTarget) { drawOutline(ctx, ix, iy, 15 * scale, "red"); drawTooltip(ctx, ix, iy, m.m_type, "Attack", ""); }
+
     ctx.save(); ctx.translate(ix, iy); ctx.scale(scale, scale);
-    ctx.fillStyle = m.m_type === "Wolf" ? "#999" : m.m_type === "Bear" ? "#531" : "#fff";
-    ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI*2); ctx.fill(); ctx.strokeStyle = "#000"; ctx.stroke();
-    ctx.restore();
+
+        ctx.fillStyle = m.m_type === "Wolf" ? "#999" : m.m_type === "Bear" ? "#531" : "#fff";
+
+        ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI*2); ctx.fill();
+
+        ctx.strokeStyle = "#000"; ctx.stroke();
+
+        ctx.restore();
+
     let max = m.m_type === "Wolf" ? 50 : m.m_type === "Bear" ? 200 : 10;
+
+    // Scale max HP by level for display?
+
+    // Backend: `health *= 1.0 + (level * 0.2)`.
+
+    // So max should also be scaled to show correct bar.
+
+    let lvl = m.level || 1;
+
+    max *= 1.0 + (lvl as number * 0.2);
+
+    
+
     if (m.health < max) drawGauge(ctx, ix, iy - 25, 24, 4, m.health / max);
+
+    
+
+    // Level Display
+
+    ctx.fillStyle = "#fff"; ctx.font = "10px sans-serif"; ctx.textAlign = "center";
+
+    ctx.fillText(`L${lvl}`, ix, iy - 15);
+
 }
 
 export function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, ix: number, iy: number, isTarget: boolean, scale: number) {

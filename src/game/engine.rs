@@ -55,15 +55,29 @@ impl GameEngine {
 
     fn spawn_initial_entities(&mut self) {
         let mut rng = rand::thread_rng();
-        for _ in 0..100 {
+        let area = self.world.width * self.world.height;
+        // Density is per 10000 sq units (100x100 area)
+        let unit_area = 10000.0;
+        
+        let resource_count = (area / unit_area * self.config.spawning.resource_density) as usize;
+        let mob_count = (area / unit_area * self.config.spawning.mob_density) as usize;
+
+        for _ in 0..resource_count {
             let x = rng.gen_range(0.0..self.world.width); let y = rng.gen_range(0.0..self.world.height);
             let r_type = match rng.gen_range(0..10) { 0..=4 => ResourceType::Tree, 5..=8 => ResourceType::Rock, _ => ResourceType::Food };
             let res = Resource::new(r_type, x, y); self.world.resources.insert(res.id, res);
         }
-        for _ in 0..20 {
+        for _ in 0..mob_count {
             let x = rng.gen_range(0.0..self.world.width); let y = rng.gen_range(0.0..self.world.height);
             let m_type = match rng.gen_range(0..10) { 0..=5 => MobType::Rabbit, 6..=8 => MobType::Wolf, _ => MobType::Bear };
-            let mob = Mob::new(m_type, x, y); self.world.mobs.insert(mob.id, mob);
+            let mut mob = Mob::new(m_type, x, y); 
+            // Calculate Mob Level based on distance from center
+            let cx = self.world.width / 2.0; let cy = self.world.height / 2.0;
+            let dist = ((x - cx).powi(2) + (y - cy).powi(2)).sqrt();
+            let level = 1 + (dist * self.config.leveling.mob_level_factor) as u32;
+            mob.level = level;
+            mob.health *= 1.0 + (level as f64 * 0.2); // 20% HP per level
+            self.world.mobs.insert(mob.id, mob);
         }
     }
     
@@ -100,7 +114,9 @@ impl GameEngine {
             if mob.m_type == MobType::Rabbit { continue; }
             for (pid, p) in self.world.players.iter() {
                 if Math::dist(mob.x, mob.y, p.x, p.y) < 30.0 {
-                    dmg_to_apply.push((*pid, match mob.m_type { MobType::Wolf => 0.5, MobType::Bear => 1.5, _ => 0.0 }));
+                    let base_dmg = match mob.m_type { MobType::Wolf => 0.5, MobType::Bear => 1.5, _ => 0.0 };
+                    let level_mult = 1.0 + (mob.level as f64 * 0.1);
+                    dmg_to_apply.push((*pid, base_dmg * level_mult));
                 }
             }
         }
