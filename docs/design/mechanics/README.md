@@ -7,3 +7,4 @@ Core systems that drive the gameplay.
 - [Crafting](crafting/README.md)
 - [NPC Interaction](npc_interaction.md)
 - [Quests](quests.md)
+- [Barriers](barriers.md)

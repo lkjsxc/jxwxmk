@@ -1,4 +1,40 @@
-import { Resource, Structure, Mob, Player, Npc, World } from "../../types";
+import { Resource, Structure, Mob, Player, Npc, BarrierCore, World } from "../../types";
+
+export function drawBarrier(ctx: CanvasRenderingContext2D, b: BarrierCore, isTarget: boolean, scale: number) {
+    const range = b.base_range + (b.level - 1) * 50; // Hardcoded multiplier for now or pass from world?
+    
+    // Draw Range Field
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, range, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(0, 255, 255, 0.05)";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(0, 255, 255, 0.2)";
+    ctx.setLineDash([5, 5]);
+    ctx.stroke();
+    ctx.restore();
+
+    // Draw Core
+    if (isTarget) { drawOutline(ctx, b.x, b.y, 20 * scale, "cyan"); drawTooltip(ctx, b.x, b.y, `Core Lv.${b.level}`, "Info", ""); }
+    ctx.save(); ctx.translate(b.x, b.y); ctx.scale(scale, scale);
+    
+    // Pulsing effect
+    const pulse = 1 + Math.sin(Date.now() / 500) * 0.1;
+    ctx.scale(pulse, pulse);
+
+    const gradient = ctx.createRadialGradient(0, 0, 2, 0, 0, 15);
+    gradient.addColorStop(0, "#fff");
+    gradient.addColorStop(0.5, "#0ff");
+    gradient.addColorStop(1, "rgba(0, 255, 255, 0)");
+    
+    ctx.fillStyle = gradient;
+    ctx.beginPath(); ctx.arc(0, 0, 15, 0, Math.PI * 2); ctx.fill();
+    
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(-5, -5, 10, 10);
+    ctx.restore();
+}
 
 export function drawNpc(ctx: CanvasRenderingContext2D, n: Npc, ix: number, iy: number, isTarget: boolean, scale: number) {
     if (isTarget) { drawOutline(ctx, ix, iy, 18 * scale, "cyan"); drawTooltip(ctx, ix, iy, n.name, "Talk", ""); }

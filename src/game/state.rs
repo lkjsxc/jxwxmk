@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use uuid::Uuid;
 use serde::{Serialize, Deserialize};
-use crate::game::entities::{player::Player, resource::Resource, mob::Mob, structure::Structure, npc::Npc};
+use crate::game::entities::{player::Player, resource::Resource, mob::Mob, structure::Structure, npc::Npc, barrier::BarrierCore};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct World {
@@ -12,6 +12,7 @@ pub struct World {
     pub mobs: HashMap<Uuid, Mob>,
     pub structures: HashMap<Uuid, Structure>,
     pub npcs: HashMap<Uuid, Npc>,
+    pub barrier_cores: HashMap<Uuid, BarrierCore>,
 }
 
 impl World {
@@ -24,6 +25,7 @@ impl World {
             mobs: HashMap::new(),
             structures: HashMap::new(),
             npcs: HashMap::new(),
+            barrier_cores: HashMap::new(),
         }
     }
 }

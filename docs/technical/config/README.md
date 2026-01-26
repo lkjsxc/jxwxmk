@@ -11,8 +11,8 @@ The `config.json` file serves as the single source of truth for game balance.
     "tick_rate": 20
   },
   "game": {
-    "world_width": 20000,
-    "world_height": 20000,
+    "world_width": 4000,
+    "world_height": 4000,
     "interact_range": 60.0,
     "spawn_radius": 200.0
   },

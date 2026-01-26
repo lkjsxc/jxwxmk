@@ -1,27 +1,28 @@
 use crate::game::entities::player::Player;
-use crate::game::config::MechanicsConfig;
+use crate::game::config::AppConfig;
 
 pub struct SurvivalSystem;
 
 impl SurvivalSystem {
-    pub fn tick(player: &mut Player, cfg: &MechanicsConfig) {
-        let hunger_decay = cfg.hunger_decay / 20.0;
-        let heal_rate = cfg.heal_rate / 20.0;
-        let starve_dmg = cfg.starve_dmg / 20.0;
-        let freeze_dmg = cfg.freeze_dmg / 20.0;
+    pub fn tick(player: &mut Player, cfg: &AppConfig) {
+        let tick_rate = cfg.server.tick_rate as f64;
+        let hunger_decay = cfg.mechanics.hunger_decay / tick_rate;
+        let heal_rate = cfg.mechanics.heal_rate / tick_rate;
+        let starve_dmg = cfg.mechanics.starve_dmg / tick_rate;
+        let freeze_dmg = cfg.mechanics.freeze_dmg / tick_rate;
 
         // Hunger
         player.hunger -= hunger_decay;
         if player.hunger < 0.0 {
             player.hunger = 0.0;
             player.health -= starve_dmg;
-        } else if player.hunger > 90.0 && player.health < 100.0 {
+        } else if player.hunger > cfg.balance.player.heal_threshold && player.health < cfg.balance.player.max_health {
             player.health += heal_rate;
         }
 
         // Temperature
-        let target_temp = 50.0; 
-        let change_rate = cfg.cold_decay / 20.0;
+        let target_temp = cfg.balance.player.neutral_temp; 
+        let change_rate = cfg.mechanics.cold_decay / tick_rate;
         if player.cold < target_temp {
             player.cold += change_rate;
         } else {
@@ -33,6 +34,6 @@ impl SurvivalSystem {
             player.health -= freeze_dmg;
         }
 
-        player.health = player.health.clamp(0.0, 100.0);
+        player.health = player.health.clamp(0.0, cfg.balance.player.max_health);
     }
 }

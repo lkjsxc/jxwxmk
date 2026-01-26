@@ -18,6 +18,7 @@ export interface Achievement {
     name: string;
     description: string;
     stat_bonus: [string, number];
+    requirement?: { type: string, value: number };
 }
 
 export interface PlayerStats {
@@ -91,15 +92,12 @@ export interface Structure {
     lastHitAt?: number;
 }
 
-export interface Npc {
+export interface BarrierCore {
     id: string;
-    n_type: "Elder" | "Merchant" | "Guard";
-    name: string;
     x: number;
     y: number;
-    health: number;
-    dialogue_index: number;
-    trade_inventory?: Item[];
+    level: number;
+    base_range: number;
 }
 
 export interface World {
@@ -110,6 +108,7 @@ export interface World {
     mobs: Record<string, Mob>;
     structures: Record<string, Structure>;
     npcs: Record<string, Npc>;
+    barrier_cores: Record<string, BarrierCore>;
 }
 
 export interface NpcInteraction {

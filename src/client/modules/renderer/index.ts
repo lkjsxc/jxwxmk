@@ -3,7 +3,7 @@ import { InputManager } from "../input";
 import { Camera } from "../camera";
 import { UIManager } from "../ui/index";
 import { drawMap, lerp, getScale } from "./utils";
-import { drawResource, drawStructure, drawMob, drawPlayer, drawNpc } from "./entities";
+import { drawResource, drawStructure, drawMob, drawPlayer, drawNpc, drawBarrier } from "./entities";
 
 export class Renderer {
     canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D; camera: Camera;
@@ -74,6 +74,10 @@ export class Renderer {
                 const n = world.npcs[id]; const pN = prevWorld?.npcs[id] || n;
                 drawNpc(this.ctx, n, lerp(pN.x, n.x, alpha), lerp(pN.y, n.y, alpha), id === targetId, getScale(id, world, prevWorld));
             }
+            for (const id in world.barrier_cores) {
+                const b = world.barrier_cores[id];
+                drawBarrier(this.ctx, b, id === targetId, getScale(id, world, prevWorld));
+            }
             for (const id in world.players) {
                 const p = world.players[id];
                 if (!p.spawned) continue;
@@ -113,6 +117,7 @@ export class Renderer {
         for (const id in world.structures) check(id, world.structures[id].x, world.structures[id].y);
         for (const id in world.mobs) check(id, world.mobs[id].x, world.mobs[id].y);
         for (const id in world.npcs) check(id, world.npcs[id].x, world.npcs[id].y);
+        for (const id in world.barrier_cores) check(id, world.barrier_cores[id].x, world.barrier_cores[id].y);
         for (const id in world.players) {
             const p = world.players[id];
             if (p.spawned) check(id, p.x, p.y);

@@ -19,12 +19,26 @@ pub struct Mob {
     pub target_id: Option<Uuid>, // For aggression
 }
 
+use crate::game::config::MobConfig;
+
 impl Mob {
     pub fn new(m_type: MobType, x: f64, y: f64) -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            m_type,
+            x,
+            y,
+            health: 10.0, // Default, should use new_with_config
+            level: 1,
+            target_id: None,
+        }
+    }
+
+    pub fn new_with_config(m_type: MobType, x: f64, y: f64, cfg: &MobConfig) -> Self {
         let health = match m_type {
-            MobType::Rabbit => 10.0,
-            MobType::Wolf => 50.0,
-            MobType::Bear => 200.0,
+            MobType::Rabbit => cfg.rabbit_health,
+            MobType::Wolf => cfg.wolf_health,
+            MobType::Bear => cfg.bear_health,
         };
         Self {
             id: Uuid::new_v4(),

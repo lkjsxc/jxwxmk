@@ -19,13 +19,26 @@ pub struct Structure {
     pub owner_id: Uuid,
 }
 
+use crate::game::config::StructureConfig;
+
 impl Structure {
     pub fn new(s_type: StructureType, x: f64, y: f64, owner_id: Uuid) -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            s_type,
+            x,
+            y,
+            health: 10.0, // Default
+            owner_id,
+        }
+    }
+
+    pub fn new_with_config(s_type: StructureType, x: f64, y: f64, owner_id: Uuid, cfg: &StructureConfig) -> Self {
         let health = match s_type {
-            StructureType::Wall => 200.0,
-            StructureType::Door => 100.0,
-            StructureType::Workbench => 50.0,
-            StructureType::Torch => 10.0,
+            StructureType::Wall => cfg.wall_health,
+            StructureType::Door => cfg.door_health,
+            StructureType::Workbench => cfg.workbench_health,
+            StructureType::Torch => cfg.torch_health,
         };
         Self {
             id: Uuid::new_v4(),

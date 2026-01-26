@@ -17,12 +17,24 @@ pub struct Resource {
     pub amount: i32, // Remaining health/resources
 }
 
+use crate::game::config::ResourceConfig;
+
 impl Resource {
     pub fn new(r_type: ResourceType, x: f64, y: f64) -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            r_type,
+            x,
+            y,
+            amount: 1, // Default
+        }
+    }
+
+    pub fn new_with_config(r_type: ResourceType, x: f64, y: f64, cfg: &ResourceConfig) -> Self {
         let amount = match r_type {
-            ResourceType::Tree => 5,
-            ResourceType::Rock => 10,
-            ResourceType::Food => 1,
+            ResourceType::Tree => cfg.tree_amount,
+            ResourceType::Rock => cfg.rock_amount,
+            ResourceType::Food => cfg.food_amount,
         };
         Self {
             id: Uuid::new_v4(),

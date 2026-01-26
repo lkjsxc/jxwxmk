@@ -5,7 +5,7 @@ import { drawInventory, handleInvInput } from "./inventory";
 import { drawCrafting, handleCraftInput } from "./crafting";
 import { drawAchievements, handleAchInput } from "./achievements";
 import { drawProfile, handleProfileInput } from "./profile";
-import { drawQuests } from "./quests";
+import { drawQuests, handleQuestsInput } from "./quests";
 import { drawOver } from "./screens";
 
 export { AppState };
@@ -33,6 +33,8 @@ interface Toast { title: string; message: string; color: string; start: number; 
 export class UIManager {
     state: AppState = AppState.InGame;
     isMenuOpen = false;
+    pinnedQuestId: string | null = null;
+    pinnedAchId: string | null = null;
     npcInteraction: NpcInteraction | null = null;
     npcActionRequest: { npc_id: string, option_index: number } | null = null;
     tradeRequest: { npc_id: string, item_index: number, buy: boolean } | null = null;
@@ -68,6 +70,7 @@ export class UIManager {
         else if (this.state === AppState.InGame && p) {
             this.drawHotbar(ctx, p, w, h);
             this.drawMenu(ctx, p, w, h);
+            this.drawPinnedTracker(ctx, p, w, h);
             if (this.npcInteraction) this.drawNpcInteraction(ctx, w, h);
         }
         this.drawToast(ctx, w, h);
@@ -99,7 +102,7 @@ export class UIManager {
         else if (this.activeTab === MenuTab.Crafting) drawCrafting(ctx, p, this.selectedRecipe, cw, ch, this, this.scrollY);
         else if (this.activeTab === MenuTab.Profile) drawProfile(ctx, p, cw, ch, this.nameBuffer, this.isNameFocused, this);
         else if (this.activeTab === MenuTab.Quests) drawQuests(ctx, p, cw, ch, this, this.scrollY);
-        else if (this.activeTab === MenuTab.Achievements) drawAchievements(ctx, p, ALL_ACHIEVEMENTS, this.selectedAchId, cw, ch, this.scrollY);
+        else if (this.activeTab === MenuTab.Achievements) drawAchievements(ctx, p, ALL_ACHIEVEMENTS, this.selectedAchId, cw, ch, this.scrollY, this);
         ctx.restore();
     }
 
@@ -211,14 +214,18 @@ export class UIManager {
                                 const res = handleCraftInput(contentX, contentY, pw, ph - 50, p, this.selectedRecipe, this.scrollY);
                                 if (res.select) this.selectedRecipe = res.select;
                                 if (res.craft) this.craftRequest = this.selectedRecipe;
+                            } else if (this.activeTab === MenuTab.Quests && p) {
+                                const res = handleQuestsInput(contentX, contentY, pw, ph - 50, p, this, this.scrollY);
+                                if (res?.pin) this.pinnedQuestId = (this.pinnedQuestId === res.pin) ? null : res.pin;
                             } else if (this.activeTab === MenuTab.Profile && p) {
                                 const res = handleProfileInput(contentX, contentY, pw, ph - 50, p, this);
                                 if (res.focus) { this.isNameFocused = true; this.nameBuffer = p.username; }
                                 else if (res.update) { this.nameUpdateRequest = this.nameBuffer; this.isNameFocused = false; }
                                 else this.isNameFocused = false;
                             } else if (this.activeTab === MenuTab.Achievements) {
-                                const res = handleAchInput(contentX, contentY, pw, ph - 50, ALL_ACHIEVEMENTS, this.scrollY);
-                                if (res) this.selectedAchId = res;
+                                const res = handleAchInput(contentX, contentY, pw, ph - 50, ALL_ACHIEVEMENTS, this.selectedAchId, this.scrollY);
+                                if (res?.select) this.selectedAchId = res.select;
+                                if (res?.pin) this.pinnedAchId = (this.pinnedAchId === res.pin) ? null : res.pin;
                             }
                         }
                     }
@@ -294,5 +301,76 @@ export class UIManager {
         }
         lines.push(currentLine);
         return lines;
+    }
+
+    private drawPinnedTracker(ctx: CanvasRenderingContext2D, p: Player, w: number, h: number) {
+        if (!this.pinnedQuestId && !this.pinnedAchId) return;
+        
+        ctx.save();
+        const tw = 200;
+        let ty = 100;
+        const tx = w - tw - 20;
+
+        if (this.pinnedQuestId) {
+            const q = p.quests.find(q => q.id === this.pinnedQuestId);
+            if (q) {
+                this.drawTrackerBox(ctx, tx, ty, tw, q.name, q.state);
+                q.objectives.forEach((obj, i) => {
+                    let txt = ""; let pct = 0;
+                    if ("Gather" in obj) { txt = `${obj.Gather.item}: ${obj.Gather.current}/${obj.Gather.count}`; pct = obj.Gather.current/obj.Gather.count; }
+                    else if ("Kill" in obj) { txt = `${obj.Kill.mob_type}: ${obj.Kill.current}/${obj.Kill.count}`; pct = obj.Kill.current/obj.Kill.count; }
+                    else if ("TalkTo" in obj) { txt = `Talk to ${obj.TalkTo.npc_name}`; pct = q.state === "ReadyToTurnIn" ? 1 : 0; }
+                    this.drawTrackerObjective(ctx, tx + 10, ty + 35 + i * 20, tw - 20, txt, pct);
+                });
+                ty += 40 + q.objectives.length * 20;
+            }
+        }
+
+        if (this.pinnedAchId) {
+            const ach = ALL_ACHIEVEMENTS.find(a => a.id === this.pinnedAchId);
+            if (ach) {
+                const isUnlocked = p.achievements.includes(ach.id);
+                this.drawTrackerBox(ctx, tx, ty, tw, ach.name, isUnlocked ? "Unlocked" : "Progress");
+                if (!isUnlocked && ach.requirement) {
+                    const current = this.getProgressValue(p, ach.requirement.type);
+                    const pct = Math.min(1, current / ach.requirement.value);
+                    this.drawTrackerObjective(ctx, tx + 10, ty + 35, tw - 20, `${current}/${ach.requirement.value}`, pct);
+                }
+            }
+        }
+        ctx.restore();
+    }
+
+    private drawTrackerBox(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, title: string, sub: string) {
+        ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(x, y, w, 25);
+        ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.strokeRect(x, y, w, 25);
+        ctx.fillStyle = "#ff0"; ctx.font = "bold 12px sans-serif"; ctx.textAlign = "left";
+        ctx.fillText(title, x + 5, y + 12);
+        ctx.fillStyle = "#aaa"; ctx.textAlign = "right"; ctx.font = "10px sans-serif";
+        ctx.fillText(sub, x + w - 5, y + 12);
+    }
+
+    private drawTrackerObjective(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, text: string, pct: number) {
+        ctx.fillStyle = "white"; ctx.font = "11px sans-serif"; ctx.textAlign = "left";
+        ctx.fillText(text, x, y + 10);
+        ctx.fillStyle = "#222"; ctx.fillRect(x, y + 15, w, 4);
+        ctx.fillStyle = pct >= 1 ? "#4f4" : "#fb4"; ctx.fillRect(x, y + 15, w * Math.min(1, pct), 4);
+    }
+
+    private getProgressValue(p: Player, type: string): number {
+        if (!p.stats) return 0;
+        switch(type) {
+            case "Steps": return p.stats.steps_taken;
+            case "Kills": return p.stats.mobs_killed;
+            case "Resources": return p.stats.resources_gathered;
+            case "Crafts": return p.stats.items_crafted;
+            case "Structures": return p.stats.structures_placed;
+            case "ToolLevel": {
+                let max = 1;
+                for (const s of p.inventory.slots) if (s && s.level && s.level > max) max = s.level;
+                return max;
+            }
+            default: return 0;
+        }
     }
 }

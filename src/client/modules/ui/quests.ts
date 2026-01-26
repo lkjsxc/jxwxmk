@@ -23,6 +23,10 @@ export function drawQuests(ctx: CanvasRenderingContext2D, p: Player, w: number, 
         ctx.fillStyle = "white"; ctx.font = "14px sans-serif";
         ctx.fillText(quest.description, 25, y + 50);
 
+        // Pin Button
+        const isPinned = ui.pinnedQuestId === quest.id;
+        ui.drawBtn(ctx, w - 80, y + 40, 60, 25, isPinned ? "Unpin" : "Pin", isPinned);
+
         // Draw objectives
         quest.objectives.forEach((obj, i) => {
             let text = "";
@@ -44,4 +48,16 @@ export function drawQuests(ctx: CanvasRenderingContext2D, p: Player, w: number, 
 
         y += 120;
     });
+}
+
+export function handleQuestsInput(mx: number, my: number, w: number, h: number, p: Player, ui: UIManager, scrollY: number): { pin?: string } | null {
+    let y = 60 - scrollY;
+    for (const quest of p.quests) {
+        // Pin button hit check
+        if (mx >= w - 80 && mx <= w - 20 && my >= y + 40 && my <= y + 65) {
+            return { pin: quest.id };
+        }
+        y += 120;
+    }
+    return null;
 }

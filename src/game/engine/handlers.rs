@@ -87,7 +87,7 @@ impl Handler<Input> for GameEngine {
     type Result = ();
     fn handle(&mut self, msg: Input, _: &mut Context<Self>) {
         if let Some(p) = self.world.players.get(&msg.id) { if !p.spawned { return; } } else { return; }
-        InteractionSystem::handle_movement(&mut self.world, msg.id, msg.dx, msg.dy);
+        InteractionSystem::handle_movement(&mut self.world, &self.config, msg.id, msg.dx, msg.dy);
         if msg.attack {
             let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_millis() as u64;
             let events = InteractionSystem::handle_attack(&mut self.world, &self.config, msg.id, now);

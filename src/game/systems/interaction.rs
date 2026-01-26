@@ -36,11 +36,11 @@ impl InteractionSystem {
         target_npc.map(|npc_id| InteractionEvent::Npc { npc_id })
     }
 
-    pub fn handle_movement(world: &mut World, player_id: Uuid, dx: f64, dy: f64) {
+    pub fn handle_movement(world: &mut World, config: &AppConfig, player_id: Uuid, dx: f64, dy: f64) {
         if let Some(player) = world.players.get_mut(&player_id) {
             if dx != 0.0 || dy != 0.0 { player.stats.steps_taken += 1; }
             let bonus_speed = *player.stat_bonuses.get("speed").unwrap_or(&0.0) as f64;
-            let speed = 5.0 * (1.0 + bonus_speed);
+            let speed = config.balance.player.base_speed * (1.0 + bonus_speed);
             player.x = (player.x + dx * speed).clamp(0.0, world.width); 
             player.y = (player.y + dy * speed).clamp(0.0, world.height);
         }
@@ -54,12 +54,12 @@ impl InteractionSystem {
                 if now - p.last_attack_at < config.mechanics.attack_cooldown { return events; }
                 let bd = *p.stat_bonuses.get("damage").unwrap_or(&0.0) as f64;
                 let bg = *p.stat_bonuses.get("gather").unwrap_or(&0.0) as f64;
-                let mut td = 2.0; let mut rm = 1.0;
+                let mut td = config.balance.tools.base_dmg; let mut rm = 1.0;
                 let mut level_bonus = 0.0;
                 if let Some(item) = &p.inventory.slots[p.active_slot] {
-                    if item.kind == ItemType::WoodPickaxe { td = 4.0; rm = 2.0; }
-                    if item.kind == ItemType::StonePickaxe { td = 8.0; rm = 3.0; }
-                    level_bonus = (item.level as f64 - 1.0) * 0.1;
+                    if item.kind == ItemType::WoodPickaxe { td = config.balance.tools.wood_pickaxe_dmg; rm = config.balance.tools.rock_mult; }
+                    if item.kind == ItemType::StonePickaxe { td = config.balance.tools.stone_pickaxe_dmg; rm = config.balance.tools.rock_mult; }
+                    level_bonus = (item.level as f64 - 1.0) * config.balance.tools.tool_level_dmg_bonus;
                 }
                 (p.x, p.y, p.active_slot, td * (1.0 + bd + level_bonus), rm, bg)
             } else { return events; }
@@ -72,13 +72,13 @@ impl InteractionSystem {
             
             if let Some(item) = &mut p.inventory.slots[slot] {
                 if matches!(item.kind, ItemType::Berry | ItemType::Meat | ItemType::CookedMeat) {
-                     p.hunger = (p.hunger + config.mechanics.food_value).min(100.0);
+                     p.hunger = (p.hunger + config.mechanics.food_value).min(config.balance.player.max_hunger);
                      item.amount -= 1; consumed = true;
                 } else if let Some(st) = match item.kind {
                     ItemType::WoodWall => Some(StructureType::Wall), ItemType::Door => Some(StructureType::Door),
                     ItemType::Torch => Some(StructureType::Torch), ItemType::Workbench => Some(StructureType::Workbench), _ => None
                 } {
-                    built_structure = Some(Structure::new(st, p.x, p.y, player_id));
+                    built_structure = Some(Structure::new_with_config(st, p.x, p.y, player_id, &config.balance.structures));
                     p.stats.structures_placed += 1;
                     item.amount -= 1; consumed = true;
                 }

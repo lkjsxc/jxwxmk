@@ -40,12 +40,77 @@ pub struct LevelingConfig {
 }
 
 #[derive(Debug, Deserialize, Clone)]
+pub struct BarrierConfig {
+    pub base_range: f64,
+    pub level_multiplier: f64,
+    pub placement_chance_center: f64,
+    pub max_additional_barriers: u32,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct PlayerConfig {
+    pub base_speed: f64,
+    pub max_health: f64,
+    pub max_hunger: f64,
+    pub neutral_temp: f64,
+    pub heal_threshold: f64,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct MobConfig {
+    pub rabbit_health: f64,
+    pub wolf_health: f64,
+    pub bear_health: f64,
+    pub wolf_dmg: f64,
+    pub bear_dmg: f64,
+    pub level_hp_mult: f64,
+    pub level_dmg_mult: f64,
+    pub aggression_range: f64,
+    pub attack_range: f64,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct ToolConfig {
+    pub base_dmg: f64,
+    pub wood_pickaxe_dmg: f64,
+    pub stone_pickaxe_dmg: f64,
+    pub rock_mult: f64,
+    pub tool_level_dmg_bonus: f64,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct ResourceConfig {
+    pub tree_amount: i32,
+    pub rock_amount: i32,
+    pub food_amount: i32,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct StructureConfig {
+    pub wall_health: f64,
+    pub door_health: f64,
+    pub workbench_health: f64,
+    pub torch_health: f64,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct BalanceConfig {
+    pub player: PlayerConfig,
+    pub mobs: MobConfig,
+    pub tools: ToolConfig,
+    pub resources: ResourceConfig,
+    pub structures: StructureConfig,
+}
+
+#[derive(Debug, Deserialize, Clone)]
 pub struct AppConfig {
     pub server: ServerConfig,
     pub game: GameConfig,
     pub mechanics: MechanicsConfig,
     pub spawning: SpawnConfig,
     pub leveling: LevelingConfig,
+    pub barriers: BarrierConfig,
+    pub balance: BalanceConfig,
 }
 
 impl AppConfig {
