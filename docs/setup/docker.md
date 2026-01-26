@@ -1,29 +1,26 @@
 # Docker Setup
 
-We use Docker Compose to run the entire stack.
+We run a **single container** that includes both the Rust server and PostgreSQL.
 
-## Services
-
-1.  **`app`**: The Rust application.
-    - Builds from `Dockerfile`.
-    - Exposes port 8080.
-    - Depends on `db`.
-2.  **`db`**: PostgreSQL database.
-    - Uses official `postgres` image.
-    - Persists data to a volume.
-
-## Commands
+## Build
 
 ```bash
-# Start everything
-docker-compose up --build
-
-# Stop everything
-docker-compose down
+docker build -f src/runtime/Dockerfile -t kkmypk .
 ```
 
-## Development
+## Run
 
-For local dev (outside docker):
-1.  Start DB: `docker-compose up db -d`
-2.  Run App: `cargo run`
+```bash
+docker run --rm \
+    -p 8080:8080 \
+    -e DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/kkmypk \
+    -e APP_BIND=0.0.0.0:8080 \
+    -e TICK_HZ=20 \
+    -v kkmypk_pgdata:/var/lib/postgresql/data \
+    kkmypk
+```
+
+## Notes
+
+- PostgreSQL is **not** exposed to the host.
+- The server connects to the local DB via `127.0.0.1`.

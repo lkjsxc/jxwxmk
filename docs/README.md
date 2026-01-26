@@ -13,3 +13,4 @@ This is the comprehensive documentation for the **kkmypk** project.
   - [Frontend](technical/frontend/README.md) (Rendering, Input)
   - [Deployment](technical/deployment/README.md) (Docker, CI/CD)
 - [Setup](setup/README.md)
+- [Policy](policy/README.md)
