@@ -10,7 +10,9 @@ This document describes how the server handles player death and reconnection.
     - `p.health` is reset to `0.0`.
     - `p.stats.deaths` is incremented.
     - `p.inventory` is cleared (using `Inventory::default()`).
-3. **Notification**: The player's ID remains in the world, but they are marked as not spawned. On the next world update, the client detects that `!p.spawned` and triggers the Game Over screen.
+3. **Notification**: The player's ID remains in the server's authoritative state (for reconnection), but they are marked as not spawned. 
+4. **Disappearance**: The server filters out unspawned players from the world broadcast. This ensures dead players "disappear" from the view of other players.
+5. **Client Death**: On the next world update, the client detects that its local player is missing from the broadcast (or marked dead) and triggers the Game Over screen.
 
 ## Reconnection Flow
 

@@ -71,7 +71,9 @@ export class Renderer {
                 drawMob(this.ctx, m, lerp(pM.x, m.x, alpha), lerp(pM.y, m.y, alpha), id === targetId, getScale(id, world, prevWorld));
             }
             for (const id in world.players) {
-                const p = world.players[id]; const pP = prevWorld?.players[id] || p;
+                const p = world.players[id];
+                if (!p.spawned) continue;
+                const pP = prevWorld?.players[id] || p;
                 drawPlayer(this.ctx, p, lerp(pP.x, p.x, alpha), lerp(pP.y, p.y, alpha), id === targetId, getScale(id, world, prevWorld));
             }
         }
@@ -89,8 +91,8 @@ export class Renderer {
             }
             // Allow UI to render its overlays (StartScreen, GameOver, Menus)
             // ui.render handles state checking internally for what to draw
-            if (myId && world.players[myId]) ui.render(this.ctx, world.players[myId], input);
-            else ui.render(this.ctx, null, input);
+            const me = myId ? world.players[myId] : null;
+            ui.render(this.ctx, me, input);
         }
     }
 
@@ -106,7 +108,10 @@ export class Renderer {
         for (const id in world.resources) check(id, world.resources[id].x, world.resources[id].y);
         for (const id in world.structures) check(id, world.structures[id].x, world.structures[id].y);
         for (const id in world.mobs) check(id, world.mobs[id].x, world.mobs[id].y);
-        for (const id in world.players) check(id, world.players[id].x, world.players[id].y);
+        for (const id in world.players) {
+            const p = world.players[id];
+            if (p.spawned) check(id, p.x, p.y);
+        }
         return closestId;
     }
 

@@ -10,7 +10,9 @@ use crate::game::systems::achievements::AchievementSystem;
 
 impl GameEngine {
     pub(super) fn broadcast(&self) { 
-        let msg = ServerMessage::WorldUpdate(self.world.clone()); 
+        let mut world_copy = self.world.clone();
+        world_copy.players.retain(|_, p| p.spawned);
+        let msg = ServerMessage::WorldUpdate(world_copy); 
         for addr in self.sessions.values() { 
             addr.do_send(msg.clone()); 
         } 

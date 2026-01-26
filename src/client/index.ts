@@ -32,9 +32,10 @@ function connect() {
                 }
             } else if (msg.type === "world") {
                  prevWorld = world; world = msg.data; lastUpdateAt = Date.now();
-                 if (ui.state === AppState.InGame && myId && world) {
+                 if (ui.state === AppState.InGame && myId) {
                      const p = world.players[myId];
-                     if (!p || !p.spawned) { ui.state = AppState.GameOver; }
+                     // If player is missing from broadcast, they are either dead or not spawned
+                     if (!p) { ui.state = AppState.GameOver; }
                  }
             } else if (msg.type === "achievement") {
                 ui.showAchievement(msg.data);
