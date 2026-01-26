@@ -7,8 +7,9 @@ export function drawQuests(ctx: CanvasRenderingContext2D, p: Player, w: number, 
 
     let y = 50 - scrollY;
     p.quests.forEach(quest => {
-        const cardH = 130;
-        const spacing = 140;
+        const descLines = ui.wrapText(ctx, quest.description, w - 100);
+        const cardH = 100 + descLines.length * 20;
+        const spacing = cardH + 10;
         if (y + cardH < 0 || y > h) { y += spacing; return; }
 
         ctx.fillStyle = "rgba(255,255,255,0.1)";
@@ -24,13 +25,16 @@ export function drawQuests(ctx: CanvasRenderingContext2D, p: Player, w: number, 
         ctx.textAlign = "left";
 
         ctx.fillStyle = "white"; ctx.font = "14px sans-serif";
-        ctx.fillText(quest.description, 25, y + 35);
+        descLines.forEach((line, i) => {
+            ctx.fillText(line, 25, y + 35 + i * 20);
+        });
 
         // Pin Button
         const isPinned = ui.pinnedQuestId === quest.id;
         ui.drawBtn(ctx, w - 80, y + 35, 60, 25, isPinned ? "Unpin" : "Pin", isPinned);
 
         // Draw objectives
+        const objY = y + 40 + descLines.length * 20;
         quest.objectives.forEach((obj, i) => {
             let text = "";
             let progress = 0;
@@ -46,7 +50,7 @@ export function drawQuests(ctx: CanvasRenderingContext2D, p: Player, w: number, 
             }
             
             ctx.fillStyle = progress >= 1 ? "#4f4" : "#fff";
-            ctx.fillText("- " + text, 35, y + 65 + i * 20);
+            ctx.fillText("- " + text, 35, objY + i * 20);
         });
 
         y += spacing;
@@ -56,8 +60,11 @@ export function drawQuests(ctx: CanvasRenderingContext2D, p: Player, w: number, 
 
 export function handleQuestsInput(mx: number, my: number, w: number, h: number, p: Player, ui: UIManager, scrollY: number): { pin?: string } | null {
     let y = 50 - scrollY;
-    const spacing = 140;
     for (const quest of p.quests) {
+        const descLines = ui.wrapText(ui.ctx, quest.description, w - 100);
+        const cardH = 100 + descLines.length * 20;
+        const spacing = cardH + 10;
+        
         // Pin button hit check
         if (mx >= w - 80 && mx <= w - 20 && my >= y + 35 && my <= y + 60) {
             return { pin: quest.id };

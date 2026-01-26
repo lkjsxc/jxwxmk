@@ -32,6 +32,7 @@ interface Toast { title: string; message: string; color: string; start: number; 
 
 export class UIManager {
     state: AppState = AppState.InGame;
+    ctx!: CanvasRenderingContext2D;
     isMenuOpen = false;
     pinnedQuestId: string | null = null;
     pinnedAchId: string | null = null;
@@ -61,6 +62,7 @@ export class UIManager {
     }
 
     render(ctx: CanvasRenderingContext2D, p: Player | null, input: InputManager) {
+        this.ctx = ctx;
         const dpr = window.devicePixelRatio || 1;
         const w = ctx.canvas.width / dpr;
         const h = ctx.canvas.height / dpr;
@@ -80,7 +82,7 @@ export class UIManager {
     }
 
     private drawMenu(ctx: CanvasRenderingContext2D, p: Player, w: number, h: number) {
-        this.drawBtn(ctx, w - 60, 20, 50, 50, "☰", this.isMenuOpen, 30);
+        this.drawBtn(ctx, w - 60, 20, 50, 50, "☰", this.isMenuOpen, 40);
         if (!this.isMenuOpen) return;
 
         const m = 20; const px = m; const py = m; const pw = w - m * 2; const ph = h - m * 2;
@@ -88,11 +90,11 @@ export class UIManager {
         ctx.strokeStyle = "#fff"; ctx.strokeRect(px, py, pw, ph);
 
         const tabs = ["INV", "CRAFT", "PROF", "QUESTS", "ACH"];
-        const tw = (pw - 60) / tabs.length; // Leave space for close button
+        const tw = (pw - 80) / tabs.length; // Leave more space for close button
         for (let i = 0; i < tabs.length; i++) {
-            this.drawBtn(ctx, px + i * tw, py, tw, 50, tabs[i], this.activeTab === i);
+            this.drawBtn(ctx, px + i * tw, py, tw, 50, tabs[i], this.activeTab === i, 12);
         }
-        this.drawBtn(ctx, px + pw - 50, py + 5, 40, 40, "X", false, 20);
+        this.drawBtn(ctx, px + pw - 60, py + 5, 50, 40, "X", false, 20);
 
         ctx.save();
         ctx.beginPath(); ctx.rect(px, py + 50, pw, ph - 50); ctx.clip();
@@ -203,8 +205,8 @@ export class UIManager {
                 } else if (this.isMenuOpen) {
                     consumed = true; // Any click while menu is open is consumed
                     const m = 20; const px = m; const py = m; const pw = w - m * 2; const ph = h - m * 2;
-                    if (this.hit(mx, my, px + pw - 50, py + 5, 40, 40)) this.isMenuOpen = false;
-                    else if (this.hit(mx, my, px, py, pw - 60, 50)) { this.activeTab = Math.floor((mx - px) / ((pw - 60) / 5)); this.scrollY = 0; }
+                    if (this.hit(mx, my, px + pw - 60, py + 5, 50, 40)) this.isMenuOpen = false;
+                    else if (this.hit(mx, my, px, py, pw - 80, 50)) { this.activeTab = Math.floor((mx - px) / ((pw - 80) / 5)); this.scrollY = 0; }
                     else {
                         const contentX = mx - px; const contentY = my - (py + 50);
                         if (contentX >= 0 && contentY >= 0 && contentX <= pw && contentY <= ph - 50) {
@@ -290,7 +292,7 @@ export class UIManager {
         });
     }
 
-    private wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+    public wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
         const words = text.split(' ');
         const lines = [];
         let currentLine = words[0];
