@@ -69,8 +69,8 @@ export class UIManager {
         if (this.state === AppState.GameOver) drawOver(ctx, w, h, this);
         else if (this.state === AppState.InGame && p) {
             this.drawHotbar(ctx, p, w, h);
-            this.drawMenu(ctx, p, w, h);
             this.drawPinnedTracker(ctx, p, w, h);
+            this.drawMenu(ctx, p, w, h);
             if (this.npcInteraction) this.drawNpcInteraction(ctx, w, h);
         }
         this.drawToast(ctx, w, h);
