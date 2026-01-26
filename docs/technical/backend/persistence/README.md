@@ -19,5 +19,5 @@ Players remain in the world after disconnection and can rejoin.
     - If no match, a new Player is created.
 
 ### Death
-- If `HP <= 0`, the player entity is removed (or marked Dead).
-- Rejoining with a dead player's token prompts a "Game Over" screen and respawn (new entity).
+- If `HP <= 0`, the player entity is marked as dead (`spawned = false`) and inventory is cleared.
+- Rejoining with a dead player's token possess the existing entity, prompts a "Game Over" screen, and requires a respawn (fresh start for that entity).

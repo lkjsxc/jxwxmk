@@ -14,7 +14,7 @@ impl GameSession {
     }
 }
 
-#[derive(Serialize)] struct WelcomeMsg { #[serde(rename = "type")] msg_type: String, id: Uuid, token: String }
+#[derive(Serialize)] struct WelcomeMsg { #[serde(rename = "type")] msg_type: String, id: Uuid, token: String, spawned: bool }
 #[derive(Serialize)] struct WorldMsg<T> { #[serde(rename = "type")] msg_type: String, data: T }
 #[derive(Serialize)] struct NotificationPayload { title: String, message: String, color: String }
 
@@ -24,9 +24,9 @@ impl Actor for GameSession {
         let addr = ctx.address().recipient();
         let join_msg = Join { id: self.id, token: self.token.clone(), addr };
         self.game_engine.send(join_msg).into_actor(self).then(|res, act, ctx: &mut ws::WebsocketContext<GameSession>| {
-            if let Ok(Some((token, id))) = res {
+            if let Ok(Some((token, id, spawned))) = res {
                 act.id = id;
-                let welcome = WelcomeMsg { msg_type: "welcome".to_string(), id, token };
+                let welcome = WelcomeMsg { msg_type: "welcome".to_string(), id, token, spawned };
                 if let Ok(json) = serde_json::to_string(&welcome) { ctx.text(json); }
             } else { ctx.stop(); }
             actix::fut::ready(())

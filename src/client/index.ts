@@ -26,11 +26,16 @@ function connect() {
             if (msg.type === "welcome") {
                 myId = msg.id;
                 if (msg.token) localStorage.setItem(STORAGE_KEY, msg.token);
-                // Auto-spawn
-                if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ spawn: true }));
+                // Auto-spawn only if not already spawned (e.g. first time or died)
+                if (!msg.spawned && ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ spawn: true }));
+                }
             } else if (msg.type === "world") {
                  prevWorld = world; world = msg.data; lastUpdateAt = Date.now();
-                 if (ui.state === AppState.InGame && myId && world && !world.players[myId]) { ui.state = AppState.GameOver; }
+                 if (ui.state === AppState.InGame && myId && world) {
+                     const p = world.players[myId];
+                     if (!p || !p.spawned) { ui.state = AppState.GameOver; }
+                 }
             } else if (msg.type === "achievement") {
                 ui.showAchievement(msg.data);
             } else if (msg.type === "notification") {

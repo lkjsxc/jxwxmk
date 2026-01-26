@@ -8,14 +8,21 @@ use crate::game::systems::crafting::CraftingSystem;
 use crate::game::systems::interaction::{InteractionSystem, InteractionEvent};
 
 impl Handler<Join> for GameEngine {
-    type Result = Option<(String, Uuid)>;
+    type Result = Option<(String, Uuid, bool)>;
     fn handle(&mut self, msg: Join, _: &mut Context<Self>) -> Self::Result {
-        if let Some(token) = msg.token { if let Some(player) = self.world.players.values_mut().find(|p| p.token == token) { let player_id = player.id; self.sessions.insert(player_id, msg.addr); return Some((token, player_id)); } }
+        if let Some(token) = msg.token { 
+            if let Some(player) = self.world.players.values_mut().find(|p| p.token == token) { 
+                let player_id = player.id; 
+                let spawned = player.spawned;
+                self.sessions.insert(player_id, msg.addr); 
+                return Some((token, player_id, spawned)); 
+            } 
+        }
         let token = Uuid::new_v4().to_string(); 
         self.sessions.insert(msg.id, msg.addr);
         let player = Player::new(msg.id, token.clone(), "Guest".to_string(), 0.0, 0.0);
         self.world.players.insert(msg.id, player); 
-        Some((token, msg.id))
+        Some((token, msg.id, false))
     }
 }
 
@@ -30,6 +37,7 @@ impl Handler<Spawn> for GameEngine {
             player.y = cy + angle.sin() * dist;
             player.health = 100.0;
             player.hunger = 100.0;
+            player.cold = 50.0;
             player.spawned = true;
         }
     }
@@ -40,15 +48,16 @@ impl Handler<Craft> for GameEngine {
     type Result = (); 
     fn handle(&mut self, msg: Craft, _: &mut Context<Self>) { 
         if let Some(p) = self.world.players.get_mut(&msg.id) { 
+            if !p.spawned { return; }
             CraftingSystem::craft(&mut p.inventory, msg.item); 
             p.stats.items_crafted += 1;
         }
         self.check_achievements(msg.id);
     } 
 }
-impl Handler<SelectSlot> for GameEngine { type Result = (); fn handle(&mut self, msg: SelectSlot, _: &mut Context<Self>) { if let Some(p) = self.world.players.get_mut(&msg.id) { if msg.slot < 7 { p.active_slot = msg.slot; } } } }
+impl Handler<SelectSlot> for GameEngine { type Result = (); fn handle(&mut self, msg: SelectSlot, _: &mut Context<Self>) { if let Some(p) = self.world.players.get_mut(&msg.id) { if p.spawned && msg.slot < 7 { p.active_slot = msg.slot; } } } }
 impl Handler<UpdateName> for GameEngine { type Result = (); fn handle(&mut self, msg: UpdateName, _: &mut Context<Self>) { if let Some(p) = self.world.players.get_mut(&msg.id) { let mut n = msg.name.trim().to_string(); if n.is_empty() { n = "Guest".to_string(); } if n.len() > 12 { n.truncate(12); } p.username = n; } } }
-impl Handler<SwapSlots> for GameEngine { type Result = (); fn handle(&mut self, msg: SwapSlots, _: &mut Context<Self>) { if let Some(p) = self.world.players.get_mut(&msg.id) { if msg.from < p.inventory.slots.len() && msg.to < p.inventory.slots.len() { p.inventory.slots.swap(msg.from, msg.to); } } } }
+impl Handler<SwapSlots> for GameEngine { type Result = (); fn handle(&mut self, msg: SwapSlots, _: &mut Context<Self>) { if let Some(p) = self.world.players.get_mut(&msg.id) { if p.spawned && msg.from < p.inventory.slots.len() && msg.to < p.inventory.slots.len() { p.inventory.slots.swap(msg.from, msg.to); } } } }
 
 impl Handler<Input> for GameEngine {
     type Result = ();

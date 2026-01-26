@@ -54,19 +54,12 @@ impl GameEngine {
     }
     
     pub(super) fn tick_world(&mut self) {
-        let mut dead_p = Vec::new();
-        for (id, p) in self.world.players.iter_mut() { 
-            if !p.spawned { continue; }
-            SurvivalSystem::tick(p, &self.config.mechanics); 
-            if p.health <= 0.0 { dead_p.push(*id); } 
-        }
-        for id in dead_p { 
-            if let Some(p) = self.world.players.get_mut(&id) { 
-                p.stats.deaths += 1; 
-                p.spawned = false; 
-            }
+        // 1. Survival tick
+        for p in self.world.players.values_mut() { 
+            if p.spawned { SurvivalSystem::tick(p, &self.config.mechanics); }
         }
 
+        // 2. Mob AI
         let mut rng = rand::thread_rng();
         let player_ids: Vec<Uuid> = self.world.players.keys().cloned().collect();
         for mob in self.world.mobs.values_mut() {
@@ -89,6 +82,7 @@ impl GameEngine {
             }
         }
         
+        // 3. Mob Damage
         let mut dmg_to_apply = Vec::new();
         for mob in self.world.mobs.values() {
             if mob.m_type == MobType::Rabbit { continue; }
@@ -104,9 +98,24 @@ impl GameEngine {
         for (pid, d) in dmg_to_apply { 
             if let Some(p) = self.world.players.get_mut(&pid) { 
                 p.health -= d; p.stats.damage_taken += d; 
-                if p.health <= 0.0 { p.spawned = false; p.stats.deaths += 1; }
             }
             self.check_achievements(pid);
+        }
+
+        // 4. Death Check & Cleanup (Catch all deaths)
+        let mut dead_ids = Vec::new();
+        for (id, p) in self.world.players.iter_mut() {
+            if p.spawned && p.health <= 0.0 {
+                dead_ids.push(*id);
+            }
+        }
+        for id in dead_ids {
+            if let Some(p) = self.world.players.get_mut(&id) {
+                p.spawned = false;
+                p.health = 0.0;
+                p.stats.deaths += 1;
+                p.inventory = crate::game::entities::player::Inventory::default();
+            }
         }
     }
 }

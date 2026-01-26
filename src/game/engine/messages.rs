@@ -13,7 +13,7 @@ pub enum ServerMessage {
 }
 
 #[derive(Message)] #[rtype(result = "()")] pub struct Tick;
-#[derive(Message)] #[rtype(result = "Option<(String, Uuid)>")] pub struct Join { pub id: Uuid, pub token: Option<String>, pub addr: Recipient<ServerMessage> }
+#[derive(Message)] #[rtype(result = "Option<(String, Uuid, bool)>")] pub struct Join { pub id: Uuid, pub token: Option<String>, pub addr: Recipient<ServerMessage> }
 #[derive(Message)] #[rtype(result = "()")] pub struct Leave { pub id: Uuid }
 #[derive(Message)] #[rtype(result = "()")] pub struct Input { pub id: Uuid, pub dx: f64, pub dy: f64, pub attack: bool, pub interact: bool }
 #[derive(Message)] #[rtype(result = "()")] pub struct Craft { pub id: Uuid, pub item: ItemType }
