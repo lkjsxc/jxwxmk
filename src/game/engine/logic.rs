@@ -35,7 +35,7 @@ impl GameEngine {
     pub(super) fn spawn_initial_entities(&mut self) {
         let mut rng = rand::thread_rng();
         let area = self.world.width * self.world.height;
-        let unit_area = 10000.0;
+        let unit_area = self.config.spawning.unit_area;
         
         let resource_count = (area / unit_area * self.config.spawning.resource_density) as usize;
         let mob_count = (area / unit_area * self.config.spawning.mob_density) as usize;

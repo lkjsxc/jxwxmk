@@ -23,14 +23,15 @@ pub struct MechanicsConfig {
     pub starve_dmg: f64,
     pub freeze_dmg: f64,
     pub food_value: f64,
-    pub attack_cooldown: u64,
-    pub interact_cooldown: u64,
+    pub attack_cooldown: f64,
+    pub interact_cooldown: f64,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct SpawnConfig {
-    pub resource_density: f64, // Resources per 10000 sq units
-    pub mob_density: f64,      // Mobs per 10000 sq units
+    pub resource_density: f64, // Resources per unit sq units
+    pub mob_density: f64,      // Mobs per unit sq units
+    pub unit_area: f64,        // Unit area for density calculation
 }
 
 #[derive(Debug, Deserialize, Clone)]

@@ -51,7 +51,7 @@ impl InteractionSystem {
         
         let (px, py, slot, mut tool_dmg, mut rock_mult, mut bonus_gather) = {
             if let Some(p) = world.players.get(&player_id) {
-                if now - p.last_attack_at < config.mechanics.attack_cooldown { return events; }
+                if now - p.last_attack_at < (config.mechanics.attack_cooldown * 1000.0) as u64 { return events; }
                 let bd = *p.stat_bonuses.get("damage").unwrap_or(&0.0) as f64;
                 let bg = *p.stat_bonuses.get("gather").unwrap_or(&0.0) as f64;
                 let mut td = config.balance.tools.base_dmg; let mut rm = 1.0;

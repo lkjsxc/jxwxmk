@@ -16,12 +16,13 @@
     "starve_dmg": 0.5,
     "freeze_dmg": 0.3,
     "food_value": 20.0,
-    "attack_cooldown": 500,
-    "interact_cooldown": 400
+    "attack_cooldown": 0.5,
+    "interact_cooldown": 0.4
   },
   "spawning": {
     "resource_density": 0.2,
-    "mob_density": 0.05
+    "mob_density": 0.05,
+    "unit_area": 10000.0
   },
   "leveling": {
     "mob_level_factor": 0.001,

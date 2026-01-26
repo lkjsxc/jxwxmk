@@ -80,7 +80,7 @@ export class UIManager {
     }
 
     private drawMenu(ctx: CanvasRenderingContext2D, p: Player, w: number, h: number) {
-        this.drawBtn(ctx, w - 60, 20, 50, 50, "☰", this.isMenuOpen);
+        this.drawBtn(ctx, w - 60, 20, 50, 50, "☰", this.isMenuOpen, 30);
         if (!this.isMenuOpen) return;
 
         const m = 20; const px = m; const py = m; const pw = w - m * 2; const ph = h - m * 2;
@@ -88,11 +88,11 @@ export class UIManager {
         ctx.strokeStyle = "#fff"; ctx.strokeRect(px, py, pw, ph);
 
         const tabs = ["INV", "CRAFT", "PROF", "QUESTS", "ACH"];
-        const tw = pw / tabs.length;
+        const tw = (pw - 60) / tabs.length; // Leave space for close button
         for (let i = 0; i < tabs.length; i++) {
             this.drawBtn(ctx, px + i * tw, py, tw, 50, tabs[i], this.activeTab === i);
         }
-        this.drawBtn(ctx, px + pw - 40, py + 10, 30, 30, "X", false);
+        this.drawBtn(ctx, px + pw - 50, py + 5, 40, 40, "X", false, 20);
 
         ctx.save();
         ctx.beginPath(); ctx.rect(px, py + 50, pw, ph - 50); ctx.clip();
@@ -152,13 +152,13 @@ export class UIManager {
         }
     }
 
-    drawBtn(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, l: string, a: boolean) {
+    drawBtn(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, l: string, a: boolean, fontSize: number = 14) {
         ctx.fillStyle = a ? "rgba(74, 164, 74, 0.9)" : "rgba(68, 68, 68, 0.8)";
         ctx.fillRect(x, y, w, h);
         ctx.strokeStyle = "#fff";
         ctx.lineWidth = 1;
         ctx.strokeRect(x, y, w, h);
-        ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = "bold 14px sans-serif"; ctx.fillText(l, x + w / 2, y + h / 2);
+        ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = `bold ${fontSize}px sans-serif`; ctx.fillText(l, x + w / 2, y + h / 2);
     }
 
     handleInput(input: InputManager, w: number, h: number, p: Player | null) {
@@ -183,6 +183,7 @@ export class UIManager {
                 consumed = true;
             } else if (this.state === AppState.InGame) {
                 if (this.npcInteraction) {
+                    // ... (no changes to npcInteraction coordinates needed)
                     consumed = true;
                     const dw = Math.min(400, w - 40);
                     const dh = 250;
@@ -202,8 +203,8 @@ export class UIManager {
                 } else if (this.isMenuOpen) {
                     consumed = true; // Any click while menu is open is consumed
                     const m = 20; const px = m; const py = m; const pw = w - m * 2; const ph = h - m * 2;
-                    if (this.hit(mx, my, px + pw - 40, py + 10, 30, 30)) this.isMenuOpen = false;
-                    else if (this.hit(mx, my, px, py, pw, 50)) { this.activeTab = Math.floor((mx - px) / (pw / 5)); this.scrollY = 0; }
+                    if (this.hit(mx, my, px + pw - 50, py + 5, 40, 40)) this.isMenuOpen = false;
+                    else if (this.hit(mx, my, px, py, pw - 60, 50)) { this.activeTab = Math.floor((mx - px) / ((pw - 60) / 5)); this.scrollY = 0; }
                     else {
                         const contentX = mx - px; const contentY = my - (py + 50);
                         if (contentX >= 0 && contentY >= 0 && contentX <= pw && contentY <= ph - 50) {

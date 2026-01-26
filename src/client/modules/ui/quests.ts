@@ -51,6 +51,7 @@ export function drawQuests(ctx: CanvasRenderingContext2D, p: Player, w: number, 
 
         y += spacing;
     });
+    ctx.textBaseline = "alphabetic"; // Reset to default
 }
 
 export function handleQuestsInput(mx: number, my: number, w: number, h: number, p: Player, ui: UIManager, scrollY: number): { pin?: string } | null {

@@ -22,7 +22,7 @@ export class InputManager {
     lastAttackAt: number = 0;
     lastInteractAt: number = 0;
     attackCooldown: number = 500;
-    interactCooldown: number = 300;
+    interactCooldown: number = 400;
 
     constructor() {
         this.resizeButtons();
@@ -91,9 +91,9 @@ export class InputManager {
         
         // Ergonomic positioning: A is primary (larger, lower), B is secondary (smaller, higher/left)
         this.btnA.x = w - 100 * btnScale;
-        this.btnA.y = h - 120 * btnScale;
+        this.btnA.y = h - 180 * btnScale;
         this.btnB.x = w - 180 * btnScale;
-        this.btnB.y = h - 80 * btnScale;
+        this.btnB.y = h - 140 * btnScale;
         
         // Ensure they don't go off screen on very small devices
         this.btnA.x = Math.max(this.btnA.radius + 10, this.btnA.x);
