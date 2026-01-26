@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  kkmypk:
+    build:
+      context: .
+      dockerfile: src/runtime/Dockerfile
+    image: kkmypk:latest
+    ports:
+      - "8080:8080"
+    environment:
+      APP_BIND: "0.0.0.0:8080"
+      DATABASE_URL: "postgres://postgres:postgres@127.0.0.1:5432/kkmypk"
+      TICK_HZ: "20"
+    volumes:
+      - kkmypk_pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  kkmypk_pgdata:
