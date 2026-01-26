@@ -113,16 +113,26 @@ export class UIManager {
     }
 
     drawHotbar(ctx: CanvasRenderingContext2D, p: Player, w: number, h: number) {
-        const slots = 7; const ss = Math.min(50, (w - 80) / 7); const pad = 10; const sx = (w - (slots * (ss + pad))) / 2; const sy = h - ss - 20;
+        const slots = 7;
+        const isSmall = w < 600;
+        const ss = isSmall ? Math.min(50, (w - 20) / 7) : Math.min(50, (w - 80) / 7);
+        const pad = isSmall ? 2 : 10;
+        const sx = (w - (slots * (ss + pad))) / 2;
+        const sy = h - ss - (isSmall ? 15 : 20);
+
         for (let i = 0; i < slots; i++) {
             const x = sx + i * (ss + pad);
-            ctx.fillStyle = i === p.active_slot ? "#aa0" : "#000"; ctx.globalAlpha = 0.5; ctx.fillRect(x, sy, ss, ss); ctx.globalAlpha = 1;
-            ctx.strokeStyle = "#fff"; ctx.strokeRect(x, sy, ss, ss);
-            const item = p.inventory.slots[i]; if (item && (!this.drag || this.drag.fromIndex !== i)) this.drawItem(ctx, item, x, sy, ss);
+            ctx.fillStyle = i === p.active_slot ? "rgba(255, 255, 0, 0.3)" : "rgba(0, 0, 0, 0.5)";
+            ctx.fillRect(x, sy, ss, ss);
+            ctx.strokeStyle = i === p.active_slot ? "#ff0" : "#fff";
+            ctx.lineWidth = i === p.active_slot ? 2 : 1;
+            ctx.strokeRect(x, sy, ss, ss);
+            const item = p.inventory.slots[i];
+            if (item && (!this.drag || this.drag.fromIndex !== i)) this.drawItem(ctx, item, x, sy, ss);
         }
         const active = p.inventory.slots[p.active_slot];
         if (active) {
-             ctx.fillStyle = "white"; ctx.font = "bold 16px sans-serif"; ctx.textAlign = "center";
+             ctx.fillStyle = "white"; ctx.font = "bold 14px sans-serif"; ctx.textAlign = "center";
              ctx.fillText(active.kind, w / 2, sy - 10);
         }
     }
@@ -130,15 +140,19 @@ export class UIManager {
     drawItem(ctx: CanvasRenderingContext2D, item: Item, x: number, y: number, s: number) {
         ctx.fillStyle = item.kind.includes("Wood") ? "#852" : item.kind.includes("Stone") ? "#888" : item.kind.includes("Meat") ? "#f88" : "#e22";
         ctx.beginPath(); ctx.arc(x + s / 2, y + s / 2, s / 3, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "white"; ctx.font = "12px sans-serif"; ctx.textAlign = "right"; ctx.fillText(item.amount.toString(), x + s - 4, y + s - 4);
+        ctx.fillStyle = "white"; ctx.font = `${Math.max(10, s/4)}px sans-serif`; ctx.textAlign = "right"; ctx.fillText(item.amount.toString(), x + s - 4, y + s - 4);
         if (item.level && item.level > 1) {
             ctx.fillStyle = "#fb4"; ctx.textAlign = "left"; ctx.fillText(`Lv.${item.level}`, x + 4, y + s - 4);
         }
     }
 
     drawBtn(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, l: string, a: boolean) {
-        ctx.fillStyle = a ? "#4a4" : "#444"; ctx.fillRect(x, y, w, h); ctx.strokeStyle = "#fff"; ctx.strokeRect(x, y, w, h);
-        ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = "14px sans-serif"; ctx.fillText(l, x + w / 2, y + h / 2);
+        ctx.fillStyle = a ? "rgba(74, 164, 74, 0.9)" : "rgba(68, 68, 68, 0.8)";
+        ctx.fillRect(x, y, w, h);
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x, y, w, h);
+        ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = "bold 14px sans-serif"; ctx.fillText(l, x + w / 2, y + h / 2);
     }
 
     handleInput(input: InputManager, w: number, h: number, p: Player | null) {
@@ -156,10 +170,17 @@ export class UIManager {
 
         if (input.isPointerDown) {
             const mx = input.mouseX; const my = input.mouseY;
-            if (this.state === AppState.StartScreen && this.hit(mx, my, (w - 200) / 2, h / 2, 200, 60)) { this.joinRequest = true; }
-            else if (this.state === AppState.GameOver && this.hit(mx, my, (w - 300) / 2, h / 2, 300, 80)) { this.respawnRequest = true; }
-            else if (this.state === AppState.InGame) {
+            let consumed = false;
+
+            if (this.state === AppState.StartScreen && this.hit(mx, my, (w - 200) / 2, h / 2, 200, 60)) {
+                this.joinRequest = true;
+                consumed = true;
+            } else if (this.state === AppState.GameOver && this.hit(mx, my, (w - 300) / 2, h / 2, 300, 80)) {
+                this.respawnRequest = true;
+                consumed = true;
+            } else if (this.state === AppState.InGame) {
                 if (this.isMenuOpen) {
+                    consumed = true; // Any click while menu is open is consumed
                     const m = 20; const px = m; const py = m; const pw = w - m * 2; const ph = h - m * 2;
                     if (this.hit(mx, my, px + pw - 40, py + 10, 30, 30)) this.isMenuOpen = false;
                     else if (this.hit(mx, my, px, py, pw, 50)) { this.activeTab = Math.floor((mx - px) / (pw / 5)); this.scrollY = 0; }
@@ -185,17 +206,25 @@ export class UIManager {
                         }
                     }
                 } else {
-                    if (this.hit(mx, my, w - 60, 20, 50, 50)) this.isMenuOpen = true;
+                    if (this.hit(mx, my, w - 60, 20, 50, 50)) {
+                        this.isMenuOpen = true;
+                        consumed = true;
+                    }
                     // Hotbar logic
-                    const slots = 7; const ss = Math.min(50, (w - 80) / 7); const pad = 10; 
-                    const sx = (w - (slots * (ss + pad))) / 2; const sy = h - ss - 20;
+                    const slots = 7;
+                    const isSmall = w < 600;
+                    const ss = isSmall ? Math.min(50, (w - 20) / 7) : Math.min(50, (w - 80) / 7);
+                    const pad = isSmall ? 2 : 10;
+                    const sx = (w - (slots * (ss + pad))) / 2;
+                    const sy = h - ss - (isSmall ? 15 : 20);
                     if (this.hit(mx, my, sx, sy, slots * (ss + pad), ss)) {
                         const idx = Math.floor((mx - sx) / (ss + pad));
                         if (idx >= 0 && idx < 7) { this.slotSelectRequest = idx; }
+                        consumed = true;
                     }
                 }
             }
-            input.isPointerDown = false; // Consume click
+            if (consumed) input.isPointerDown = false;
         }
         if (this.drag && !input.isPointerDown && p) {
              const mx = input.mouseX; const my = input.mouseY;

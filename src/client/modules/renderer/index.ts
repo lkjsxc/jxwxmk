@@ -113,10 +113,21 @@ export class Renderer {
     drawHUD(world: World, myId: string | null) {
         if (!myId || !world.players[myId]) return;
         const p = world.players[myId];
-        let y = 20;
-        this.drawBarWithLabel(20, y, 200, 15, p.health / 100, "rgba(255,0,0,0.5)", "rgba(80,0,0,0.3)", "HP"); y += 20;
-        this.drawBarWithLabel(20, y, 200, 15, p.hunger / 100, "rgba(255,165,0,0.5)", "rgba(80,40,0,0.3)", "HG"); y += 20;
-        this.drawBarWithLabel(20, y, 200, 15, (100 - p.cold) / 100, "rgba(0,170,255,0.5)", "rgba(0,40,80,0.3)", "TP");
+        const dpr = window.devicePixelRatio || 1;
+        const w = this.canvas.width / dpr;
+
+        // Mobile optimization: larger bars, better spacing
+        const isMobile = w < 600;
+        const barW = isMobile ? Math.min(180, w * 0.4) : 200;
+        const barH = isMobile ? 18 : 15;
+        const spacing = isMobile ? 24 : 20;
+        
+        let x = isMobile ? 10 : 20;
+        let y = isMobile ? 10 : 20;
+
+        this.drawBarWithLabel(x, y, barW, barH, p.health / 100, "rgba(255,0,0,0.6)", "rgba(80,0,0,0.3)", "HP"); y += spacing;
+        this.drawBarWithLabel(x, y, barW, barH, p.hunger / 100, "rgba(255,165,0,0.6)", "rgba(80,40,0,0.3)", "HG"); y += spacing;
+        this.drawBarWithLabel(x, y, barW, barH, (100 - p.cold) / 100, "rgba(0,170,255,0.6)", "rgba(0,40,80,0.3)", "TP");
     }
 
     drawBarWithLabel(x: number, y: number, w: number, h: number, pct: number, fg: string, bg: string, label: string) {
@@ -124,11 +135,35 @@ export class Renderer {
         this.ctx.fillText(label, x, y + h/2);
         const barX = x + 25; this.ctx.fillStyle = bg; this.ctx.fillRect(barX, y, w, h);
         this.ctx.fillStyle = fg; this.ctx.fillRect(barX, y, w * Math.max(0, pct), h);
-        this.ctx.strokeStyle = "rgba(0,0,0,0.5)"; this.ctx.strokeRect(barX, y, w, h);
+        this.ctx.strokeStyle = "rgba(255,255,255,0.2)"; this.ctx.strokeRect(barX, y, w, h);
     }
 
     drawUI(input: InputManager) {
         const now = Date.now();
+
+        // Draw Joystick
+        if (input.joystick.active && input.joystick.origin) {
+            const { origin, current } = input.joystick;
+            this.ctx.save();
+            // Outer circle
+            this.ctx.beginPath();
+            this.ctx.arc(origin.x, origin.y, 50, 0, Math.PI * 2);
+            this.ctx.fillStyle = "rgba(255,255,255,0.1)";
+            this.ctx.fill();
+            this.ctx.strokeStyle = "rgba(255,255,255,0.3)";
+            this.ctx.lineWidth = 2;
+            this.ctx.stroke();
+
+            // Inner stick
+            this.ctx.beginPath();
+            this.ctx.arc(current.x, current.y, 25, 0, Math.PI * 2);
+            this.ctx.fillStyle = "rgba(255,255,255,0.4)";
+            this.ctx.fill();
+            this.ctx.strokeStyle = "rgba(255,255,255,0.6)";
+            this.ctx.stroke();
+            this.ctx.restore();
+        }
+
         this.drawPieButton(input.btnA.x, input.btnA.y, input.btnA.radius, "A", input.btnA.active, "rgba(211,51,51,0.4)", (now - input.lastAttackAt) / input.attackCooldown);
         this.drawPieButton(input.btnB.x, input.btnB.y, input.btnB.radius, "B", input.btnB.active, "rgba(51,51,211,0.4)", (now - input.lastInteractAt) / input.interactCooldown);
     }

@@ -7,11 +7,11 @@ export class InputManager {
         num1: false, num2: false, num3: false, num4: false,
         num5: false, num6: false, num7: false
     };
-    joystick: { active: boolean; origin: { x: number; y: number } | null; current: { x: number; y: number } } = {
-        active: false, origin: null, current: { x: 0, y: 0 }
+    joystick: { active: boolean; identifier: number | null; origin: { x: number; y: number } | null; current: { x: number; y: number } } = {
+        active: false, identifier: null, origin: null, current: { x: 0, y: 0 }
     };
-    btnA = { active: false, x: 0, y: 0, radius: 35, label: 'A', pulse: 0 };
-    btnB = { active: false, x: 0, y: 0, radius: 25, label: 'B', pulse: 0 };
+    btnA = { active: false, x: 0, y: 0, radius: 40, label: 'A', pulse: 0, identifier: null as number | null };
+    btnB = { active: false, x: 0, y: 0, radius: 30, label: 'B', pulse: 0, identifier: null as number | null };
 
     zoomDelta: number = 0;
     mouseX: number = 0;
@@ -34,7 +34,7 @@ export class InputManager {
         window.addEventListener('keydown', (e) => {
             const k = e.key.toLowerCase();
             if (k in this.keys) (this.keys as any)[k] = true;
-            if (e.code === 'KeyE' || e.code === 'KeyB') this.keys.interact = true; // Map B to Interact
+            if (e.code === 'KeyE' || e.code === 'KeyB') this.keys.interact = true;
             if (e.key >= '1' && e.key <= '7') (this.keys as any)[`num${e.key}`] = true;
             if (e.key.length === 1 || e.key === "Backspace" || e.key === "Enter") this.keyQueue.push(e.key);
         });
@@ -51,7 +51,6 @@ export class InputManager {
             this.mouseX = e.clientX; this.mouseY = e.clientY;
             this.isPointerDown = true;
             
-            // Check UI buttons (PC Mouse support)
             const distA = Math.hypot(e.clientX - this.btnA.x, e.clientY - this.btnA.y);
             const distB = Math.hypot(e.clientX - this.btnB.x, e.clientY - this.btnB.y);
             
@@ -60,7 +59,6 @@ export class InputManager {
             } else if (distB < this.btnB.radius * 1.2) {
                 this.btnB.active = true;
             } else {
-                // Global actions if not clicking buttons
                 if (e.button === 0) this.keys.attack = true;
                 if (e.button === 2) this.keys.interact = true;
             }
@@ -83,55 +81,105 @@ export class InputManager {
         window.addEventListener('touchstart', (e) => this.handleTouch(e), { passive: false });
         window.addEventListener('touchmove', (e) => this.handleTouch(e), { passive: false });
         window.addEventListener('touchend', (e) => this.handleTouch(e), { passive: false });
+        window.addEventListener('touchcancel', (e) => this.handleTouch(e), { passive: false });
     }
 
     private resizeButtons() {
         const w = window.innerWidth; const h = window.innerHeight;
-        this.btnA.x = w - 80; this.btnA.y = h - 120;
-        this.btnB.x = w - 140; this.btnB.y = h - 100;
+        const baseSize = Math.min(w, h);
+        const btnScale = baseSize < 500 ? 1.2 : 1.0;
+        this.btnA.radius = 45 * btnScale;
+        this.btnB.radius = 35 * btnScale;
+        
+        // Ergonomic positioning: A is primary (larger, lower), B is secondary (smaller, higher/left)
+        this.btnA.x = w - 100 * btnScale;
+        this.btnA.y = h - 120 * btnScale;
+        this.btnB.x = w - 180 * btnScale;
+        this.btnB.y = h - 80 * btnScale;
+        
+        // Ensure they don't go off screen on very small devices
+        this.btnA.x = Math.max(this.btnA.radius + 10, this.btnA.x);
+        this.btnA.y = Math.min(h - this.btnA.radius - 10, this.btnA.y);
     }
 
     private handleTouch(e: TouchEvent) {
         e.preventDefault();
-        let joystickFound = false; let aFound = false; let bFound = false;
-        let uiPointerFound = false;
+        
+        // Reset flags that are re-calculated from current touches
+        this.isPointerDown = e.touches.length > 0;
 
-        for (let i = 0; i < e.touches.length; i++) {
-            const t = e.touches[i];
-            this.mouseX = t.clientX; this.mouseY = t.clientY;
-            uiPointerFound = true; // Any touch is potential UI pointer
-
-            if (t.clientX > window.innerWidth / 2) {
-                const distA = Math.hypot(t.clientX - this.btnA.x, t.clientY - this.btnA.y);
-                if (distA < this.btnA.radius * 1.5) aFound = true;
-                const distB = Math.hypot(t.clientX - this.btnB.x, t.clientY - this.btnB.y);
-                if (distB < this.btnB.radius * 1.5) bFound = true;
-            } else {
-                if (!this.joystick.active) {
-                    this.joystick.active = true;
-                    this.joystick.origin = { x: t.clientX, y: t.clientY };
-                    this.joystick.current = { x: t.clientX, y: t.clientY };
-                } else if (this.joystick.origin) {
-                    const dx = t.clientX - this.joystick.origin.x;
-                    const dy = t.clientY - this.joystick.origin.y;
-                    const dist = Math.hypot(dx, dy);
-                    const maxDist = 50;
-                    if (dist > maxDist) {
-                        this.joystick.current = {
-                            x: this.joystick.origin.x + (dx / dist) * maxDist,
-                            y: this.joystick.origin.y + (dy / dist) * maxDist
-                        };
-                    } else {
-                        this.joystick.current = { x: t.clientX, y: t.clientY };
-                    }
+        // Process all active touches
+        const touches = Array.from(e.touches);
+        
+        // Check for touches that ended
+        const changedTouches = Array.from(e.changedTouches);
+        if (e.type === 'touchend' || e.type === 'touchcancel') {
+            for (const t of changedTouches) {
+                if (this.joystick.identifier === t.identifier) {
+                    this.joystick.active = false;
+                    this.joystick.identifier = null;
+                    this.joystick.origin = null;
                 }
-                joystickFound = true;
+                if (this.btnA.identifier === t.identifier) {
+                    this.btnA.active = false;
+                    this.btnA.identifier = null;
+                }
+                if (this.btnB.identifier === t.identifier) {
+                    this.btnB.active = false;
+                    this.btnB.identifier = null;
+                }
             }
         }
 
-        if (!joystickFound) { this.joystick.active = false; this.joystick.origin = null; }
-        this.btnA.active = aFound; this.btnB.active = bFound;
-        this.isPointerDown = uiPointerFound;
+        for (const t of touches) {
+            this.mouseX = t.clientX;
+            this.mouseY = t.clientY;
+
+            // If this touch is already tracked, update it
+            if (t.identifier === this.joystick.identifier && this.joystick.origin) {
+                const dx = t.clientX - this.joystick.origin.x;
+                const dy = t.clientY - this.joystick.origin.y;
+                const dist = Math.hypot(dx, dy);
+                const maxDist = 50;
+                if (dist > maxDist) {
+                    this.joystick.current = {
+                        x: this.joystick.origin.x + (dx / dist) * maxDist,
+                        y: this.joystick.origin.y + (dy / dist) * maxDist
+                    };
+                } else {
+                    this.joystick.current = { x: t.clientX, y: t.clientY };
+                }
+                continue;
+            }
+
+            if (t.identifier === this.btnA.identifier) {
+                this.btnA.active = true;
+                continue;
+            }
+            if (t.identifier === this.btnB.identifier) {
+                this.btnB.active = true;
+                continue;
+            }
+
+            // New touch logic
+            if (e.type === 'touchstart') {
+                const distA = Math.hypot(t.clientX - this.btnA.x, t.clientY - this.btnA.y);
+                const distB = Math.hypot(t.clientX - this.btnB.x, t.clientY - this.btnB.y);
+
+                if (distA < this.btnA.radius * 1.5) {
+                    this.btnA.active = true;
+                    this.btnA.identifier = t.identifier;
+                } else if (distB < this.btnB.radius * 1.5) {
+                    this.btnB.active = true;
+                    this.btnB.identifier = t.identifier;
+                } else if (t.clientX < window.innerWidth / 2 && !this.joystick.active) {
+                    this.joystick.active = true;
+                    this.joystick.identifier = t.identifier;
+                    this.joystick.origin = { x: t.clientX, y: t.clientY };
+                    this.joystick.current = { x: t.clientX, y: t.clientY };
+                }
+            }
+        }
     }
 
     getState(): InputState {
