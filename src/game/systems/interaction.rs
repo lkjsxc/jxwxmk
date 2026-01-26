@@ -9,9 +9,33 @@ pub struct InteractionSystem;
 
 pub enum InteractionEvent {
     LevelUp { tool: String, level: u32 },
+    Npc { npc_id: Uuid },
+    Gather { item: ItemType, amount: u32 },
+    Kill { mob_type: String },
 }
 
 impl InteractionSystem {
+    pub fn handle_interact(world: &mut World, config: &AppConfig, player_id: Uuid) -> Option<InteractionEvent> {
+        let (px, py) = {
+            let p = world.players.get(&player_id)?;
+            (p.x, p.y)
+        };
+
+        let range = config.game.interact_range;
+        let mut target_npc = None;
+        let mut min_d = range;
+
+        for (id, n) in world.npcs.iter() {
+            let d = ((px - n.x).powi(2) + (py - n.y).powi(2)).sqrt();
+            if d < min_d {
+                min_d = d;
+                target_npc = Some(*id);
+            }
+        }
+
+        target_npc.map(|npc_id| InteractionEvent::Npc { npc_id })
+    }
+
     pub fn handle_movement(world: &mut World, player_id: Uuid, dx: f64, dy: f64) {
         if let Some(player) = world.players.get_mut(&player_id) {
             if dx != 0.0 || dy != 0.0 { player.stats.steps_taken += 1; }
@@ -93,6 +117,7 @@ impl InteractionSystem {
                 
                 if r.amount <= 0 {
                     let drop = match r.r_type { ResourceType::Tree => (ItemType::Wood, 5), ResourceType::Rock => (ItemType::Stone, 3), ResourceType::Food => (ItemType::Berry, 2) };
+                    events.push(InteractionEvent::Gather { item: drop.0.clone(), amount: drop.1 });
                     if let Some(p) = world.players.get_mut(&player_id) { 
                         p.inventory.add(drop.0, drop.1); 
                         p.stats.resources_gathered += 1;
@@ -127,14 +152,14 @@ impl InteractionSystem {
                     }
                 }
 
-                if m.health <= 0.0 {
-                    if let Some(p) = world.players.get_mut(&player_id) {
-                         p.inventory.add(ItemType::Meat, 2); 
-                         p.stats.mobs_killed += 1;
-                    }
-                    world.mobs.remove(&mid);
-                }
-            }
+                                if m.health <= 0.0 {
+                                    events.push(InteractionEvent::Kill { mob_type: format!("{:?}", m.m_type) });
+                                    if let Some(p) = world.players.get_mut(&player_id) { 
+                                         p.inventory.add(ItemType::Meat, 2); 
+                                         p.stats.mobs_killed += 1;
+                                    }
+                                    world.mobs.remove(&mid);
+                                }            }
             return events;
         }
         

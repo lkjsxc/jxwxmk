@@ -41,6 +41,17 @@ function connect() {
                 ui.showAchievement(msg.data);
             } else if (msg.type === "notification") {
                 ui.showNotification(msg.data.title, msg.data.message, msg.data.color);
+            } else if (msg.type === "npcInteraction") {
+                ui.npcInteraction = msg.data;
+            } else if (msg.type === "questUpdate") {
+                if (world && myId) {
+                    const p = world.players[myId];
+                    if (p) {
+                        const idx = p.quests.findIndex(q => q.id === msg.data.id);
+                        if (idx !== -1) p.quests[idx] = msg.data;
+                        else p.quests.push(msg.data);
+                    }
+                }
             }
         } catch (e) { console.error("Parse error", e); }
     };
@@ -75,6 +86,8 @@ function loop() {
             if (ui.slotSelectRequest !== null) { ws.send(JSON.stringify({ slot: ui.slotSelectRequest })); ui.slotSelectRequest = null; }
             if (ui.nameUpdateRequest) { ws.send(JSON.stringify({ name: ui.nameUpdateRequest })); ui.nameUpdateRequest = null; }
             if (ui.swapRequest) { ws.send(JSON.stringify({ swapSlots: ui.swapRequest })); ui.swapRequest = null; }
+            if (ui.npcActionRequest) { ws.send(JSON.stringify({ npcAction: [ui.npcActionRequest.npc_id, ui.npcActionRequest.option_index] })); ui.npcActionRequest = null; }
+            if (ui.tradeRequest) { ws.send(JSON.stringify({ trade: [ui.tradeRequest.npc_id, ui.tradeRequest.item_index, ui.tradeRequest.buy] })); ui.tradeRequest = null; }
         }
     }
     requestAnimationFrame(loop);

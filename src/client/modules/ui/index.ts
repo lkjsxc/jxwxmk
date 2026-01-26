@@ -1,14 +1,15 @@
 import { InputManager } from "../input";
 // UIManager handles UI rendering and input
-import { Player, Item, Achievement, AppState } from "../../types";
+import { Player, Item, Achievement, AppState, NpcInteraction } from "../../types";
 import { drawInventory, handleInvInput } from "./inventory";
 import { drawCrafting, handleCraftInput } from "./crafting";
 import { drawAchievements, handleAchInput } from "./achievements";
 import { drawProfile, handleProfileInput } from "./profile";
+import { drawQuests } from "./quests";
 import { drawOver } from "./screens";
 
 export { AppState };
-export enum MenuTab { Inventory, Crafting, Profile, Guidebook, Achievements }
+export enum MenuTab { Inventory, Crafting, Profile, Quests, Achievements }
 
 const ALL_ACHIEVEMENTS: Achievement[] = [
     { id: "NoviceWalker", name: "Novice Walker", description: "Walk 1,000 steps", stat_bonus: ["speed", 0.01] },
@@ -32,6 +33,9 @@ interface Toast { title: string; message: string; color: string; start: number; 
 export class UIManager {
     state: AppState = AppState.InGame;
     isMenuOpen = false;
+    npcInteraction: NpcInteraction | null = null;
+    npcActionRequest: { npc_id: string, option_index: number } | null = null;
+    tradeRequest: { npc_id: string, item_index: number, buy: boolean } | null = null;
     activeTab: MenuTab = MenuTab.Inventory;
     scrollY = 0;
     selectedRecipe: string | null = null;
@@ -64,6 +68,7 @@ export class UIManager {
         else if (this.state === AppState.InGame && p) {
             this.drawHotbar(ctx, p, w, h);
             this.drawMenu(ctx, p, w, h);
+            if (this.npcInteraction) this.drawNpcInteraction(ctx, w, h);
         }
         this.drawToast(ctx, w, h);
         if (this.drag && input.isPointerDown) {
@@ -79,7 +84,7 @@ export class UIManager {
         ctx.fillStyle = "rgba(0,0,0,0.9)"; ctx.fillRect(px, py, pw, ph);
         ctx.strokeStyle = "#fff"; ctx.strokeRect(px, py, pw, ph);
 
-        const tabs = ["INV", "CRAFT", "PROF", "GUIDE", "ACH"];
+        const tabs = ["INV", "CRAFT", "PROF", "QUESTS", "ACH"];
         const tw = pw / tabs.length;
         for (let i = 0; i < tabs.length; i++) {
             this.drawBtn(ctx, px + i * tw, py, tw, 50, tabs[i], this.activeTab === i);
@@ -93,6 +98,7 @@ export class UIManager {
         if (this.activeTab === MenuTab.Inventory) drawInventory(ctx, p, cw, ch, this.drag, this);
         else if (this.activeTab === MenuTab.Crafting) drawCrafting(ctx, p, this.selectedRecipe, cw, ch, this, this.scrollY);
         else if (this.activeTab === MenuTab.Profile) drawProfile(ctx, p, cw, ch, this.nameBuffer, this.isNameFocused, this);
+        else if (this.activeTab === MenuTab.Quests) drawQuests(ctx, p, cw, ch, this, this.scrollY);
         else if (this.activeTab === MenuTab.Achievements) drawAchievements(ctx, p, ALL_ACHIEVEMENTS, this.selectedAchId, cw, ch, this.scrollY);
         ctx.restore();
     }
@@ -173,7 +179,24 @@ export class UIManager {
                 this.respawnRequest = true;
                 consumed = true;
             } else if (this.state === AppState.InGame) {
-                if (this.isMenuOpen) {
+                if (this.npcInteraction) {
+                    consumed = true;
+                    const dw = Math.min(400, w - 40);
+                    const dh = 250;
+                    const dx = (w - dw) / 2;
+                    const dy = (h - dh) / 2;
+                    const optH = 30;
+                    this.npcInteraction.options.forEach((opt, i) => {
+                        const oy = dy + dh - (this.npcInteraction!.options.length - i) * (optH + 10) - 10;
+                        if (this.hit(mx, my, dx + 20, oy, dw - 40, optH)) {
+                            if (opt === "Goodbye" || opt === "Close" || opt === "Okay") {
+                                this.npcInteraction = null;
+                            } else {
+                                this.npcActionRequest = { npc_id: this.npcInteraction!.npc_id, option_index: i };
+                            }
+                        }
+                    });
+                } else if (this.isMenuOpen) {
                     consumed = true; // Any click while menu is open is consumed
                     const m = 20; const px = m; const py = m; const pw = w - m * 2; const ph = h - m * 2;
                     if (this.hit(mx, my, px + pw - 40, py + 10, 30, 30)) this.isMenuOpen = false;
@@ -234,4 +257,42 @@ export class UIManager {
         }
     }
     hit(mx: number, my: number, x: number, y: number, w: number, h: number) { return mx >= x && mx <= x + w && my >= y && my <= y + h; }
+
+    private drawNpcInteraction(ctx: CanvasRenderingContext2D, w: number, h: number) {
+        if (!this.npcInteraction) return;
+        const dw = Math.min(400, w - 40);
+        const dh = 250;
+        const dx = (w - dw) / 2;
+        const dy = (h - dh) / 2;
+
+        ctx.fillStyle = "rgba(0,0,0,0.9)"; ctx.fillRect(dx, dy, dw, dh);
+        ctx.strokeStyle = "#0ff"; ctx.strokeRect(dx, dy, dw, dh);
+
+        ctx.fillStyle = "#0ff"; ctx.font = "bold 18px sans-serif"; ctx.textAlign = "left";
+        ctx.fillText(this.npcInteraction.name, dx + 20, dy + 35);
+
+        ctx.fillStyle = "white"; ctx.font = "14px sans-serif";
+        const lines = this.wrapText(ctx, this.npcInteraction.text, dw - 40);
+        lines.forEach((line, i) => ctx.fillText(line, dx + 20, dy + 70 + i * 20));
+
+        const optH = 30;
+        this.npcInteraction.options.forEach((opt, i) => {
+            const oy = dy + dh - (this.npcInteraction!.options.length - i) * (optH + 10) - 10;
+            this.drawBtn(ctx, dx + 20, oy, dw - 40, optH, opt, false);
+        });
+    }
+
+    private wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+        const words = text.split(' ');
+        const lines = [];
+        let currentLine = words[0];
+        for (let i = 1; i < words.length; i++) {
+            const word = words[i];
+            const width = ctx.measureText(currentLine + " " + word).width;
+            if (width < maxWidth) currentLine += " " + word;
+            else { lines.push(currentLine); currentLine = word; }
+        }
+        lines.push(currentLine);
+        return lines;
+    }
 }

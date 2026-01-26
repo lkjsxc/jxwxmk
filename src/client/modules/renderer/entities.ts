@@ -1,4 +1,14 @@
-import { Resource, Structure, Mob, Player, World } from "../../types";
+import { Resource, Structure, Mob, Player, Npc, World } from "../../types";
+
+export function drawNpc(ctx: CanvasRenderingContext2D, n: Npc, ix: number, iy: number, isTarget: boolean, scale: number) {
+    if (isTarget) { drawOutline(ctx, ix, iy, 18 * scale, "cyan"); drawTooltip(ctx, ix, iy, n.name, "Talk", ""); }
+    ctx.save(); ctx.translate(ix, iy); ctx.scale(scale, scale);
+    ctx.fillStyle = n.n_type === "Elder" ? "#48f" : n.n_type === "Merchant" ? "#fa0" : "#777";
+    ctx.beginPath(); ctx.arc(0, 0, 15, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = "#fff"; ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle = "white"; ctx.font = "bold 12px sans-serif"; ctx.textAlign = "center";
+    ctx.fillText(n.name, ix, iy - 25);
+}
 
 export function drawResource(ctx: CanvasRenderingContext2D, r: Resource, isTarget: boolean, scale: number) {
     if (isTarget) { drawOutline(ctx, r.x, r.y, 22 * scale, "yellow"); drawTooltip(ctx, r.x, r.y, r.r_type, "Gather", ""); }

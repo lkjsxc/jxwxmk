@@ -5,6 +5,8 @@ use rand::Rng;
 use crate::game::engine::{GameEngine, messages::ServerMessage};
 use crate::game::entities::resource::{Resource, ResourceType};
 use crate::game::entities::mob::{Mob, MobType};
+use crate::game::entities::npc::{Npc, NpcType};
+use crate::game::entities::item::{Item, ItemType};
 use crate::game::systems::survival::SurvivalSystem;
 use crate::game::systems::achievements::AchievementSystem;
 
@@ -53,6 +55,16 @@ impl GameEngine {
             mob.health *= 1.0 + (level as f64 * 0.2); 
             self.world.mobs.insert(mob.id, mob);
         }
+
+        // Spawn Village NPCs near center
+        let cx = self.world.width / 2.0;
+        let cy = self.world.height / 2.0;
+        
+        let elder = Npc::new(NpcType::Elder, "Elder", cx + 20.0, cy + 20.0);
+        self.world.npcs.insert(elder.id, elder);
+
+        let merchant = Npc::new(NpcType::Merchant, "Merchant", cx - 20.0, cy - 20.0);
+        self.world.npcs.insert(merchant.id, merchant);
     }
     
     pub(super) fn tick_world(&mut self) {

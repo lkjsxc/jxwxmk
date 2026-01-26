@@ -30,6 +30,21 @@ export interface PlayerStats {
     deaths: number;
 }
 
+export type QuestState = "NotStarted" | "InProgress" | "ReadyToTurnIn" | "Completed";
+
+export type ObjectiveType = 
+    | { Gather: { item: string, count: number, current: number } }
+    | { Kill: { mob_type: string, count: number, current: number } }
+    | { TalkTo: { npc_name: string } };
+
+export interface Quest {
+    id: string;
+    name: string;
+    description: string;
+    state: QuestState;
+    objectives: ObjectiveType[];
+}
+
 export interface Player {
     id: string;
     username: string;
@@ -42,6 +57,7 @@ export interface Player {
     active_slot: number;
     lastHitAt?: number;
     achievements: string[];
+    quests: Quest[];
     stat_bonuses: Record<string, number>;
     stats?: PlayerStats;
 }
@@ -75,6 +91,17 @@ export interface Structure {
     lastHitAt?: number;
 }
 
+export interface Npc {
+    id: string;
+    n_type: "Elder" | "Merchant" | "Guard";
+    name: string;
+    x: number;
+    y: number;
+    health: number;
+    dialogue_index: number;
+    trade_inventory?: Item[];
+}
+
 export interface World {
     width: number;
     height: number;
@@ -82,6 +109,16 @@ export interface World {
     resources: Record<string, Resource>;
     mobs: Record<string, Mob>;
     structures: Record<string, Structure>;
+    npcs: Record<string, Npc>;
+}
+
+export interface NpcInteraction {
+    npc_id: string;
+    npc_type: string;
+    name: string;
+    text: string;
+    options: string[];
+    trade_items?: Item[];
 }
 
 export interface InputState {

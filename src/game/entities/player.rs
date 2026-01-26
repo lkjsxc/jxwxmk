@@ -70,6 +70,8 @@ impl Inventory {
     }
 }
 
+use crate::game::systems::quests::Quest;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Player {
     pub id: Uuid,
@@ -86,6 +88,7 @@ pub struct Player {
     pub last_interact_at: u64,
     pub stats: PlayerStats,
     pub achievements: HashSet<String>, // Using String for ID simplicity in JSON
+    pub quests: Vec<Quest>,
     pub stat_bonuses: HashMap<String, f32>, // e.g. "speed" -> 1.05
     pub spawned: bool,
 }
@@ -107,6 +110,7 @@ impl Player {
             last_interact_at: 0,
             stats: PlayerStats::default(),
             achievements: HashSet::new(),
+            quests: Vec::new(),
             stat_bonuses: HashMap::new(),
             spawned: false,
         }

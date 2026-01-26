@@ -2,8 +2,8 @@ use actix::{Actor, StreamHandler, AsyncContext, Handler, Addr, ActorContext, Run
 use actix_web::{web, HttpRequest, HttpResponse, Error};
 use actix_web_actors::ws;
 use uuid::Uuid;
-use crate::game::engine::{GameEngine, Join, Leave, Input, ServerMessage, Craft, SelectSlot, UpdateName, SwapSlots, Spawn};
-use crate::game::entities::item::ItemType;
+use crate::game::engine::{GameEngine, Join, Leave, Input, ServerMessage, Craft, SelectSlot, UpdateName, SwapSlots, Spawn, NpcAction, Trade, AcceptQuest};
+use crate::game::entities::item::{Item, ItemType};
 use serde::{Serialize, Deserialize};
 
 pub struct GameSession { pub id: Uuid, pub token: Option<String>, pub game_engine: Addr<GameEngine> }
@@ -17,6 +17,9 @@ impl GameSession {
 #[derive(Serialize)] struct WelcomeMsg { #[serde(rename = "type")] msg_type: String, id: Uuid, token: String, spawned: bool }
 #[derive(Serialize)] struct WorldMsg<T> { #[serde(rename = "type")] msg_type: String, data: T }
 #[derive(Serialize)] struct NotificationPayload { title: String, message: String, color: String }
+#[derive(Serialize)] struct NpcInteractionPayload { 
+    npc_id: Uuid, npc_type: crate::game::entities::npc::NpcType, name: String, text: String, options: Vec<String>, trade_items: Option<Vec<Item>> 
+}
 
 impl Actor for GameSession {
     type Context = ws::WebsocketContext<Self>;
@@ -40,6 +43,8 @@ struct ClientMessage {
     #[serde(default)] dx: f64, #[serde(default)] dy: f64, #[serde(default)] attack: bool, #[serde(default)] interact: bool,
     #[serde(default)] craft: Option<ItemType>, #[serde(default)] slot: Option<usize>, #[serde(default)] name: Option<String>,
     #[serde(default)] swapSlots: Option<(usize, usize)>, #[serde(default)] spawn: bool,
+    #[serde(default)] npcAction: Option<(Uuid, u32)>, #[serde(default)] trade: Option<(Uuid, usize, bool)>,
+    #[serde(default)] acceptQuest: Option<String>,
 }
 
 impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for GameSession {
@@ -51,6 +56,9 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for GameSession {
                 if let Some(s) = m.slot { self.game_engine.do_send(SelectSlot { id: self.id, slot: s }); }
                 if let Some(c) = m.craft { self.game_engine.do_send(Craft { id: self.id, item: c }); }
                 if let Some((f, t)) = m.swapSlots { self.game_engine.do_send(SwapSlots { id: self.id, from: f, to: t }); }
+                if let Some((npc_id, opt)) = m.npcAction { self.game_engine.do_send(NpcAction { id: self.id, npc_id, option_index: opt }); }
+                if let Some((npc_id, idx, buy)) = m.trade { self.game_engine.do_send(Trade { id: self.id, npc_id, item_index: idx, buy }); }
+                if let Some(qid) = m.acceptQuest { self.game_engine.do_send(AcceptQuest { id: self.id, quest_id: qid }); }
                 self.game_engine.do_send(Input { id: self.id, dx: m.dx, dy: m.dy, attack: m.attack, interact: m.interact });
             }
         } else if let Ok(ws::Message::Ping(msg)) = msg { ctx.pong(&msg); }
@@ -72,6 +80,15 @@ impl Handler<ServerMessage> for GameSession {
             ServerMessage::Notification { title, message, color } => {
                 let payload = NotificationPayload { title, message, color };
                 let wrapper = WorldMsg { msg_type: "notification".to_string(), data: payload };
+                if let Ok(json) = serde_json::to_string(&wrapper) { ctx.text(json); }
+            }
+            ServerMessage::NpcInteraction { npc_id, npc_type, name, text, options, trade_items } => {
+                let payload = NpcInteractionPayload { npc_id, npc_type, name, text, options, trade_items };
+                let wrapper = WorldMsg { msg_type: "npcInteraction".to_string(), data: payload };
+                if let Ok(json) = serde_json::to_string(&wrapper) { ctx.text(json); }
+            }
+            ServerMessage::QuestUpdate(quest) => {
+                let wrapper = WorldMsg { msg_type: "questUpdate".to_string(), data: quest };
                 if let Ok(json) = serde_json::to_string(&wrapper) { ctx.text(json); }
             }
         }
