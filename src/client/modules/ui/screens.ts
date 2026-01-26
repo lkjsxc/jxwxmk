@@ -1,6 +1,7 @@
 export function drawStart(ctx: CanvasRenderingContext2D, w: number, h: number, ui: any) {
     ctx.fillStyle = "rgba(17, 17, 17, 0.7)"; ctx.fillRect(0, 0, w, h); 
-    ctx.fillStyle = "#eee"; ctx.font = "bold 60px sans-serif"; ctx.textAlign = "center"; 
+    const fontSize = Math.min(60, w / 8);
+    ctx.fillStyle = "#eee"; ctx.font = `bold ${fontSize}px sans-serif`; ctx.textAlign = "center"; 
     ctx.fillText("kkmypk", w / 2, h / 3);
     ui.drawBtn(ctx, (w - 200) / 2, h / 2, 200, 60, "PLAY", true);
 }

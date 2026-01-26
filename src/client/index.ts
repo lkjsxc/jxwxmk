@@ -30,6 +30,10 @@ function connect() {
             } else if (msg.type === "world") {
                  prevWorld = world; world = msg.data; lastUpdateAt = Date.now();
                  if (ui.state === AppState.InGame && myId && world && !world.players[myId]) { ui.state = AppState.GameOver; }
+                 // If we are on start screen but server says we are spawned, jump in
+                 if (ui.state === AppState.StartScreen && myId && world && world.players[myId]?.spawned) {
+                     ui.state = AppState.InGame;
+                 }
             } else if (msg.type === "achievement") {
                 ui.showAchievement(msg.data);
             } else if (msg.type === "notification") {
@@ -50,7 +54,6 @@ function connect() {
 
 function loop() {
     const player = myId && world ? world.players[myId] : null;
-    ui.handleInput(input, renderer.canvas.width, renderer.canvas.height, player);
     input.updateAnimations(16);
 
     const now = Date.now();

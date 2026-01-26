@@ -28,7 +28,7 @@ ENV PATH="/usr/lib/postgresql/15/bin:${PATH}"
 
 WORKDIR /app
 COPY --from=backend-builder /build/target/release/kkmypk /app/kkmypk
-COPY src/config.json /app/config.json
+COPY config.json /app/config.json
 COPY src/runtime/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 

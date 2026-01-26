@@ -6,6 +6,7 @@ export class Camera {
     height: number;
     targetX: number = 0;
     targetY: number = 0;
+    initialized: boolean = false;
 
     constructor() {
         this.width = window.innerWidth;
@@ -16,6 +17,13 @@ export class Camera {
     resize() {
         this.width = window.innerWidth;
         this.height = window.innerHeight;
+    }
+
+    snap(x: number, y: number) {
+        this.x = x;
+        this.y = y;
+        this.targetX = x;
+        this.targetY = y;
     }
 
     follow(targetX: number, targetY: number) {

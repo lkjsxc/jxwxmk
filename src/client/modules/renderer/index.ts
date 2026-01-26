@@ -27,18 +27,35 @@ export class Renderer {
     }
 
     render(world: World | null, prevWorld: World | null, alpha: number, input: InputManager, myId: string | null, ui: UIManager) {
+        const dpr = window.devicePixelRatio || 1;
+        const w = this.canvas.width / dpr;
+        const h = this.canvas.height / dpr;
+
+        if (!this.camera.initialized && world) {
+            this.camera.snap(Math.random() * world.width, Math.random() * world.height);
+            this.camera.initialized = true;
+        }
+
         const zoomDelta = input.getZoomDelta();
         if (zoomDelta !== 0) this.camera.setZoom(zoomDelta);
 
-        if (world && myId && world.players[myId]) {
+        if (world && myId && world.players[myId] && world.players[myId].spawned) {
             const me = world.players[myId]; const pMe = prevWorld?.players[myId] || me;
-            this.camera.follow(lerp(pMe.x, me.x, alpha), lerp(pMe.y, me.y, alpha));
+            const tx = lerp(pMe.x, me.x, alpha);
+            const ty = lerp(pMe.y, me.y, alpha);
+            
+            // Snap if just spawned
+            if (!prevWorld?.players[myId]?.spawned) {
+                this.camera.snap(tx, ty);
+            } else {
+                this.camera.follow(tx, ty);
+            }
         }
         this.camera.update();
 
-        this.ctx.fillStyle = "#222"; this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.fillStyle = "#222"; this.ctx.fillRect(0, 0, w, h);
         this.ctx.save();
-        this.ctx.translate(this.canvas.width / 2, this.canvas.height / 2);
+        this.ctx.translate(w / 2, h / 2);
         this.ctx.scale(this.camera.zoom, this.camera.zoom);
         this.ctx.translate(-this.camera.x, -this.camera.y);
 
@@ -61,7 +78,10 @@ export class Renderer {
         this.ctx.restore();
 
         if (!world) {
-            this.ctx.fillStyle = "#fff"; this.ctx.font = "20px sans-serif"; this.ctx.fillText("Connecting...", 50, 50);
+            this.ctx.fillStyle = "#fff"; 
+            this.ctx.font = "bold 24px sans-serif"; 
+            this.ctx.textAlign = "center";
+            this.ctx.fillText("Connecting...", w / 2, h / 2);
         } else {
             if (ui.state === AppState.InGame) {
                 this.drawUI(input);
