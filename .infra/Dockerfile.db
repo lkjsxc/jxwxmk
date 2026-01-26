@@ -1,3 +1,0 @@
-FROM postgres:16-alpine
-RUN apk add --no-cache musl-locales musl-utils
-ENV LANG=en_US.UTF-8

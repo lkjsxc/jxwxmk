@@ -1,12 +1,1 @@
-target/
-**/*.rs.bk
-db.sqlite
-.env
-.DS_Store
-node_modules/
-dist/
-*.log
-.idea/
-.vscode/
-static/game.js
-src/client/node_modules/
+.gemini/
