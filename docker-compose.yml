@@ -12,7 +12,7 @@ services:
       TICK_HZ: "20"
     volumes:
       - kkmypk_pgdata:/var/lib/postgresql/data
-      - ./src/config.json:/app/config.json
+      - ./config.json:/app/config.json
     restart: unless-stopped
 
 volumes:

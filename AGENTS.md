@@ -28,6 +28,7 @@ Root contains only:
 - `README.md`
 - `LICENSE`
 - `AGENTS.md`
+- `config.json`
 - `docker-compose.yml`
 - `.gitignore`
 - `docs/`
