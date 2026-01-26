@@ -1,26 +1,39 @@
-FROM rust:1.76-bookworm AS builder
+# --- Frontend Build ---
+FROM node:18-slim AS frontend-builder
+WORKDIR /build/client
+COPY src/client/package*.json ./
+RUN npm install
+COPY src/client/ ./
+COPY src/static/ ../static/
+RUN npm run build
 
-WORKDIR /workspace
-COPY src/server ./src/server
-RUN cargo build --release --manifest-path src/server/Cargo.toml
+# --- Backend Build ---
+FROM rust:1-bookworm AS backend-builder
+WORKDIR /build
+# Copy the entire src for Rust build
+COPY src/ ./
+# Copy built frontend assets from previous stage
+COPY --from=frontend-builder /build/static/ ./static/
+RUN cargo build --release --manifest-path Cargo.toml
 
+# --- Runtime ---
 FROM debian:bookworm-slim
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends postgresql \
+RUN apt-get update && apt-get install -y \
+    postgresql \
+    ca-certificates \
+    libssl3 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /workspace/src/server/target/release/kkmypk-server /app/kkmypk-server
-COPY src/server/static /app/static
-COPY src/runtime/entrypoint.sh /app/entrypoint.sh
-
-RUN chmod +x /app/entrypoint.sh
-
-ENV APP_BIND=0.0.0.0:8080
-ENV DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/kkmypk
-ENV TICK_HZ=20
+ENV PATH="/usr/lib/postgresql/15/bin:${PATH}"
 
 WORKDIR /app
-EXPOSE 8080
+COPY --from=backend-builder /build/target/release/kkmypk /app/kkmypk
+COPY src/config.json /app/config.json
+COPY src/runtime/entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
+# PostgreSQL data volume
+VOLUME /var/lib/postgresql/data
+
+EXPOSE 8080
 ENTRYPOINT ["/app/entrypoint.sh"]
