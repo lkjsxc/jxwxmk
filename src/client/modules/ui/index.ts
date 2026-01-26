@@ -5,7 +5,7 @@ import { drawInventory, handleInvInput } from "./inventory";
 import { drawCrafting, handleCraftInput } from "./crafting";
 import { drawAchievements, handleAchInput } from "./achievements";
 import { drawProfile, handleProfileInput } from "./profile";
-import { drawStart, drawOver } from "./screens";
+import { drawOver } from "./screens";
 
 export { AppState };
 export enum MenuTab { Inventory, Crafting, Profile, Guidebook, Achievements }
@@ -30,7 +30,7 @@ interface DragState { fromIndex: number; item: Item; startX: number; startY: num
 interface Toast { title: string; message: string; color: string; start: number; }
 
 export class UIManager {
-    state: AppState = AppState.StartScreen;
+    state: AppState = AppState.InGame;
     isMenuOpen = false;
     activeTab: MenuTab = MenuTab.Inventory;
     scrollY = 0;
@@ -39,7 +39,6 @@ export class UIManager {
     isNameFocused = false;
     nameBuffer = "";
     nameUpdateRequest: string | null = null;
-    joinRequest = false;
     respawnRequest = false;
     craftRequest: string | null = null;
     slotSelectRequest: number | null = null;
@@ -61,8 +60,7 @@ export class UIManager {
         const h = ctx.canvas.height / dpr;
         this.handleInput(input, w, h, p);
 
-        if (this.state === AppState.StartScreen) drawStart(ctx, w, h, this);
-        else if (this.state === AppState.GameOver) drawOver(ctx, w, h, this);
+        if (this.state === AppState.GameOver) drawOver(ctx, w, h, this);
         else if (this.state === AppState.InGame && p) {
             this.drawHotbar(ctx, p, w, h);
             this.drawMenu(ctx, p, w, h);
@@ -114,11 +112,10 @@ export class UIManager {
 
     drawHotbar(ctx: CanvasRenderingContext2D, p: Player, w: number, h: number) {
         const slots = 7;
-        const isSmall = w < 600;
-        const ss = isSmall ? Math.min(50, (w - 20) / 7) : Math.min(50, (w - 80) / 7);
-        const pad = isSmall ? 2 : 10;
+        const ss = Math.min(50, (w - 40) / 7);
+        const pad = 6;
         const sx = (w - (slots * (ss + pad))) / 2;
-        const sy = h - ss - (isSmall ? 15 : 20);
+        const sy = h - ss - 20;
 
         for (let i = 0; i < slots; i++) {
             const x = sx + i * (ss + pad);
@@ -172,10 +169,7 @@ export class UIManager {
             const mx = input.mouseX; const my = input.mouseY;
             let consumed = false;
 
-            if (this.state === AppState.StartScreen && this.hit(mx, my, (w - 200) / 2, h / 2, 200, 60)) {
-                this.joinRequest = true;
-                consumed = true;
-            } else if (this.state === AppState.GameOver && this.hit(mx, my, (w - 300) / 2, h / 2, 300, 80)) {
+            if (this.state === AppState.GameOver && this.hit(mx, my, (w - 300) / 2, h / 2, 300, 80)) {
                 this.respawnRequest = true;
                 consumed = true;
             } else if (this.state === AppState.InGame) {
@@ -212,11 +206,10 @@ export class UIManager {
                     }
                     // Hotbar logic
                     const slots = 7;
-                    const isSmall = w < 600;
-                    const ss = isSmall ? Math.min(50, (w - 20) / 7) : Math.min(50, (w - 80) / 7);
-                    const pad = isSmall ? 2 : 10;
+                    const ss = Math.min(50, (w - 40) / 7);
+                    const pad = 6;
                     const sx = (w - (slots * (ss + pad))) / 2;
-                    const sy = h - ss - (isSmall ? 15 : 20);
+                    const sy = h - ss - 20;
                     if (this.hit(mx, my, sx, sy, slots * (ss + pad), ss)) {
                         const idx = Math.floor((mx - sx) / (ss + pad));
                         if (idx >= 0 && idx < 7) { this.slotSelectRequest = idx; }

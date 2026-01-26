@@ -26,14 +26,11 @@ function connect() {
             if (msg.type === "welcome") {
                 myId = msg.id;
                 if (msg.token) localStorage.setItem(STORAGE_KEY, msg.token);
-                // Keep state as StartScreen until player clicks Play
+                // Auto-spawn
+                if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ spawn: true }));
             } else if (msg.type === "world") {
                  prevWorld = world; world = msg.data; lastUpdateAt = Date.now();
                  if (ui.state === AppState.InGame && myId && world && !world.players[myId]) { ui.state = AppState.GameOver; }
-                 // If we are on start screen but server says we are spawned, jump in
-                 if (ui.state === AppState.StartScreen && myId && world && world.players[myId]?.spawned) {
-                     ui.state = AppState.InGame;
-                 }
             } else if (msg.type === "achievement") {
                 ui.showAchievement(msg.data);
             } else if (msg.type === "notification") {
@@ -47,7 +44,7 @@ function connect() {
         inputInterval = setInterval(sendInput, 50);
     };
     ws.onclose = () => {
-        ui.state = AppState.StartScreen; world = null; myId = null;
+        ui.state = AppState.InGame; world = null; myId = null;
         if (inputInterval) { clearInterval(inputInterval); inputInterval = null; }
     };
 }
@@ -60,13 +57,7 @@ function loop() {
     const alpha = Math.min(1.0, (now - lastUpdateAt) / 50); 
     renderer.render(world, prevWorld, alpha, input, myId, ui);
 
-    if (ui.state === AppState.StartScreen) {
-        if (ui.joinRequest) { 
-            if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ spawn: true }));
-            ui.state = AppState.InGame; 
-            ui.joinRequest = false; 
-        }
-    } else if (ui.state === AppState.GameOver) {
+    if (ui.state === AppState.GameOver) {
         if (ui.respawnRequest) {
             ui.respawnRequest = false; if (ws) { ws.close(); ws = null; }
             if (inputInterval) { clearInterval(inputInterval); inputInterval = null; }

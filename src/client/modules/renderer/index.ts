@@ -116,14 +116,12 @@ export class Renderer {
         const dpr = window.devicePixelRatio || 1;
         const w = this.canvas.width / dpr;
 
-        // Mobile optimization: larger bars, better spacing
-        const isMobile = w < 600;
-        const barW = isMobile ? Math.min(180, w * 0.4) : 200;
-        const barH = isMobile ? 18 : 15;
-        const spacing = isMobile ? 24 : 20;
+        const barW = Math.min(200, w * 0.4);
+        const barH = 16;
+        const spacing = 22;
         
-        let x = isMobile ? 10 : 20;
-        let y = isMobile ? 10 : 20;
+        let x = 15;
+        let y = 15;
 
         this.drawBarWithLabel(x, y, barW, barH, p.health / 100, "rgba(255,0,0,0.6)", "rgba(80,0,0,0.3)", "HP"); y += spacing;
         this.drawBarWithLabel(x, y, barW, barH, p.hunger / 100, "rgba(255,165,0,0.6)", "rgba(80,40,0,0.3)", "HG"); y += spacing;

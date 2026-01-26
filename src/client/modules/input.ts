@@ -25,6 +25,8 @@ export class InputManager {
     interactCooldown: number = 300;
 
     constructor() {
+        this.resizeButtons();
+        window.addEventListener('resize', () => this.resizeButtons());
         this.setupKeyboard();
         this.setupTouch();
         this.setupMouse();
@@ -59,8 +61,7 @@ export class InputManager {
             } else if (distB < this.btnB.radius * 1.2) {
                 this.btnB.active = true;
             } else {
-                if (e.button === 0) this.keys.attack = true;
-                if (e.button === 2) this.keys.interact = true;
+                // No mapping for other buttons
             }
         });
         window.addEventListener('mouseup', () => { 
@@ -76,8 +77,6 @@ export class InputManager {
     }
 
     private setupTouch() {
-        this.resizeButtons();
-        window.addEventListener('resize', () => { this.resizeButtons(); });
         window.addEventListener('touchstart', (e) => this.handleTouch(e), { passive: false });
         window.addEventListener('touchmove', (e) => this.handleTouch(e), { passive: false });
         window.addEventListener('touchend', (e) => this.handleTouch(e), { passive: false });
@@ -86,8 +85,7 @@ export class InputManager {
 
     private resizeButtons() {
         const w = window.innerWidth; const h = window.innerHeight;
-        const baseSize = Math.min(w, h);
-        const btnScale = baseSize < 500 ? 1.2 : 1.0;
+        const btnScale = 1.0;
         this.btnA.radius = 45 * btnScale;
         this.btnB.radius = 35 * btnScale;
         

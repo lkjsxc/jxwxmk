@@ -1,4 +1,4 @@
-export enum AppState { StartScreen, InGame, GameOver }
+export enum AppState { InGame, GameOver }
 
 export interface Item {
     kind: string; // "Wood", "Stone", etc.

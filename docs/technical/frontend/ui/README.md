@@ -8,7 +8,7 @@ This directory details the frontend UI components and systems.
 - **Crafting**: Recipe list and crafting details.
 - **Achievements**: Achievement list and notifications.
 - **Profile**: Player stats and name management.
-- **Screens**: Start screen and Game Over screen.
+- **Screens**: Game Over screen.
 
 ## Logic
 The UI is managed by the `UIManager` class, which handles:
