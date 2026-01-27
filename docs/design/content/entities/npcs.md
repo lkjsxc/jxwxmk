@@ -1,20 +1,39 @@
-# NPCs (Non-Player Characters)
+# Villagers + NPCs
 
-NPCs are stationary entities that players can interact with.
+Villagers populate settlements and provide trade, quests, and services.
 
-## NPC Types
+## Roles (Variety Target)
 
-- **Elder**: quest giver.
-- **Merchant**: trade placeholder (inventory exists but no trading logic).
-- **Guard**: minimal dialogue.
+- Trader (general goods)
+- Blacksmith
+- Armorer
+- Woodworker
+- Tanner
+- Alchemist
+- Hunter
+- Farmer
+- Fisher
+- Innkeeper
+- Guard Captain
+- Caravan Master
+- Healer
+- Cartographer
+- Quest Board Clerk
 
-## Properties (Current)
+## Properties
 
-- `id`, `npc_type`, `name`, `x`, `y`, `health`
-- `dialogue_index` (reserved for future use)
-- `trade_inventory` (empty list for Merchant, `None` otherwise)
+- `id`, `role`, `name`, `faction`, `x`, `y`
+- `inventory` (buy/sell lists)
+- `service_catalog` (repairs, storage, crafting orders)
+- `reputation_gate` (min reputation tier)
 
 ## Interactions
 
-- Dialogue options are served by the server.
-- Options can trigger quest acceptance or completion.
+- Dialogue with branching options and reputation checks.
+- Trade with dynamic pricing modifiers.
+- Service actions (repair, fast travel, storage).
+
+## Variety Targets
+
+- 10x increase in villager roles compared to baseline.
+- Tiered role mix scales with settlement level.

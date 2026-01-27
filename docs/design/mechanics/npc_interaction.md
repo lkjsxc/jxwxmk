@@ -1,24 +1,24 @@
 # NPC Interaction Mechanics
 
-NPC interaction is handled by the server and delivered to the client as a modal dialogue.
+NPCs provide quests, trading, services, and settlement flavor.
 
 ## Dialogue System
 
-- Player presses Interact near an NPC.
-- Server responds with a dialogue payload (`npcInteraction`) containing text + options.
-- Selecting an option sends `npcAction` with the NPC id and option index.
-
-## Current NPC Types
-
-- **Elder**: quest giver (wood gatherer -> wolf hunter).
-- **Merchant**: placeholder dialogue and trade inventory (empty).
-- **Guard**: placeholder dialogue.
+- Interactions are initiated by Interact within range.
+- Dialogue options are server-authored and can branch on reputation.
 
 ## Trading
 
-- Trade messages exist in the protocol, but server-side trade logic is not implemented.
+- Villagers expose a buy/sell list and pricing modifiers.
+- Trades validate inventory, currency, and reputation server-side.
+- Settlement taxes apply to buy/sell operations.
 
-## Quest Integration
+## Services
 
-- Dialogue options can start quests or complete them.
-- Quest progress is tracked server-side and pushed to the client.
+- Repairs, crafting orders, storage, and travel links.
+- Service availability scales with settlement tier.
+
+## Reputation
+
+- Reputation tracks per settlement or faction.
+- Higher reputation unlocks exclusive quests and discounts.

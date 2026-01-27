@@ -1,16 +1,25 @@
 # Rewards & Notifications
 
-## Stat Bonuses (Current)
+## Stat Bonuses
 
-Achievements grant additive bonuses recorded in `player.stat_bonuses`.
+Achievements grant additive bonuses that are applied server-side:
 
-- `speed`: used in movement.
-- `damage`: used in attack damage.
-- `gather`: used in resource damage.
-- `max_hp` and `craft`: currently stored but **not applied** by gameplay logic.
+- `speed`
+- `damage`
+- `gather`
+- `max_hp`
+- `craft`
+- `resistance`
+- `reputation_gain`
+
+## Reward Types
+
+- Flat stat bonuses.
+- Cosmetic titles.
+- One-time item bundles.
 
 ## Notifications
 
-- Unlocks trigger a toast notification on the client.
-- Duration: ~3 seconds.
-- Content: title + achievement name.
+- Unlocks trigger a toast notification.
+- Duration: 3-5 seconds.
+- Content: title + achievement name + optional reward summary.

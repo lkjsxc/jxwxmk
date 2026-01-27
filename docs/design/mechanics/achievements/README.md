@@ -1,6 +1,6 @@
 # Achievement System Design
 
-This section documents the currently implemented achievements and rewards.
+Achievements provide long-term goals and progression boosts.
 
 ## Contents
 

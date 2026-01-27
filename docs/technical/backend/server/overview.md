@@ -4,14 +4,14 @@
 
 - Single Rust binary built with Actix Web.
 - One HTTP server instance with one worker (`workers(1)`), intentionally low memory.
-- `GameEngine` is an Actix actor that owns world state and runs the tick loop.
-- Each WebSocket connection runs a `GameSession` actor that forwards input to `GameEngine` and receives outbound messages.
+- `GameEngine` owns world state, chunk cache, and tick loop.
+- Each WebSocket connection runs a `GameSession` actor that forwards input to `GameEngine`.
 
 ## Startup Flow
 
 1. `main` initializes logging and constructs `GameEngine::new()`.
-2. `GameEngine` loads `config.json` and initializes the `World`.
-3. `GameEngine` starts and begins its fixed-rate tick loop.
+2. `GameEngine` loads config files from `config/` and initializes the world seed.
+3. `GameEngine` starts the fixed-rate tick loop.
 4. Actix Web binds `0.0.0.0:8080` and exposes routes:
    - `GET /health`
    - `GET /ws`
@@ -20,12 +20,12 @@
 ## Actor Responsibilities
 
 - **GameEngine**:
-  - Owns `World` state and configuration.
-  - Processes input messages (movement, attack, craft, spawn, etc.).
+  - Owns world state and configuration.
+  - Processes validated input events.
   - Runs the tick loop at `tick_rate`.
-  - Broadcasts full world snapshots each tick.
+  - Streams chunk deltas to clients.
 
 - **GameSession**:
-  - Handles JSON message parsing from WebSocket.
+  - Parses JSON messages.
   - Sends `Join` on start and `Leave` on stop.
-  - Forwards input messages to `GameEngine` without mutating state directly.
+  - Enqueues input events without mutating state.

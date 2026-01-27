@@ -1,7 +1,7 @@
 # Game Content
 
-Data definitions for entities and items.
+Entity and item catalogs that back the MMORPG content scale.
 
 - [Entities](entities/README.md)
 - [Items](items/README.md)
-- [Biomes](biomes.md)
+- [Biome Content](../world/biomes.md)

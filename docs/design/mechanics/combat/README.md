@@ -1,27 +1,32 @@
 # Combat Mechanics
 
-Combat is implemented as part of the attack action. The server is authoritative for all damage.
+Combat includes melee and ranged options with server-side resolution.
 
-## Damage Calculation
+## Damage Model
 
-`Damage = ToolDamage * (1 + damage_bonus + level_bonus)`
+`Damage = WeaponDamage * (1 + stat_bonus + level_bonus)`
 
-- Base damage and tool damage values are from `config.json`.
-- Tool level adds `tool_level_dmg_bonus` per level above 1.
+- Base values are defined in `config/balance.json`.
+- Level bonus scales with item and player tier.
 
-## Tools
+## Weapon Classes
 
-- **Hand**: `tools.base_dmg`
-- **Wood Pickaxe**: `tools.wood_pickaxe_dmg`
-- **Stone Pickaxe**: `tools.stone_pickaxe_dmg`
-- **Rock Multiplier**: `tools.rock_mult` applies only to rocks.
+- **Melee**: axes, swords, maces, spears.
+- **Ranged**: bows, crossbows, thrown weapons.
+- **Magic-lite**: staves and scrolls with cooldown-based effects.
 
-## Mob Behavior
+## Status Effects
 
-- **Rabbit**: random wander, non-hostile.
-- **Wolf/Bear**: chase nearest spawned player within `aggression_range` and deal damage within `attack_range`.
-- Mob damage is applied every tick when in range (no separate cooldown).
+- Bleed, slow, poison, burn, chill, stun.
+- Resistance values derive from armor and survival skills.
 
-## Player Interaction
+## PvP Rules
 
-- Players can damage other players within `game.interact_range` when attacking.
+- Safe zones around settlement cores disable PvP.
+- PvP is enabled in open world and certain event regions.
+- Guards respond to hostile actions within settlement bounds.
+
+## AI Combat
+
+- Mobs have aggro radius, leash range, and threat table.
+- Elites and bosses use telegraphed attacks.

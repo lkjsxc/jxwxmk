@@ -7,15 +7,17 @@ The client is initialized in `src/client/index.ts`.
 - Establishes WebSocket to `/ws` with stored token (localStorage).
 - On `welcome`:
   - Stores token.
-  - Auto-sends `{ "spawn": true }` if `spawned` is false.
+  - Sends `{ "type": "spawn", "data": { "settlement_id": null } }` if `spawned` is false.
 
 ## World Updates
 
-- On `world`:
-  - Stores current world as `prevWorld`.
-  - Replaces `world` with new snapshot.
-  - Records `lastUpdateAt` for interpolation.
-  - If player is missing, switches to Game Over state.
+- On `chunkAdd`:
+  - Insert chunk into local cache.
+- On `chunkRemove`:
+  - Evict chunk from local cache.
+- On `entityDelta`:
+  - Apply updates/removals inside the target chunk.
+- If the local player entity is missing for too long, switch to Game Over.
 
 ## Other Messages
 
@@ -26,12 +28,11 @@ The client is initialized in `src/client/index.ts`.
 
 ## Input Loop
 
-- Every 50ms, sends `InputState` if:
-  - Movement, attack, interact, or pointer down is active.
-- Separate one-off messages are sent for crafting, slot selection, name updates, NPC actions, and trades.
+- Every 50ms, sends `{ "type": "input" }` if movement or actions are active.
+- One-off messages are sent for crafting, trades, NPC actions, and quests.
 
 ## Render Loop
 
 - Uses `requestAnimationFrame`.
-- Interpolates entity positions between `prevWorld` and `world`.
+- Interpolates entity positions within active chunks.
 - Delegates UI and HUD rendering to `UIManager`.

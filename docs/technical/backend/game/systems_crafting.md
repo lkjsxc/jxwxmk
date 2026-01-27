@@ -1,22 +1,16 @@
 # Crafting System
 
-Crafting is entirely server-authoritative and operates on the player's inventory.
+Crafting is server-authoritative and data-driven.
 
 ## Recipes
 
-Current recipes (`CraftingSystem::get_recipes()`):
-
-- `WoodPickaxe`: Wood x10
-- `StonePickaxe`: Wood x10, Stone x10
-- `WoodWall`: Wood x20
-- `Door`: Wood x30
-- `Torch`: Wood x2
-- `Workbench`: Wood x50
+- Recipes load from `config/crafting.json` and `config/balance.json`.
+- Each recipe includes required station tier and materials.
 
 ## Craft Flow
 
-1. Client sends `{"craft": "<ItemType>"}`.
-2. Server checks recipe and inventory availability.
-3. Ingredients are consumed across slots (stacked or split).
-4. Output item is added to inventory (stacked where possible).
-5. `stats.items_crafted` increments.
+1. Client sends `craft` with recipe ID.
+2. Server validates station proximity and player tier.
+3. Ingredients are consumed from inventory.
+4. Output item is added with derived level.
+5. Craft stats and XP are updated.

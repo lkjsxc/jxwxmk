@@ -15,4 +15,4 @@ The camera smooth-follows the local player and supports zoom.
 
 ## Notes
 
-- The camera is not clamped to world bounds yet.
+- The world is unbounded; the camera does not clamp to world edges.

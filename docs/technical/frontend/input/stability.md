@@ -3,16 +3,16 @@
 ## Session Lifecycle
 
 1. Client opens WebSocket `/ws` with optional `token`.
-2. Server sends `welcome` with `id`, `token`, `spawned`.
-3. Client sends `{"spawn": true}` if needed.
-4. Input loop sends `InputState` every 50ms when in game.
+2. Server sends `welcome` with `id`, `token`, `version`, `spawned`.
+3. Client sends `{ "type": "spawn" }` if needed.
+4. Input loop sends `input` messages every 50ms when in game.
 
 ## Disconnect
 
-- On socket close, the client resets local world state and clears its input interval.
+- On socket close, the client resets local chunk cache and clears its input interval.
 - Reconnect occurs on page reload.
 
 ## Game Over
 
-- Client enters Game Over state when its player is missing from world updates.
-- Respawn closes the socket, clears stored token, and reloads the page.
+- Client enters Game Over when its player entity is missing for too long.
+- Respawn requests are sent via `spawn` without resetting the session token.

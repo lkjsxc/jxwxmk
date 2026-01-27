@@ -1,9 +1,11 @@
 # Game Design
 
-This directory contains the detailed design specifications.
+This directory captures the MMORPG-scale design targets and gameplay rules.
 
-## Modules
+## Sections
 
-1.  **[Mechanics](mechanics/README.md)**: The rules and systems.
-2.  **[Content](content/README.md)**: The data and assets (mobs, items).
-3.  **[UX](ux/README.md)**: User interaction and interfaces.
+1. **[Core Loop](core_loop.md)**: The player-facing loop and progression arc.
+2. **[World](world/README.md)**: World scale, chunks, biomes, and settlements.
+3. **[Mechanics](mechanics/README.md)**: Core systems and rules.
+4. **[Content](content/README.md)**: Entities, items, and catalogs.
+5. **[UX](ux/README.md)**: Interaction and UI specs.

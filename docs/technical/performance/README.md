@@ -5,3 +5,4 @@ Notes on performance goals and optimizations.
 ## Contents
 
 - [Memory](memory.md)
+- [World Streaming](streaming.md)

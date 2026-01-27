@@ -1,30 +1,24 @@
-# Items & Equipment
+# Item Catalog Overview
 
-This list reflects current `ItemType` values.
+Items are tiered (L1-L10) and derive level from their primary material.
 
-## Resources
+## Category Summary
 
-- Wood
-- Stone
-- Gold (defined, not spawned)
-- Diamond (defined, not spawned)
-- Berry
-- Meat
-- CookedMeat (defined, not crafted)
+- **Materials**: raw and processed components for crafting.
+- **Tools**: axes, picks, sickles, hammers.
+- **Weapons**: melee and ranged.
+- **Armor**: cloth, leather, metal, exotic.
+- **Consumables**: food, potions, buffs.
+- **Structures**: walls, stations, utilities.
+- **Trade Goods**: settlement economy and quests.
 
-## Tools
+## Naming Conventions
 
-- WoodPickaxe
-- StonePickaxe
+- Prefix by tier: `Bronze Axe (L2)`, `Iron Axe (L3)`.
+- Exotic materials introduce unique suffixes.
+- Crafted items inherit the highest material tier used.
 
-## Structures
+## Variety Targets
 
-- WoodWall
-- Door
-- Torch
-- Workbench
-
-## Notes
-
-- Gold, Diamond, and CookedMeat exist in the enum but are not produced by current gameplay.
-- No weapons or armor items are implemented yet.
+- 10x increase over baseline item counts per tier.
+- 100+ total items across categories at launch.

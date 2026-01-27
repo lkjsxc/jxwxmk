@@ -1,44 +1,39 @@
 # Engine
 
-The engine is implemented as an Actix actor (`GameEngine`) that owns the world state and processes messages.
+`GameEngine` owns world state, the chunk cache, and the fixed tick loop.
 
 ## Startup
 
-- Loads `AppConfig` from `config.json`.
-- Builds a new `World` with configured dimensions.
-- Spawns initial entities (resources, mobs, barriers, NPCs).
-- Starts a fixed tick loop at `server.tick_rate` Hz.
+- Loads configuration from `config/`.
+- Initializes world seed and chunk manager.
+- Spawns initial settlements and starting chunks.
+- Starts fixed tick loop at `server.tick_rate` Hz.
 
 ## Tick Loop
 
 Each tick runs in this order:
 
-1. Barrier checks (remove hostile mobs inside barrier ranges).
-2. Survival tick (hunger, temperature, healing, damage).
-3. Mob AI movement and target selection.
-4. Mob damage to nearby players.
-5. Death cleanup (set `spawned = false`, clear inventory).
-6. Broadcast world snapshot.
+1. Dequeue input events into a bounded queue.
+2. Activate/deactivate chunks based on player positions.
+3. Run systems (survival, combat, AI, crafting, quests).
+4. Update regeneration timers and spawn budgets.
+5. Build per-player delta updates.
+6. Broadcast deltas to interested clients.
 
 ## Input Handling
 
-- Client input messages are handled immediately when received by the `GameEngine` actor.
-- There is no input queue; ordering is the Actix message order.
-- All mutations still occur on the single engine actor thread (no concurrent writes).
+- WebSocket handlers enqueue validated input events.
+- The engine is the only writer to world state.
+- Input ordering is deterministic within a tick.
 
 ## Engine Messages
 
-`GameEngine` handles Actix messages for:
+`GameEngine` handles:
 
-- `Join` / `Leave` (session lifecycle)
-- `Spawn`
-- `Input` (movement + attack + interact)
+- `Join` / `Leave`
+- `Spawn` / `BindSettlement`
+- `Input` (movement + actions)
 - `Craft`
-- `SelectSlot`
-- `UpdateName`
-- `SwapSlots`
+- `Trade`
 - `NpcAction`
-- `Trade` (placeholder)
 - `AcceptQuest`
-
-Outbound messages to clients are sent as `ServerMessage` values (world update, achievements, notifications, quest updates, NPC interactions).

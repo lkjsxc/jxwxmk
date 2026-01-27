@@ -1,25 +1,23 @@
 # Barrier System
 
-Barrier cores define safe zones that automatically eliminate hostile mobs inside their range.
+Barrier cores define safe zones and anchor settlements.
 
 ## BarrierCore
 
 - `level` controls effective range.
+- `integrity` tracks damage and repair state.
 - Range formula: `base_range + (level - 1) * level_multiplier`.
 
-## Spawning Rules
+## Generation Rules
 
-- A level-1 core always spawns at world center.
-- Additional cores spawn with a probability biased toward the center.
-- `max_additional_barriers` caps total extra cores.
+- Barrier cores seed settlement generation.
+- Core level determines settlement tier and NPC mix.
 
 ## Tick Behavior
 
-Each tick:
+- Hostile mobs are removed or pushed outside the safe zone.
+- PvP is disabled inside the safe-zone radius.
 
-- For each hostile mob (Wolf/Bear), if inside any barrier range, the mob is removed.
-- Rabbits are ignored (not hostile).
+## Configuration
 
-## Village Coupling
-
-Barrier cores act as village anchors. NPCs spawn near cores to provide early-game interaction.
+- Parameters live in `config/settlements.json`.

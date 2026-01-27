@@ -1,20 +1,21 @@
 # Persistence
 
-The current implementation does not persist game state to PostgreSQL. Player state is held in memory and survives only as long as the server process runs.
+Persistence is required for MMORPG-scale continuity.
 
-## Session Tokens
+## Persisted Data
 
-- Each player is assigned a UUID token on first connection.
-- The client stores the token in local storage and presents it on reconnect.
-- The token reattaches the session to the existing player entity (if present in memory).
+- Accounts and sessions.
+- Player progression (levels, inventory, quests, achievements).
+- Settlement state (core integrity, NPC inventories, reputation).
+- Chunk deltas (structures, depleted nodes, event states).
 
-## Implications
+## Checkpoint Strategy
 
-- Server restart resets the world and all player progress.
-- PostgreSQL is started in the runtime container but is not used yet.
+- Periodic checkpoints for chunks and settlements.
+- Player state saved on logout and at fixed intervals.
+- Avoid per-tick writes; coalesce changes.
 
-## Future Persistence Targets (Not Implemented)
+## PostgreSQL Usage
 
-- Accounts and sessions
-- Player inventory, stats, and quest state
-- World structures and village state
+- PostgreSQL runs inside the runtime container.
+- Migrations define player, settlement, and chunk tables.

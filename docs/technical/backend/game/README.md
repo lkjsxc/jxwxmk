@@ -4,7 +4,7 @@ Authoritative simulation logic and world state.
 
 ## Contents
 
-- [World State](world_state.md)
+- [World State + Chunks](world_state.md)
 - [Engine](engine.md)
 - [Spawning + AI](spawning_and_ai.md)
 - [Entities](entities.md)

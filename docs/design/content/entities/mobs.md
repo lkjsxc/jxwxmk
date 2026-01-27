@@ -1,26 +1,53 @@
-# Mobs
+# Creatures (Mobs)
 
-AI-controlled entities spawned at world start.
+All creatures spawn with a level (L1-L10) driven by biome tier and region difficulty.
 
-## Passive
+## Passive Fauna
 
-### Rabbit
-- **HP**: `balance.mobs.rabbit_health`
-- **Behavior**: random wandering.
-- **Drop**: Meat x2 on kill.
+- **Rabbit (L1)**
+- **Deer (L1-2)**
+- **Boar (L2)**
+- **Goat (L2)**
+- **Bison (L3)**
+- **Moose (L3)**
+- **Yak (L4)**
+- **Turtle (L1)**
+- **Crane (L1)**
+- **Capybara (L2)**
 
-## Aggressive
+## Predators
 
-### Wolf
-- **HP**: `balance.mobs.wolf_health` (scaled by level)
-- **Damage**: `balance.mobs.wolf_dmg` (scaled by level)
-- **Behavior**: chases nearest spawned player within `aggression_range`.
+- **Wolf (L2-3)**
+- **Bear (L3-4)**
+- **Mountain Lion (L4)**
+- **Crocodile (L4)**
+- **Dire Wolf (L5)**
+- **Sabertooth (L6)**
+- **Warg (L7)**
 
-### Bear
-- **HP**: `balance.mobs.bear_health` (scaled by level)
-- **Damage**: `balance.mobs.bear_dmg` (scaled by level)
-- **Behavior**: chases nearest spawned player within `aggression_range`.
+## Monsters
 
-## Leveling
+- **Stone Golem (L4)**
+- **Swamp Wraith (L5)**
+- **Sand Scorpion (L5)**
+- **Ice Revenant (L6)**
+- **Lava Serpent (L7)**
+- **Storm Elemental (L8)**
+- **Void Stalker (L9)**
 
-Mob level scales with distance from world center using `leveling.mob_level_factor`.
+## Elites + Bosses
+
+- **Ancient Treant (L7)**
+- **Frost Behemoth (L8)**
+- **Colossus of Ash (L9)**
+- **World Dragon (L10)**
+
+## Spawn Rules
+
+- Spawn tables are per-biome and per-settlement tier.
+- Elites and bosses use global caps and long cooldowns.
+
+## Variety Targets
+
+- 10x increase in creature variety per biome versus baseline.
+- Minimum 30 creature types across the world at launch.

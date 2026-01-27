@@ -4,14 +4,19 @@ The survival system runs once per tick for each spawned player.
 
 ## Hunger
 
-- Hunger decays by `mechanics.hunger_decay / tick_rate` per tick.
-- If hunger drops below 0, it is clamped to 0 and health is reduced by `mechanics.starve_dmg / tick_rate`.
-- If hunger is above `balance.player.heal_threshold` and health is below max, health heals by `mechanics.heal_rate / tick_rate`.
+- Hunger decays by `survival.hunger_decay / tick_rate`.
+- If hunger is 0, health is reduced by `survival.starve_damage / tick_rate`.
+- If hunger is above `survival.heal_threshold`, health regenerates by `survival.heal_rate / tick_rate`.
 
-## Temperature (Cold)
+## Temperature
 
-- Player temperature moves toward `balance.player.neutral_temp` at `mechanics.cold_decay / tick_rate`.
-- If `cold <= 0`, health is reduced by `mechanics.freeze_dmg / tick_rate`.
+- Temperature moves toward `survival.neutral_temp` with biome modifiers.
+- If temperature reaches 0, health is reduced by `survival.freeze_damage / tick_rate`.
+
+## Thirst (Optional)
+
+- Enabled via `survival.thirst_enabled`.
+- Thirst decay and dehydration damage mirror hunger rules.
 
 ## Clamping
 

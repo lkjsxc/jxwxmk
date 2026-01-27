@@ -2,9 +2,9 @@
 
 ## Game Over
 
-- Triggered when the local player is missing from world updates.
+- Triggered when the local player is missing from chunk updates.
 - Displays a "YOU DIED" overlay and a Respawn button.
-- Clicking Respawn clears the token and reloads the page.
+- Clicking Respawn sends a `spawn` message (no token reset).
 
 ## Menu Overlay
 

@@ -23,15 +23,19 @@ A structured checklist for recreating the full system from scratch.
 
 ## 3. Configuration System
 
-- [ ] Implement `AppConfig` struct and `config.json` loader.
+- [ ] Implement config loader for `config/` directory.
 - [ ] Define schema for:
-  - [ ] `server` (port, tick_rate)
-  - [ ] `game` (world dims, interact range, spawn radius)
-  - [ ] `mechanics` (hunger/cold decay, heal/starve/freeze, cooldowns)
-  - [ ] `spawning` (densities, unit area)
-  - [ ] `leveling` (mob level factor, tool XP)
-  - [ ] `barriers` (base range, level multiplier, spawn caps)
-  - [ ] `balance` (player, mobs, tools, resources, structures)
+  - [ ] `server.json` (port, tick_rate, rate limits)
+  - [ ] `world.json` (chunk size, streaming radii, seed)
+  - [ ] `balance.json` (player, mobs, tools, resources, structures)
+  - [ ] `survival.json` (hunger/temp/thirst rates)
+  - [ ] `crafting.json` (recipes, station tiers)
+  - [ ] `spawning.json` (budgets, respawn timers)
+  - [ ] `biomes.json` (biome modifiers)
+  - [ ] `settlements.json` (barrier cores, tiers)
+  - [ ] `economy.json` (vendor pricing, taxes)
+  - [ ] `quests.json` (templates and rewards)
+  - [ ] `achievements.json` (definitions and bonuses)
 
 ## 4. Server + Networking
 
@@ -41,7 +45,7 @@ A structured checklist for recreating the full system from scratch.
   - [ ] `GET /` + `GET /{filename}` for embedded assets.
 - [ ] WebSocket endpoint `GET /ws` with optional token.
 - [ ] Implement `GameSession` actor:
-  - [ ] Parse client JSON input fields.
+  - [ ] Parse client JSON messages.
   - [ ] Send `Join` on start and `Leave` on stop.
   - [ ] Serialize server messages to JSON.
 
@@ -49,68 +53,53 @@ A structured checklist for recreating the full system from scratch.
 
 - [ ] Define JSON payloads for:
   - [ ] `welcome`
-  - [ ] `world`
+  - [ ] `chunkAdd` / `chunkRemove`
+  - [ ] `entityDelta`
   - [ ] `achievement`
   - [ ] `notification`
   - [ ] `npcInteraction`
   - [ ] `questUpdate`
-- [ ] Define client message fields:
-  - [ ] `dx`, `dy`, `attack`, `interact`
-  - [ ] `spawn`, `craft`, `slot`, `name`, `swapSlots`
-  - [ ] `npcAction`, `trade`, `acceptQuest`
+- [ ] Define client message types:
+  - [ ] `input`, `craft`, `trade`, `npcAction`, `acceptQuest`.
 
 ## 6. World State + Entities
 
-- [ ] Implement `World` struct with maps for players, resources, mobs, structures, NPCs, barrier cores.
+- [ ] Implement `World` struct with chunk map and interest sets.
 - [ ] Implement entity data models:
-  - [ ] Player + Inventory + Stats
+  - [ ] Player + Inventory + Stats + Reputation
   - [ ] Item + ItemType
-  - [ ] Resource + ResourceType
-  - [ ] Mob + MobType
-  - [ ] Structure + StructureType
-  - [ ] NPC + NpcType
+  - [ ] Resource Node + ResourceType (leveled)
+  - [ ] Mob + MobType (leveled)
+  - [ ] Structure + StructureType (tiered)
+  - [ ] NPC + Role
   - [ ] BarrierCore
 
 ## 7. Game Engine (Tick)
 
 - [ ] Implement `GameEngine` actor that owns `World`.
 - [ ] Start fixed tick loop at `tick_rate`.
-- [ ] Spawn initial entities on start:
-  - [ ] Resources by density.
-  - [ ] Mobs by density + level scaling.
-  - [ ] Barrier cores (center + probabilistic extras).
-  - [ ] Village NPCs near cores.
-- [ ] Broadcast world snapshot each tick (filter unspawned players).
+- [ ] Activate/deactivate chunks based on player positions.
+- [ ] Spawn initial settlements and starter chunks.
+- [ ] Broadcast chunk deltas each tick.
 
 ## 8. Systems
 
-- [ ] Survival system (hunger, temperature, healing, starvation, freezing).
-- [ ] Interaction system:
-  - [ ] Movement with speed bonuses.
-  - [ ] Attack action (consume food, place structures, gather, attack mobs, attack players).
-  - [ ] Interact action (NPC proximity).
-- [ ] Crafting system:
-  - [ ] Recipe list and inventory consumption.
-  - [ ] Server-authoritative crafting output.
-- [ ] Achievement system:
-  - [ ] Requirements + stat bonuses.
-  - [ ] Unlock tracking + notifications.
-- [ ] Quest system:
-  - [ ] Quest states and objectives.
-  - [ ] Gather/kill progress updates.
-  - [ ] Elder dialogue for acceptance + completion.
-- [ ] Barrier system:
-  - [ ] Remove hostile mobs inside barrier range each tick.
+- [ ] Survival system (hunger, temperature, thirst, healing).
+- [ ] Interaction system (movement, actions, NPCs).
+- [ ] Crafting system (stations + recipes).
+- [ ] Achievement system (requirements + bonuses).
+- [ ] Quest system (templates + progression).
+- [ ] Barrier system (safe zones).
 
 ## 9. Client Core
 
 - [ ] WebSocket connection with localStorage token persistence.
-- [ ] World snapshot handling and interpolation.
-- [ ] Input loop sending `InputState` every 50ms.
+- [ ] Chunk add/remove and delta handling.
+- [ ] Input loop sending `input` at fixed cadence.
 
 ## 10. Client Rendering
 
-- [ ] Canvas renderer for map, entities, and HUD.
+- [ ] Canvas renderer for chunks, entities, and HUD.
 - [ ] Camera follow + zoom.
 - [ ] Highlight closest target and show tooltips.
 - [ ] Draw barrier range and mob levels.
@@ -129,9 +118,9 @@ A structured checklist for recreating the full system from scratch.
 
 ## 12. Persistence (Future)
 
-- [ ] Add schema + migrations (accounts, player_state, world_state).
+- [ ] Add schema + migrations (accounts, player_state, chunk_state).
 - [ ] Load/save player state by token.
-- [ ] Periodic checkpoints for world structures.
+- [ ] Periodic checkpoints for chunk deltas and settlement state.
 
 ## 13. Tests (Docker)
 

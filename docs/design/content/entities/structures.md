@@ -1,21 +1,24 @@
 # Structures
 
-Placeable entities created by players using the attack action with structure items.
+Placeable or generated structures with tiered durability.
 
-## Types
+## Player Structures
 
-- **Wood Wall**
-- **Door**
-- **Torch**
-- **Workbench**
+- **Walls**: wood, stone, iron, obsidian.
+- **Doors + Gates**: lockable at higher tiers.
+- **Storage**: chests, vaults.
+- **Stations**: workbench, forge, tannery, alchemy table.
+- **Utilities**: torches, campfires, beds.
+
+## Settlement Structures
+
+- **Town Hall**: governance and quests.
+- **Market Stalls**: trading hubs.
+- **Barracks**: guard spawns.
+- **Inns**: rest and fast travel.
+- **Farms**: food production.
 
 ## Properties
 
-- `x`, `y`: placement location (player position at placement time)
-- `health`: configured per type in `config.json`
-- `owner_id`: player UUID
-
-## Notes
-
-- Structures are stored in the world and broadcast to clients each tick.
-- Doors are not locked; all players can pass or attack them.
+- `x`, `y`, `owner_id`, `tier`, `health`, `flags`.
+- Durability scales with tier and material.

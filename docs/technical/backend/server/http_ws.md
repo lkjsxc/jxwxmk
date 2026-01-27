@@ -28,5 +28,6 @@ The server injects basic security headers:
 2. Server sends a `welcome` message containing:
    - `id`: player UUID
    - `token`: session token to store client-side
-   - `spawned`: whether the player is already spawned
-3. Client sends `{"spawn": true}` if it needs to enter the world.
+   - `version`: protocol version
+   - `spawned`: whether the player is already in-world
+3. Client sends a `spawn` message to enter the world if needed.

@@ -1,29 +1,38 @@
 # Quest System
 
-Quests are per-player tasks with explicit objectives and states.
+Quests are generated per settlement and scale by player tier.
 
 ## Quest Structure
 
-- `id`: Unique identifier (string)
-- `name`: Display name
-- `description`: Player-facing text
+- `id`, `name`, `description`
 - `state`: `NotStarted`, `InProgress`, `ReadyToTurnIn`, `Completed`
-- `objectives`: List of objective types
+- `objectives`: ordered list with progress counters
+- `rewards`: items, currency, reputation, XP
 
 ## Objective Types
 
 - **Gather**: `item`, `count`, `current`
 - **Kill**: `mob_type`, `count`, `current`
-- **TalkTo**: `npc_name`
+- **Craft**: `recipe`, `count`, `current`
+- **Deliver**: `item`, `target_npc`
+- **Explore**: `biome`, `poi`, `distance`
+- **Escort**: `npc_id`, `route`
+- **Defend**: `event_id`, `waves`
 
-## Current Quests
+## Quest Sources
 
-- **Wood Gatherer**: Gather 10 Wood for the Elder.
-- **Wolf Hunter**: Kill 3 Wolves (unlocked after Wood Gatherer).
+- Settlement boards (repeatable and daily quests).
+- NPCs tied to roles (hunter, smith, trader, guard).
+- World events and bosses.
 
-## Flow
+## Variety Targets
 
-1. Accept quest via Elder dialogue.
-2. Progress updates via gather/kill events.
-3. When complete, state becomes `ReadyToTurnIn`.
-4. Turn in via Elder dialogue; gathering quests consume required items.
+- 10x increase in quest variety versus baseline.
+- Each settlement tier has a pool of 30-60 quest templates.
+- Biomes inject local variants and rewards.
+
+## Sample Quest Lines
+
+- **Starter**: Gather lumber -> craft tools -> defend a caravan.
+- **Biome**: Hunt unique predators -> collect rare ore -> craft resistance gear.
+- **Event**: Defend settlement -> track raid leader -> claim bounty.

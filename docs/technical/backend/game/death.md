@@ -3,23 +3,16 @@
 ## Death Flow
 
 1. Each tick, the engine checks spawned players for `health <= 0`.
-2. Dead players are marked as:
-   - `spawned = false`
-   - `health = 0`
-   - `inventory = Inventory::default()`
-   - `stats.deaths += 1`
-3. Unspawned players are excluded from world broadcasts.
+2. Dead players are marked as unspawned and a death record is stored.
+3. Inventory drop rules are applied (configurable by biome or PvP state).
 
 ## Respawn Flow
 
-- Client sends `{ "spawn": true }`.
-- Server resets:
-  - Position to a random point within `spawn_radius` around world center.
-  - `health = 100`, `hunger = 100`, `cold = 50`.
-  - `spawned = true`.
+- Player respawns at their bound settlement core.
+- Vitals reset to configured defaults.
+- Respawn cooldowns are enforced to prevent abuse.
 
 ## Reconnect Flow
 
-- Client connects with `?token=<uuid>`.
-- If token matches an existing player, that player entity is reused.
-- The welcome message includes a `spawned` flag so the client can decide to respawn.
+- Clients reconnect with their session token.
+- The server reattaches the player and restores persisted state.

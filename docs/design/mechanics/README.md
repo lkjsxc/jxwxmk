@@ -1,11 +1,14 @@
 # Game Mechanics
 
-Core systems that drive the gameplay.
+Core systems that drive MMORPG-scale gameplay.
 
 - [Survival](survival/README.md)
 - [Combat](combat/README.md)
 - [Crafting](crafting/README.md)
+- [Progression + Tiers](progression.md)
+- [Economy + Trade](economy_trade.md)
+- [Social Systems](social.md)
 - [NPC Interaction](npc_interaction.md)
 - [Quests](quests.md)
-- [Barriers](barriers.md)
+- [Barriers + Safe Zones](barriers.md)
 - [Achievements](achievements/README.md)

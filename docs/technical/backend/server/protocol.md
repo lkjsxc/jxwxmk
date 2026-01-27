@@ -1,115 +1,73 @@
 # Protocol
 
-All gameplay traffic is JSON over WebSocket. There is no explicit protocol version or sequence number in the current implementation.
+Gameplay traffic is JSON over WebSocket with explicit message types.
 
-## Client -> Server Messages
+## Client -> Server
 
-Client messages are a single JSON object with optional fields. Absent fields default to safe values on the server.
+All client messages are objects with `type` and `data`.
 
-### Input + Actions
+### input
 
 ```json
-{
-  "dx": -1.0,
-  "dy": 0.0,
-  "attack": false,
-  "interact": false,
-  "craft": "WoodPickaxe",
-  "slot": 0,
-  "name": "PlayerName",
-  "swapSlots": [0, 5],
-  "spawn": true,
-  "npcAction": ["<npc_uuid>", 0],
-  "trade": ["<npc_uuid>", 2, true],
-  "acceptQuest": "wood_gatherer"
-}
+{ "type": "input", "data": { "dx": -1.0, "dy": 0.0, "attack": false, "interact": false } }
 ```
 
-Field details:
+### spawn
 
-- `dx`, `dy` (f64): movement vector (-1..1).
-- `attack` (bool): primary action (attack, gather, eat, place structure).
-- `interact` (bool): secondary action (NPC interaction).
-- `craft` (string): `ItemType` enum name to craft.
-- `slot` (number): active hotbar slot (0-6 enforced server-side).
-- `name` (string): requested display name (trimmed, max 12).
-- `swapSlots` ([from, to]): swap inventory slots.
-- `spawn` (bool): request spawn.
-- `npcAction` ([npc_id, option_index]): click NPC dialogue option.
-- `trade` ([npc_id, item_index, buy]): placeholder; not implemented server-side.
-- `acceptQuest` (string): quest ID (optional path; alternate quest acceptance flow).
+```json
+{ "type": "spawn", "data": { "settlement_id": "<uuid>" } }
+```
 
-## Server -> Client Messages
+### craft
 
-All server messages wrap a `type` field and a `data` payload (except `welcome`).
+```json
+{ "type": "craft", "data": { "recipe": "IronPickaxe" } }
+```
+
+### trade
+
+```json
+{ "type": "trade", "data": { "npc_id": "<uuid>", "item": "SaltCrate", "count": 2, "buy": true } }
+```
+
+### npcAction
+
+```json
+{ "type": "npcAction", "data": { "npc_id": "<uuid>", "option": 1 } }
+```
+
+### acceptQuest
+
+```json
+{ "type": "acceptQuest", "data": { "quest_id": "caravan_guard" } }
+```
+
+## Server -> Client
 
 ### welcome
 
 ```json
-{
-  "type": "welcome",
-  "id": "<player_uuid>",
-  "token": "<session_token>",
-  "spawned": false
-}
+{ "type": "welcome", "id": "<player_uuid>", "token": "<session_token>", "version": 2, "spawned": false }
 ```
 
-### world
+### chunkAdd
 
 ```json
-{
-  "type": "world",
-  "data": { "width": 4000.0, "height": 4000.0, "players": { }, "resources": { }, "mobs": { }, "structures": { }, "npcs": { }, "barrier_cores": { } }
-}
+{ "type": "chunkAdd", "data": { "coord": [12, -4], "biome": "forest", "entities": { "resources": {}, "mobs": {}, "structures": {}, "npcs": {} } } }
 ```
 
-See [World State](../game/world_state.md) for entity payloads.
-
-### achievement
+### chunkRemove
 
 ```json
-{
-  "type": "achievement",
-  "data": { "id": "NoviceWalker", "name": "Novice Walker", "description": "Walk 1,000 steps", "stat_bonus": ["speed", 0.01], "requirement": { "type": "Steps", "value": 1000 } }
-}
+{ "type": "chunkRemove", "data": { "coord": [12, -4] } }
 ```
 
-### notification
+### entityDelta
 
 ```json
-{
-  "type": "notification",
-  "data": { "title": "Quest Completed!", "message": "Wood Gatherer", "color": "#0f0" }
-}
+{ "type": "entityDelta", "data": { "chunk": [12, -4], "updates": [], "removes": [] } }
 ```
 
-### npcInteraction
+### questUpdate / achievement / notification / npcInteraction
 
-```json
-{
-  "type": "npcInteraction",
-  "data": {
-    "npc_id": "<npc_uuid>",
-    "npc_type": "Elder",
-    "name": "Elder",
-    "text": "Greetings, traveler.",
-    "options": ["Who are you?", "I need a quest.", "Goodbye"],
-    "trade_items": []
-  }
-}
-```
-
-### questUpdate
-
-```json
-{
-  "type": "questUpdate",
-  "data": {
-    "id": "wood_gatherer",
-    "name": "Wood Gatherer",
-    "description": "Collect 10 pieces of wood for the Elder.",
-    "state": "InProgress",
-    "objectives": [ { "Gather": { "item": "Wood", "count": 10, "current": 3 } } ]
-  }
-}
-```
+These remain similar in shape but are scoped to the new protocol version.

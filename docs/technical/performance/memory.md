@@ -1,26 +1,23 @@
 # Memory Optimization Strategy
 
-Goal: keep runtime RSS around ~20MB (single container, single server process, embedded assets).
+Goal: keep runtime RSS bounded with chunk streaming and strict caps.
 
 ## Techniques
 
 ### 1. Dependency Control
-- Prefer small dependency surface (Actix Web + RustEmbed + Serde).
-- Avoid extra runtime services in-process beyond PostgreSQL.
+- Prefer small dependency surface.
+- Avoid extra runtime services beyond PostgreSQL.
 
 ### 2. Build Optimizations
-- Favor release builds with LTO and stripping.
-- Keep the Rust binary small by avoiding heavy optional features.
+- Release builds with LTO and stripping.
 
 ### 3. Runtime Configuration
-- Run Actix with a single worker (`workers(1)`) to cap memory.
-- Avoid background tasks that allocate large buffers.
-- Keep world snapshot serialization bounded by world size limits.
+- Single worker to cap memory.
+- Bounded queues for input, generation, and network.
 
-### 4. Data Structures
-- Prefer small, explicit structs over nested dynamic maps.
-- Avoid per-tick allocations; reuse vectors where possible.
+### 4. World Data
+- Chunk-level storage with LRU eviction.
+- Compact serialization for frozen chunks.
 
-### 5. Static Asset Strategy
+### 5. Asset Strategy
 - Compile frontend assets once and embed using `rust-embed`.
-- Serve from memory to avoid file I/O.

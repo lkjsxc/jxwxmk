@@ -1,20 +1,24 @@
-# Barriers
+# Barriers + Safe Zones
 
-Barriers are protective zones that eliminate hostile mobs within their range. Each barrier is anchored by a **Barrier Core**.
+Barriers define protected zones and anchor settlements.
 
-## Mechanics
+## Barrier Core
 
-- Hostile mobs (Wolf, Bear) are removed if inside a barrier range.
-- Rabbits are ignored.
-- Barrier range scales by level:
-  - `range = base_range + (level - 1) * level_multiplier`
+- A barrier core creates a safe-zone radius.
+- Core level determines range and settlement tier cap.
 
-## Placement Rules
+## Safe-Zone Rules
 
-- A level-1 core always spawns at world center.
-- Additional cores spawn probabilistically; the chance increases near the center.
-- The total extra cores are capped by `max_additional_barriers`.
+- No PvP within the barrier radius.
+- Hostile mobs are pushed out or despawned.
+- Guard NPCs enforce rules and escort offenders out.
+
+## Settlement Integration
+
+- Each settlement is centered on a core.
+- Respawn and trade services depend on core integrity.
+- Damaged cores reduce safe-zone size until repaired.
 
 ## Configuration
 
-All parameters live under `barriers` in `config.json`.
+- Core parameters live in `config/settlements.json`.
