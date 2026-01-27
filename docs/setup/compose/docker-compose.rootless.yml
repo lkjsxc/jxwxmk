@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  jxwxmk:
+    build:
+      context: ../../..
+      dockerfile: src/runtime/Dockerfile
+    image: jxwxmk:local
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../../../.local/pgdata:/var/lib/postgresql/data
+      - ../../../config:/app/config
+    restart: unless-stopped

@@ -4,7 +4,7 @@ use super::GameEngine;
 
 impl GameEngine {
     pub(crate) fn build_chunk_add(
-        &mut self,
+        &self,
         coord: crate::game::world::coords::ChunkCoord,
     ) -> Option<ServerMessage> {
         let chunk = self.world.chunks.get(&coord)?;

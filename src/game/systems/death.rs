@@ -1,3 +1,5 @@
+use uuid::Uuid;
+
 use crate::config::Config;
 use crate::game::world::entities::PlayerState;
 use crate::game::world::World;
@@ -14,15 +16,15 @@ pub fn handle_deaths(world: &mut World, config: &Config) {
     }
 }
 
-pub fn respawn(world: &mut World, player: &mut PlayerState) {
-    let settlement = player
-        .bound_settlement
+pub fn select_spawn(world: &World, bound_settlement: Option<Uuid>) -> Option<(f32, f32)> {
+    let settlement = bound_settlement
         .and_then(|id| world.settlements.get(&id))
         .or_else(|| world.settlements.values().next());
+    settlement.map(|settlement| (settlement.spawn_x, settlement.spawn_y))
+}
 
-    if let Some(settlement) = settlement {
-        player.x = settlement.spawn_x;
-        player.y = settlement.spawn_y;
-        player.spawned = true;
-    }
+pub fn apply_respawn(player: &mut PlayerState, spawn_x: f32, spawn_y: f32) {
+    player.x = spawn_x;
+    player.y = spawn_y;
+    player.spawned = true;
 }

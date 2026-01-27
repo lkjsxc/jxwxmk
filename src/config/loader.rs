@@ -3,10 +3,6 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 
-use crate::config::files::{
-    AchievementsConfig, BalanceConfig, BiomesConfig, CraftingConfig, EconomyConfig, QuestsConfig,
-    ServerConfig, SettlementsConfig, SpawningConfig, SurvivalConfig, WorldConfig,
-};
 use crate::config::Config;
 
 pub fn load_from_dir(dir: &Path) -> Result<Config> {

@@ -6,13 +6,13 @@ COPY src /app
 COPY docs/assets/favicon.ico /app/static/favicon.ico
 RUN cd /app/client && npm install && npm run build
 
-FROM rust:1.75-bullseye AS rust-build
+FROM rust:1.88-bullseye AS rust-build
 WORKDIR /app
 COPY src /app
 COPY --from=client-build /app/static /app/static
 RUN cargo build --release
 
-FROM rust:1.75-bullseye AS test
+FROM rust:1.88-bullseye AS test
 WORKDIR /app
 COPY src /app
 COPY --from=client-build /app/static /app/static

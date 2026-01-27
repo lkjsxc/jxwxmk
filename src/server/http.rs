@@ -53,10 +53,10 @@ pub async fn session_claim(
     }
 }
 
-pub fn static_index() -> impl Responder {
+pub async fn static_index() -> HttpResponse {
     crate::server::static_assets::serve_index()
 }
 
-pub fn static_asset(req: HttpRequest) -> impl Responder {
+pub async fn static_asset(req: HttpRequest) -> HttpResponse {
     crate::server::static_assets::serve_asset(&req)
 }

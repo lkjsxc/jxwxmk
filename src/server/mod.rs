@@ -1,3 +1,4 @@
+use actix::Actor;
 use actix_web::{middleware::DefaultHeaders, web, App, HttpServer};
 
 use crate::config::Config;

@@ -91,13 +91,20 @@ impl GameEngine {
     }
 
     fn handle_spawn(&mut self, event: SpawnEvent) {
+        let mut bound_settlement = None;
         if let Some(player) = self.world.players.get_mut(&event.player_id) {
             if let Some(settlement_id) = event.request.settlement_id {
                 if let Ok(uuid) = Uuid::parse_str(&settlement_id) {
                     player.bound_settlement = Some(uuid);
                 }
             }
-            death::respawn(&mut self.world, player);
+            bound_settlement = player.bound_settlement;
+        }
+
+        if let Some((spawn_x, spawn_y)) = death::select_spawn(&self.world, bound_settlement) {
+            if let Some(player) = self.world.players.get_mut(&event.player_id) {
+                death::apply_respawn(player, spawn_x, spawn_y);
+            }
         }
     }
 

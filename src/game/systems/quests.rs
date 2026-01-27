@@ -1,6 +1,7 @@
 use crate::config::Config;
 use crate::game::world::entities::{PlayerQuest, PlayerQuestObjective, PlayerState};
-use crate::protocol::server::{QuestUpdate, ServerMessage};
+use crate::protocol::server::ServerMessage;
+use crate::protocol::types::QuestUpdate;
 use uuid::Uuid;
 
 pub fn accept(player: &mut PlayerState, config: &Config, quest_id: &str) -> Option<ServerMessage> {

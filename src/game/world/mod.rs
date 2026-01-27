@@ -73,18 +73,30 @@ impl World {
     }
 
     pub fn update_player_chunk(&mut self, player_id: Uuid, chunk_size: f32) {
+        let (x, y) = match self.players.get(&player_id) {
+            Some(player) => (player.x, player.y),
+            None => return,
+        };
+        let coord = self.chunk_coord(x, y, chunk_size);
         if let Some(player) = self.players.get_mut(&player_id) {
-            let coord = self.chunk_coord(player.x, player.y, chunk_size);
             player.chunk_x = coord.x;
             player.chunk_y = coord.y;
         }
     }
 
     pub fn interest_set(&self, player: &PlayerState, view_radius: i32) -> HashSet<ChunkCoord> {
+        Self::interest_set_coords(player.chunk_x, player.chunk_y, view_radius)
+    }
+
+    pub fn interest_set_coords(
+        chunk_x: i32,
+        chunk_y: i32,
+        view_radius: i32,
+    ) -> HashSet<ChunkCoord> {
         let mut set = HashSet::new();
         for dx in -view_radius..=view_radius {
             for dy in -view_radius..=view_radius {
-                set.insert(ChunkCoord::new(player.chunk_x + dx, player.chunk_y + dy));
+                set.insert(ChunkCoord::new(chunk_x + dx, chunk_y + dy));
             }
         }
         set
