@@ -5,6 +5,7 @@ This documentation set is designed to be complete enough to re-implement the pro
 ## Sections
 
 - [Implementation](implementation/README.md)
+- [Plans](plan/README.md)
 - [Design](design/README.md)
 - [Technical Architecture](technical/README.md)
 - [Setup](setup/README.md)

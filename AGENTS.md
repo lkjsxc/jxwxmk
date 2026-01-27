@@ -1,121 +1,101 @@
 # AGENTS.md — Authoritative Agent Policy and System Architecture
 
+This repository is developed only by LLM agents. Documentation is the source of truth.
+
 ## 0. Prime Directive
 
-Build and evolve a multiplayer survival game as a single integrated solution that is developed only by LLM agents.
+Build and evolve a multiplayer survival game as a single integrated solution.
 
-**Runtime must be one container** that runs:
+Runtime must be one container that runs:
 - the Rust game server (authoritative simulation + HTTP/WebSocket + static asset serving)
 - PostgreSQL (inside the same runtime container)
 
 TypeScript is allowed only for build-time generation of browser assets that are served by Rust. There is no long-running Node/JS service in production.
 
-This document is authoritative for:
-- repo invariants
-- agent workflow and commit policy
-- architecture commitments (server authority, tick loop, protocol)
-- operational constraints (Docker-first, single runtime container)
-
-`INSTRUCT.md` is the always-read execution contract; treat it as “how to act.”
-This file is “what we are building” and “what must remain true.”
+`docs/policy/INSTRUCT.md` is the always-read execution contract. Treat it as the how-to-work policy. This file is what we are building and what must remain true.
 
 ---
 
-## 1. Repository invariants (hard constraints)
+## 1. Repository Invariants (Hard Constraints)
 
-### 1.1 Root allowlist (strict)
+### 1.1 Root Allowlist (Strict)
 Root contains only:
-- `README.md`
-- `LICENSE`
-- `AGENTS.md`
-- `docker-compose.yml`
-- `.gitignore`
-- `config/`
-- `docs/`
-- `src/`
-- `.github/`
+- README.md
+- LICENSE
+- AGENTS.md
+- docker-compose.yml
+- .gitignore
+- config/
+- docs/
+- src/
+- .github/
 - hidden files/dirs
 
-Anything else at root must be moved.
+Anything else at root must be moved under docs/ or src/.
 
-### 1.2 Documentation topology (recursive TOC)
-- Every directory must contain exactly one `README.md` serving as that directory’s table of contents.
-- Additional docs must live in subdirectories and/or additional `.md` files.
-- Delete unused docs completely (no deprecated stubs).
+### 1.2 Documentation Topology (Recursive TOC)
+- Every directory must contain exactly one README.md (the directory TOC).
+- Additional docs must live in that directory or subdirectories (each with their own README.md).
+- Delete unused docs; no deprecated stubs.
 
-### 1.3 Code shape
-- Prefer deep trees and small files.
-- Keep implementation boring and auditable: explicit types, invariants, and bounds.
+### 1.3 Code Shape
+- Prefer small files and deep trees.
+- Keep implementation boring and auditable: explicit types, invariants, bounds.
 
-### 1.4 Docker as the canonical execution environment
+### 1.4 Docker-First
 - Build and test in Docker.
 - CI must run Docker builds/tests.
-- Host-based workflows are convenience only; never required for correctness.
+- Host workflows are convenience only; never required for correctness.
 
 ---
 
-## 2. System architecture commitments (authoritative)
+## 2. System Architecture Commitments
 
-## 2.1 Server-authoritative simulation
+### 2.1 Server-Authoritative Simulation
 The server is the single source of truth for:
-- movement and physics resolution
-- health and survival meters (hunger, etc.)
-- inventory/equipment, crafting results, building placement
-- combat resolution and damage application
-- world resources, respawns, and structure state (including villages)
+- movement and physics
+- survival meters (hunger, etc.)
+- inventory/equipment, crafting, building placement
+- combat resolution and damage
+- world resources, respawns, and structures (including villages)
 
-The client is a renderer + input device.
-Never trust the client for anything that affects gameplay outcomes.
+The client is a renderer + input device. Never trust the client for gameplay outcomes.
 
-## 2.2 Fixed tick loop + single owner of world state
-Simulation runs on a fixed-rate tick (target 20–60 Hz).
-One task owns world state and is the only writer.
+### 2.2 Fixed Tick Loop + Single Owner
+- Simulation runs at a fixed tick rate (target 20-60 Hz).
+- One task owns world state and is the only writer.
+- I/O handlers must enqueue events; they must not mutate world state directly.
 
-I/O handlers (WebSocket/HTTP) must never mutate world state directly. They enqueue events into bounded channels and receive snapshots/deltas via outbound queues.
-
-This yields:
-- deterministic-ish behavior
-- clear ownership and fewer races
-- bounded memory and backpressure points
-
-## 2.3 Networking model
+### 2.3 Networking Model
 - WebSocket is primary for gameplay traffic.
-- HTTP endpoints are allowed for:
+- HTTP is allowed for:
   - login/session creation
   - health/readiness
-  - serving static client assets
+  - serving static assets
   - optional admin/dev endpoints (guarded)
 
-Protocol requirements:
-- explicit `protocol_version`
-- explicit `msg_type`
-- client input sequence `seq`
-- server snapshots include `server_tick`
-
-Protocol design principles:
+Protocol principles:
 - validate all inbound messages (bounds, cooldowns, permissions)
 - disconnect for sustained abuse
-- minimize ambiguity: explicit fields and enums over implicit meaning
-- backwards compatibility is not required; we can bump versions aggressively
+- explicit fields and enums; avoid implicit meaning
+- backwards compatibility is not required (version bump freely)
 
-## 2.4 Persistence boundaries (PostgreSQL)
+### 2.4 Persistence Boundaries
 Persist only what is needed for continuity:
 - accounts/sessions
-- player progression and inventory/equipment
-- village/world structure state as needed for long-lived world
+- player progression and inventory
+- village/world structure state as needed
 
 Do not persist:
-- per-tick transient physics minutiae
+- per-tick transient physics
 - high-frequency state every tick
 
-Prefer:
-- periodic checkpointing for stable state
-- event logs for auditability (only where needed)
+Prefer periodic checkpoints for stable state.
 
-## 2.5 Integrated “frontend” without a frontend service
+### 2.5 Integrated Frontend
 - Browser client assets are generated from TypeScript at build time.
-- Rust serves compiled assets (e.g., `/static/*`).
-- Node runs only in Docker build stages; it never runs as a server process.
+- Rust serves compiled assets from embedded static files.
+- Node is build-time only.
 
 Graphics mandate:
 - Canvas2D, minimal primitives/sprites.
@@ -123,63 +103,55 @@ Graphics mandate:
 
 ---
 
-## 3. Security & abuse resistance (baseline)
+## 3. Security and Abuse Resistance
+
 - Authentication via session token (cookie or bearer).
 - Per-connection rate limiting and message caps.
-- Validate everything server-side:
-  - bounds checks and type validation
-  - cooldown enforcement
-  - permissions and ownership checks
+- Validate everything server-side.
 - Never embed secrets in client assets.
 
-Parity rule:
-Any “front-end restriction” must be matched by a “back-end restriction.”
-Assume the client is adversarial.
+Parity rule: any frontend restriction must be matched by a backend restriction.
 
 ---
 
-## 4. Content pillars (what “the game” must contain)
+## 4. Content Pillars (Must Exist)
 
-### 4.1 Minimum pillars (must exist in some form)
+### 4.1 Minimum Pillars
 - Gathering (wood/stone/food)
 - Crafting (tools/weapons/armor, plus at least one structure)
-- Survival meters: hunger mandatory; thirst/temperature optional but encouraged
+- Survival meters: hunger mandatory; thirst/temperature optional
 - Combat: melee + at least one ranged option
 - Progression: tech tiers via recipes/structures
 - World: resource nodes with respawn rules; basic biome variation
-- Social: at least party/clan scaffolding or proximity chat signals (optional early)
+- Social: party/clan scaffolding or proximity chat (optional early)
 
-### 4.2 Village requirement (must be first-class)
-Villages are world structures that shape:
+### 4.2 Village Requirement
+Villages are first-class structures that shape:
 - spawn/respawn
 - safe zones or rule modifiers
-- interaction surfaces (crafting, trade, quests, bulletin board, storage)
-- points of interest and early-game onboarding
+- interaction surfaces (crafting, trade, quests, storage)
+- points of interest and onboarding
 
 Minimum viable village:
 - named region + bounds
-- spawn point association
+- spawn association
 - at least one interactive station
-- server-enforced ruleset differences (even if minimal: e.g., no PvP inside bounds)
+- server-enforced ruleset difference (even if minimal)
 
 ---
 
-## 5. Testing & quality gates
+## 5. Testing and Quality Gates
 
 Minimum expectations per feature slice:
-- Unit tests for deterministic logic (crafting, combat resolution, respawns, village rules).
-- Integration tests for:
-  - protocol handshake/auth
-  - DB migrations and basic persistence path
-- A basic load sanity harness is encouraged:
-  - simulate N clients with scripted inputs
-  - assert server remains stable and bounded
+- Unit tests for deterministic logic (crafting, combat, respawns, village rules).
+- Integration tests for protocol handshake/auth and DB migrations.
+- Optional load sanity harness (scripted clients, bounded memory).
 
 Tests must run in Docker.
 
 ---
 
-## 6. Git policy (mandatory)
+## 6. Git Policy
 
 Commit frequently. Separate concerns:
 - schema/migrations
@@ -188,20 +160,21 @@ Commit frequently. Separate concerns:
 - docs
 
 Commit message format:
-- `feat(<area>): <summary>`
-- `fix(<area>): <summary>`
-- `refactor(<area>): <summary>`
-- `docs(<area>): <summary>`
-- `test(<area>): <summary>`
-- `chore(<area>): <summary>`
+- feat(<area>): <summary>
+- fix(<area>): <summary>
+- refactor(<area>): <summary>
+- docs(<area>): <summary>
+- test(<area>): <summary>
+- chore(<area>): <summary>
 
-Areas examples: `net`, `protocol`, `world`, `village`, `combat`, `craft`, `db`, `assets`, `docker`, `ops`, `client`.
+Areas: net, protocol, world, village, combat, craft, db, assets, docker, ops, client.
 
 ---
 
-## 7 Tradeoff priority order (when forced)
+## 7. Tradeoff Priority Order
+
 1. Correctness and server authority
 2. Determinism and bounded resource usage
-3. Architectural simplicity under constraints (single runtime container)
-4. Systemic content richness (reusable mechanics)
-5. Visual polish (last)
+3. Architectural simplicity under single-container constraint
+4. Systemic content richness
+5. Visual polish
