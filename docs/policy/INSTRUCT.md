@@ -40,7 +40,6 @@ Keep it crisp and explicit. Prefer checklists and bullet points over prose.
 Project root may contain only:
 - `README.md`
 - `LICENSE`
-- `AGENTS.md`
 - `.gitignore`
 - `config/`
 - `docs/`

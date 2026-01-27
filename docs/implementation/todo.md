@@ -4,7 +4,7 @@ A structured checklist for recreating the full system from scratch.
 
 ## 1. Repository + Docs
 
-- [ ] Enforce root allowlist (README, LICENSE, AGENTS, docker-compose, config/, docs/, src/, .github/).
+- [ ] Enforce root allowlist (README, LICENSE, docker-compose, config/, docs/, src/, .github/).
 - [ ] Create documentation TOCs for every directory.
 - [ ] Add this TODO document and link it from `docs/README.md`.
 

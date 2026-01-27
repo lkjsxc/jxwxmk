@@ -12,7 +12,6 @@ This plan is for reconstructing the entire source tree from documentation.
 
 1. **Read Policies and Constraints**
    - `docs/policy/INSTRUCT.md`
-   - `AGENTS.md`
 
 2. **Recreate Repo Layout**
    - Recreate `src/` with required README.md files.
