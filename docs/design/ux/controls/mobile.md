@@ -5,13 +5,13 @@ Mobile uses the same interaction rules as desktop, expressed through touch gestu
 ## Layout
 
 ### Left Zone (Movement)
-- **Type**: Dynamic Floating Joystick.
-- **Constraints**: Inner circle distance is capped to remain within the base circle's influence area.
+- **Type**: Dynamic floating joystick.
+- **Constraints**: Inner circle distance is capped to remain within the base circle.
 
 ### World Interaction (Tap + Long-Press)
 - **Tap**: Primary action (attack/gather) on the world.
-- **Long-Press (~300ms)**: Interact with nearby objects (open/use/talk).
-- **No A/B Buttons**: The right side is reserved for gestures, not on-screen action buttons.
+- **Long-Press (~250-300ms)**: Interact with nearby objects (open/use/talk).
+- **No A/B Buttons**: The right side is reserved for gestures, not action buttons.
 
 ### UI Overlay
 - **Hotbar**: Centered bottom. Tap to select item.
@@ -19,6 +19,7 @@ Mobile uses the same interaction rules as desktop, expressed through touch gestu
 - **Chat**: Semi-transparent overlay top-left.
 
 ## Gestures
+
 - **Pinch**: Zoom camera.
-- **Tap**: Attack/Gather in the world (ignored when UI is focused).
+- **Tap**: Attack/gather in the world (ignored when UI is focused).
 - **Long-Press**: Interact with nearby objects.

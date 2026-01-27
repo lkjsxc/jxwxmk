@@ -1,35 +1,38 @@
 # Main Menu (The Hub)
 
-The central interface for **jxwxmk**.
+The central interface for the game. Layout and behavior are identical across devices.
 
-## States
+## In-Game Menu
 
-### 1. In-Game Hub
-- **Close Button**: 'X' icon in top-right corner to resume game immediately.
+- **Close Button**: "X" icon in top-right to resume immediately.
 - **Tabs**:
-    - **Inventory**: Bag management.
-    - **Crafting**: Recipe list.
-    - **Profile**: Player information and customization.
-    - **Guidebook**: Manual.
-    - **Settings**: Audio/Graphics.
+  - **Inventory**: Bag management.
+  - **Crafting**: Recipe list.
+  - **Profile**: Player identity, level, and device login.
+  - **Guidebook**: Manual.
+  - **Settings**: Audio/graphics.
 
-### 4. Profile Tab
-- **Stats**: Total time survived, items gathered.
+## Profile Tab
+
+- **Stats**: Time survived, items gathered, kills, deaths.
 - **Identity**:
-    - **Player ID**: Displayed in full with a copy button.
-    - **Copy Action**: Copies the Player ID to clipboard and shows a toast.
+  - **Player ID**: Displayed in full with a copy button.
+  - **Copy Action**: Copies the Player ID to clipboard and shows a toast.
 - **Device Login**:
-    - **Input**: Enter a Player ID to claim that character on this device.
-    - **Action**: "Login on this device" requests a new session token.
-    - **Behavior**: Existing sessions for the same Player ID are revoked.
+  - **Input**: Enter a Player ID to claim that character on this device.
+  - **Action**: "Login on this device" requests a new session token.
+  - **Behavior**: Existing sessions for the same Player ID are revoked.
 - **Customization**:
-    - **Name Input Box**: A simulated text field. Displays the player's current username by default. Clicking it focuses the input for editing.
-    - **Keyboard Input**: While focused, typing updates the character buffer in real-time.
-    - **Visual**: Displays a blinking cursor (|) when focused.
-    - **Action**: "Update Name" button or pressing "Enter" sends the change to the server.
+  - **Name Input**: Click to focus, type to edit.
+  - **Action**: "Update Name" or Enter sends the change to the server.
 
-### 3. Game Over Screen
-A dedicated overlay when `HP <= 0`.
+## Session Revoked
+
+- Triggered when the same Player ID logs in elsewhere.
+- Shows a blocking overlay with a reconnect/login prompt.
+
+## Game Over Screen
+
 - **Header**: "YOU DIED".
 - **Action**: "RESPAWN" button (reloads page/resets session).
-- **Visual**: Dark gray/black overlay, blocking all other input.
+- **Visual**: Dark overlay, blocks all other input.

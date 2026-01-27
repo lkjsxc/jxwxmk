@@ -8,10 +8,15 @@
 - **Attack**: primary action (tap/click on world).
 - **Interact**: long-press/hold on world or `E` key.
 
+## Long-Press Detection
+
+- Long-press is detected at ~250-300ms for both mouse and touch.
+- The same threshold is used across devices to preserve parity.
+
 ## Cooldowns
 
-- Attack: 500ms (`attackCooldown`)
-- Interact: 400ms (`interactCooldown`)
+- Attack: 500ms (`attackCooldown`).
+- Interact: 400ms (`interactCooldown`).
 
 These are client-side rate limits; the server still enforces its own cooldowns.
 

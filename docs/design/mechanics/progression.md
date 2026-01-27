@@ -1,11 +1,13 @@
 # Progression + Tiers
 
-Progression is multi-track: player levels, skill mastery, and tech tiers.
+Progression is multi-track: player levels, skill mastery, and tech tiers. All progression is server-authoritative.
 
 ## Player Levels
 
-- XP from combat, gathering, crafting, quests, events, and achievements.
-- Level gates unlock new recipes, biomes, and settlement services.
+- XP comes from combat, gathering, crafting, quests, events, and **achievements**.
+- Achievements always grant XP on completion.
+- Level gates unlock recipes, biomes, and settlement services.
+- Level-ups award small stat increases or perk points (avoid power spikes).
 
 ## Skill Lines
 

@@ -18,9 +18,9 @@
 
 The server injects basic security headers:
 
-- `Content-Security-Policy` (self-only, allows unsafe-inline for styles and unsafe-eval for bundle)
-- `X-Content-Type-Options: nosniff`
-- `X-Frame-Options: DENY`
+- `Content-Security-Policy` (self-only, allows unsafe-inline for styles and unsafe-eval for bundle).
+- `X-Content-Type-Options: nosniff`.
+- `X-Frame-Options: DENY`.
 
 ## WebSocket
 
@@ -42,4 +42,5 @@ The server injects basic security headers:
 ### Single-Session Enforcement
 
 - If a new token is issued for a player ID, any existing session is revoked.
-- Revoked sessions receive a `sessionRevoked` message before disconnect.
+- Revoked sessions receive `sessionRevoked` before disconnect.
+- UI must surface the revoke reason and return to login.

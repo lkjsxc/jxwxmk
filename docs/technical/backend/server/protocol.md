@@ -76,4 +76,4 @@ All client messages are objects with `type` and `data`.
 
 ### questUpdate / achievement / notification / npcInteraction
 
-These remain similar in shape but are scoped to the new protocol version.
+These remain similar in shape but are scoped to the current protocol version.

@@ -2,9 +2,10 @@
 
 ## Displayed Fields
 
-- Player ID (full) + copy button
-- Player level + XP progress
-- Stats: kills, deaths, crafted, steps
+- Player ID (full) + copy button.
+- Player level + XP progress.
+- Stats: kills, deaths, crafted, steps.
+- Session state: connected / revoked / invalid.
 
 ## Copy Player ID
 
@@ -21,3 +22,6 @@
 
 - Input field accepts a Player ID to claim on this device.
 - Clicking "Login on this device" requests a new session token.
+- Server revokes any existing session for that Player ID (single-session rule).
+- On revoke, the previous device receives `sessionRevoked` and is disconnected.
+- Invalid IDs show a blocking error toast and do not change local session.

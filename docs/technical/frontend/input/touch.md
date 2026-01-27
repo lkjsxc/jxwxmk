@@ -13,6 +13,7 @@ Touch input is split into three zones:
 
 ## Gestures
 
-- **Tap**: primary attack/gather action.
-- **Long-press (~300ms)**: interact with nearby objects.
+- **Tap**: Primary attack/gather action.
+- **Long-press (~250-300ms)**: Interact with nearby objects.
+- **No A/B buttons**: Gestures replace on-screen action buttons.
 - Gestures are tracked by touch identifier to support multi-touch.

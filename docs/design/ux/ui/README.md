@@ -4,6 +4,6 @@ Visual elements for player interaction.
 
 - [HUD](hud.md)
 - [Inventory](inventory.md)
-- [Main Menu](main_menu.md)
+- [Main Menu + Profile](main_menu.md)
 - [Crafting Menu](crafting_menu.md)
 - [Tooltips](tooltips.md)

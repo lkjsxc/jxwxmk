@@ -4,10 +4,11 @@ The CI pipeline must build the single runtime container on every push and pull r
 
 ## Requirements
 
-- Trigger on push and pull_request (main + release branches).
+- Trigger on `push` and `pull_request` (main + release branches).
 - Build the container from the repository Dockerfile.
 - Fail the job on any build error.
 - No publishing by default (publishing can be added later on tags).
+- Optional: run the container and hit `/health`.
 
 ## Suggested Job Outline
 
