@@ -1,9 +1,0 @@
-{
-  "http_addr": "0.0.0.0",
-  "http_port": 8080,
-  "tick_rate": 20.0,
-  "input_queue_limit": 1024,
-  "input_rate_limit_per_sec": 30,
-  "max_message_bytes": 16384,
-  "session_claims_per_minute": 10
-}
