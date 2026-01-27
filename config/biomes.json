@@ -1,0 +1,14 @@
+{
+  "biomes": [
+    {
+      "id": "forest",
+      "hunger_modifier": 1.0,
+      "temperature_modifier": 0.0
+    },
+    {
+      "id": "tundra",
+      "hunger_modifier": 1.1,
+      "temperature_modifier": -15.0
+    }
+  ]
+}

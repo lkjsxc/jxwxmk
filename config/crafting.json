@@ -1,0 +1,92 @@
+{
+  "recipes": [
+    {
+      "id": "WoodPickaxe",
+      "station_tier": 0,
+      "inputs": [
+        {
+          "item": "Wood",
+          "count": 10
+        }
+      ],
+      "output": {
+        "item": "WoodPickaxe",
+        "count": 1
+      }
+    },
+    {
+      "id": "StonePickaxe",
+      "station_tier": 0,
+      "inputs": [
+        {
+          "item": "Wood",
+          "count": 10
+        },
+        {
+          "item": "Stone",
+          "count": 10
+        }
+      ],
+      "output": {
+        "item": "StonePickaxe",
+        "count": 1
+      }
+    },
+    {
+      "id": "WoodWall",
+      "station_tier": 0,
+      "inputs": [
+        {
+          "item": "Wood",
+          "count": 20
+        }
+      ],
+      "output": {
+        "item": "WoodWall",
+        "count": 1
+      }
+    },
+    {
+      "id": "Door",
+      "station_tier": 0,
+      "inputs": [
+        {
+          "item": "Wood",
+          "count": 30
+        }
+      ],
+      "output": {
+        "item": "Door",
+        "count": 1
+      }
+    },
+    {
+      "id": "Torch",
+      "station_tier": 0,
+      "inputs": [
+        {
+          "item": "Wood",
+          "count": 2
+        }
+      ],
+      "output": {
+        "item": "Torch",
+        "count": 1
+      }
+    },
+    {
+      "id": "Workbench",
+      "station_tier": 0,
+      "inputs": [
+        {
+          "item": "Wood",
+          "count": 50
+        }
+      ],
+      "output": {
+        "item": "Workbench",
+        "count": 1
+      }
+    }
+  ]
+}

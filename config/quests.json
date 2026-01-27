@@ -1,0 +1,17 @@
+{
+  "templates": [
+    {
+      "id": "caravan_guard",
+      "name": "Guard the Caravan",
+      "description": "Defeat nearby threats.",
+      "objectives": [
+        {
+          "kind": "Kill",
+          "target": "wolf",
+          "count": 3
+        }
+      ],
+      "reward_xp": 25
+    }
+  ]
+}
