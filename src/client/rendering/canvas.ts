@@ -18,6 +18,7 @@ export function startRenderLoop(
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
+    camera.setViewport(canvas.width, canvas.height);
   };
   resize();
   window.addEventListener("resize", resize);
@@ -35,6 +36,7 @@ export function startRenderLoop(
     } else if (Date.now() - session.lastSeenAt > 3000) {
       ui.setGameOver(true);
     }
+    camera.update();
 
     drawGrid(ctx, camera);
 
@@ -72,19 +74,27 @@ export function startRenderLoop(
 
 function drawGrid(ctx: CanvasRenderingContext2D, camera: Camera) {
   const spacing = 64 * camera.zoom;
+  const originX = camera.pivotX - camera.x * camera.zoom;
+  const originY = camera.pivotY - camera.y * camera.zoom;
+  const offsetX = mod(originX, spacing);
+  const offsetY = mod(originY, spacing);
   ctx.save();
   ctx.strokeStyle = "rgba(148,163,184,0.08)";
-  for (let x = 0; x < ctx.canvas.width; x += spacing) {
+  for (let x = offsetX; x < ctx.canvas.width; x += spacing) {
     ctx.beginPath();
     ctx.moveTo(x, 0);
     ctx.lineTo(x, ctx.canvas.height);
     ctx.stroke();
   }
-  for (let y = 0; y < ctx.canvas.height; y += spacing) {
+  for (let y = offsetY; y < ctx.canvas.height; y += spacing) {
     ctx.beginPath();
     ctx.moveTo(0, y);
     ctx.lineTo(ctx.canvas.width, y);
     ctx.stroke();
   }
   ctx.restore();
+}
+
+function mod(value: number, modulus: number) {
+  return ((value % modulus) + modulus) % modulus;
 }

@@ -2,8 +2,9 @@ import { EntityUpdate } from "../state/types";
 import { Camera } from "./camera";
 
 export function drawEntity(ctx: CanvasRenderingContext2D, camera: Camera, entity: EntityUpdate) {
-  const screenX = (entity.x - camera.x) * camera.zoom + ctx.canvas.width / 2;
-  const screenY = (entity.y - camera.y) * camera.zoom + ctx.canvas.height / 2;
+  const screen = camera.worldToScreen(entity.x, entity.y);
+  const screenX = screen.x;
+  const screenY = screen.y;
 
   ctx.save();
   if (entity.kind === "player") {
