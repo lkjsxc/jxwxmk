@@ -18,3 +18,4 @@ This documentation set is the source of truth for the project. It must be suffic
 - [Plans](plan/README.md)
 - [Policy](policy/README.md)
 - [Decisions](decisions/README.md)
+- [Templates (Agent Prompts)](tmp/README.md)

@@ -1,8 +1,8 @@
 # Docs-Only Update Prompt (Derived from content-change.md)
 
-Use this prompt when the user explicitly wants **documentation-only** changes. This is a **constrained** variant of `prompt/content-change.md`.
+Use this prompt when the user explicitly wants **documentation-only** changes. This is a **constrained** variant of `docs/tmp/content-change.md`.
 
-**Rule:** Follow every instruction in `prompt/content-change.md` **unless** it conflicts with the docs-only constraints below. If it conflicts, the docs-only rule wins.
+**Rule:** Follow every instruction in `docs/tmp/content-change.md` **unless** it conflicts with the docs-only constraints below. If it conflicts, the docs-only rule wins.
 
 ---
 
@@ -17,7 +17,7 @@ Use this prompt when the user explicitly wants **documentation-only** changes. T
 ## 1) Mandatory reads (before any action)
 - `docs/policy/INSTRUCT.md`
 - `AGENTS.md`
-- `prompt/content-change.md`
+- `docs/tmp/content-change.md`
 - Closest `README.md` files for every directory you will touch (recursive TOCs).
 
 ---

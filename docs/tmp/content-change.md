@@ -63,7 +63,7 @@ Never introduce a new root-level item. If the user asks for one, propose a compl
 - Client is rendering + input only; server decides outcomes.
 
 ---
-config
+
 ## 6) Change hygiene
 - Do not revert or overwrite unrelated changes in a dirty working tree.
 - Prefer `rg` for search and `apply_patch` for small edits.

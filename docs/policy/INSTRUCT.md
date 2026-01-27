@@ -28,6 +28,10 @@ In your output, use these headings in this order:
 
 Keep it crisp and explicit. Prefer checklists and bullet points over prose.
 
+### 0.3 Prompt templates (recommended)
+
+- Agent prompt templates live in `docs/tmp/README.md` (change template, docs-only updates, full `src/` reconstruction).
+
 ---
 
 ## 1. Hard repository invariants (do not violate)

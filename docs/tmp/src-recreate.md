@@ -18,20 +18,26 @@
 
 Before you write or change *any* code or docs, you must read and obey all of the following, in order:
 
+### Always-required entrypoints
+
 * `docs/policy/INSTRUCT.md`
 * `AGENTS.md`
-* `docs/technical/README.md`
-* `docs/technical/backend/README.md`
-* `docs/technical/backend/server/README.md` and all children
-* `docs/technical/backend/game/README.md` and all children
-* `docs/technical/frontend/README.md` and all children
-* `docs/technical/config/README.md`
-* `docs/technical/deployment/README.md`
-* `docs/setup/README.md`
-* `docs/setup/docker.md`
-* `docs/implementation/todo.md`
-* `docs/plan/recreate.md`
+* `docs/README.md` (documentation index)
+* `docs/technical/README.md` (architecture entrypoint)
 * The closest `README.md` for every directory you will touch (read it *before* touching that directory)
+
+### Scoped deep reads (follow TOCs; do not hard-code leaf files)
+
+For each subsystem you will implement/touch, start at that subsystem’s directory `README.md` and **recursively read what its TOC links to** (children may be files or subdirectories).
+
+Minimum expected coverage for full `src/` reconstruction:
+
+* Backend: `docs/technical/backend/README.md`
+* Frontend: `docs/technical/frontend/README.md`
+* Config: `docs/technical/config/README.md`
+* Deployment + runtime container: `docs/technical/deployment/README.md`
+* Setup + Docker ergonomics: `docs/setup/README.md`
+* Reconstruction plan + known gaps: `docs/plan/README.md` and `docs/implementation/README.md`
 
 **If any mandatory file is missing/unreadable, STOP immediately** and request the missing file(s). Do not guess.
 
