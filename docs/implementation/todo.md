@@ -17,7 +17,7 @@ A structured checklist for recreating the full system from scratch.
 - [ ] Create entrypoint script:
   - [ ] Initialize Postgres data dir (if empty).
   - [ ] Start Postgres locally on `127.0.0.1`.
-  - [ ] Ensure `kkmypk` database exists.
+  - [ ] Ensure `jxwxmk` database exists.
   - [ ] Launch server binary.
 - [ ] Add `docker-compose.yml` for local runtime.
 

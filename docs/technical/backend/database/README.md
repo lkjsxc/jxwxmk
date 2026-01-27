@@ -5,7 +5,7 @@ The persistence layer is implemented using `sqlx` and PostgreSQL.
 ## Connection
 
 - The server connects to the database URL specified in `DATABASE_URL` env var.
-- Default: `postgres://postgres:postgres@127.0.0.1:5432/kkmypk`
+- Default: `postgres://postgres:postgres@127.0.0.1:5432/jxwxmk`
 
 ## Initialization
 
