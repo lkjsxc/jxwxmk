@@ -7,6 +7,7 @@ This documentation set is designed to be complete enough to re-implement the pro
 - [Implementation](implementation/README.md)
 - [Plans](plan/README.md)
 - [Design](design/README.md)
+- [Assets](assets/README.md)
 - [Technical Architecture](technical/README.md)
 - [Setup](setup/README.md)
 - [Policy](policy/README.md)
