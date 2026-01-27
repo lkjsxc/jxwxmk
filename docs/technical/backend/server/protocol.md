@@ -15,7 +15,7 @@ All client messages are objects with `type` and `data`.
 ### spawn
 
 ```json
-{ "type": "spawn", "data": { "settlement_id": "<uuid>" } }
+{ "type": "spawn", "data": { "settlement_id": null } }
 ```
 
 ### craft
@@ -40,6 +40,24 @@ All client messages are objects with `type` and `data`.
 
 ```json
 { "type": "acceptQuest", "data": { "quest_id": "caravan_guard" } }
+```
+
+### slot
+
+```json
+{ "type": "slot", "data": { "slot": 0 } }
+```
+
+### swapSlots
+
+```json
+{ "type": "swapSlots", "data": { "from": 0, "to": 1 } }
+```
+
+### name
+
+```json
+{ "type": "name", "data": { "name": "NewName" } }
 ```
 
 ## Server -> Client
@@ -74,6 +92,44 @@ All client messages are objects with `type` and `data`.
 { "type": "entityDelta", "data": { "chunk": [12, -4], "updates": [], "removes": [] } }
 ```
 
-### questUpdate / achievement / notification / npcInteraction
+### achievement
 
-These remain similar in shape but are scoped to the current protocol version.
+```json
+{ "type": "achievement", "data": { "id": "first_steps", "name": "First Steps" } }
+```
+
+### notification
+
+```json
+{ "type": "notification", "data": { "text": "You feel hungry." } }
+```
+
+### npcInteraction
+
+```json
+{ "type": "npcInteraction", "data": { "npc_id": "<uuid>", "name": "Trader Lina", "text": "Need supplies?", "options": ["Browse", "Goodbye"] } }
+```
+
+### questUpdate
+
+```json
+{ "type": "questUpdate", "data": { "quest": { "id": "caravan_guard", "name": "Guard the Caravan", "state": "InProgress", "objectives": [] } } }
+```
+
+## Entity Shapes
+
+### Entity Snapshot / Update
+
+```json
+{ "id": "e1", "kind": "resource", "subtype": "tree", "x": 12.5, "y": 9.0, "hp": 30.0, "max_hp": 30.0, "level": 2, "name": null, "range": null }
+```
+
+- `kind`: `player | resource | mob | structure | npc` (players arrive via `entityDelta`).
+- `subtype`: resource/mob/structure/NPC type identifier.
+- `hp`, `max_hp`, `level`, `name`, `range` are optional and omitted when irrelevant.
+
+### Entity Removal
+
+```json
+{ "id": "e1", "kind": "resource" }
+```

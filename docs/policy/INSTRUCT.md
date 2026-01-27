@@ -38,6 +38,7 @@ Project root may contain only:
 - `LICENSE`
 - `AGENTS.md`
 - `.gitignore`
+- `config/`
 - `docs/`
 - `src/`
 - `.github/`

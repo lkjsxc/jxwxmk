@@ -17,8 +17,8 @@
 ## Interaction
 
 - Selecting a recipe highlights it and shows requirements.
-- Clicking Craft sends `{ "craft": "<ItemType>" }`.
-- Craft button is enabled only if requirements are met (client-side check).
+- Clicking Craft sends `{ "type": "craft", "data": { "recipe": "<ItemType>" } }`.
+- Craft button is enabled only if requirements are met (client-side check). In the current reconstruction this is always enabled until inventory state is wired.
 
 ## Server Authority Note
 

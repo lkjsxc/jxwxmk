@@ -18,6 +18,11 @@ docker run --rm \
   jxwxmk
 ```
 
+## Compose Examples
+
+- Build from source: `docs/setup/compose/docker-compose.build.yml`
+- Run a prebuilt tag: `docs/setup/compose/docker-compose.image.yml`
+
 ## Notes
 
 - PostgreSQL runs inside the same container and is not exposed externally.

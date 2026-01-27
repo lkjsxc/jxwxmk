@@ -11,6 +11,8 @@
 - Client tracks `lastHitAt` to animate a 0.25s scale pulse (1.0 -> 1.15 -> 1.0).
 - Use a quick ease-out to keep the hit readable without slowing combat.
 
+Hit pulse rendering is not yet wired in the current reconstruction.
+
 ## Barrier Cores
 
 - Rendered as a glowing core with a dashed circular range indicator.

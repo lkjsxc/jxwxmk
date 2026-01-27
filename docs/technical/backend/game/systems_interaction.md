@@ -16,6 +16,8 @@ Handles movement, actions, and NPC interactions.
 3. **Gather**: apply tool damage to nearest resource node.
 4. **Attack**: resolve combat against mobs or players.
 
+Current reconstruction only implements Gather/Attack + NPC interactions; Consume/Place are queued for follow-up.
+
 ## Tool Scaling
 
 - Tool damage and tiers are defined in `config/balance.json`.

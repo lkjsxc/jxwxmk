@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "release/**"]
+  pull_request:
+    branches: ["main", "release/**"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build runtime container
+        run: docker build -f src/runtime/Dockerfile -t jxwxmk:ci .
+
+      - name: Smoke test /health
+        run: |
+          docker run -d --rm \
+            -p 8080:8080 \
+            -v jxwxmk_pgdata_ci:/var/lib/postgresql/data \
+            -v $PWD/config:/app/config \
+            --name jxwxmk_ci \
+            jxwxmk:ci
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:8080/health > /dev/null; then
+              echo "health ok" && exit 0
+            fi
+            sleep 1
+          done
+          echo "health check failed" >&2
+          docker logs jxwxmk_ci
+          exit 1

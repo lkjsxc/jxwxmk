@@ -10,7 +10,7 @@ Crafting is server-authoritative and data-driven.
 ## Craft Flow
 
 1. Client sends `craft` with recipe ID.
-2. Server validates station proximity and player tier.
+2. Server validates station proximity and player tier (currently a no-op; stations do not gate recipes yet).
 3. Ingredients are consumed from inventory.
 4. Output item is added with derived level.
 5. Craft stats and XP are updated.

@@ -16,7 +16,7 @@
 
 - Clicking the name field focuses input.
 - Keyboard input is appended to the name buffer.
-- Clicking "Update Name" sends `{ "name": "<new_name>" }`.
+- Clicking "Update Name" sends `{ "type": "name", "data": { "name": "<new_name>" } }`.
 
 ## Device Login
 

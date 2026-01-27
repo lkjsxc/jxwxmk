@@ -14,5 +14,5 @@ The CI pipeline must build the single runtime container on every push and pull r
 
 1. Checkout repository.
 2. Set up Docker Buildx (and QEMU if multi-arch is required).
-3. Run `docker build . -t kkmypk:ci`.
-4. (Optional) Run `docker run --rm kkmypk:ci` and validate `/health`.
+3. Run `docker build -f src/runtime/Dockerfile -t jxwxmk:ci .`.
+4. (Optional) Run the container and validate `/health`.

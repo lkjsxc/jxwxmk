@@ -1,42 +1,29 @@
-# Database Schema (Placeholder)
+# Database Schema
 
-The server currently does not execute SQL migrations. This document outlines a minimal schema to support persistence when implemented.
+The current implementation initializes a single `players` table directly on startup (no migration tool yet). Additional tables are a future expansion.
 
-## accounts
+## players (current)
 
 ```sql
-CREATE TABLE accounts (
+CREATE TABLE IF NOT EXISTS players (
     id UUID PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-```
-
-## player_state
-
-```sql
-CREATE TABLE player_state (
-    account_id UUID REFERENCES accounts(id),
     token UUID UNIQUE NOT NULL,
-    inventory JSONB NOT NULL DEFAULT '{}',
-    stats JSONB NOT NULL DEFAULT '{}',
-    quests JSONB NOT NULL DEFAULT '[]',
-    level INT NOT NULL DEFAULT 1,
-    xp BIGINT NOT NULL DEFAULT 0,
+    username TEXT NOT NULL,
+    level INT NOT NULL,
+    xp BIGINT NOT NULL,
     x DOUBLE PRECISION NOT NULL,
     y DOUBLE PRECISION NOT NULL,
+    health DOUBLE PRECISION NOT NULL,
+    hunger DOUBLE PRECISION NOT NULL,
+    inventory JSONB NOT NULL,
+    stats JSONB NOT NULL,
     spawned BOOLEAN NOT NULL,
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ NOT NULL
 );
 ```
 
-## world_state
+## Future expansion (not yet implemented)
 
-```sql
-CREATE TABLE world_state (
-    id UUID PRIMARY KEY,
-    structures JSONB NOT NULL DEFAULT '[]',
-    villages JSONB NOT NULL DEFAULT '[]',
-    updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-```
+- `accounts`
+- `player_state`
+- `world_state`
