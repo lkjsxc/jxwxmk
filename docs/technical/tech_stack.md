@@ -2,21 +2,25 @@
 
 ## Backend (Rust)
 
-- **Language**: Rust (Edition 2021+)
-- **Async Runtime**: `tokio`
+- **Language**: Rust (Edition 2021)
 - **Web Framework**: `actix-web`
+- **Actor Model**: `actix`
 - **WebSockets**: `actix-web-actors`
-- **Database Driver**: `sqlx` (PostgreSQL)
 - **Serialization**: `serde`, `serde_json`
+- **IDs**: `uuid`
+- **Randomness**: `rand`
+- **Static Assets**: `rust-embed`, `mime_guess`
+- **Logging**: `log`, `env_logger`
 
 ## Frontend (TypeScript)
 
-- **Language**: TypeScript
-- **Rendering**: HTML5 Canvas API (2D)
-- **Bundler**: `esbuild` (or similar simple build step run by cargo or script)
-- **Communication**: Native `WebSocket` API
+- **Language**: TypeScript (ES2020 target)
+- **Bundler**: `esbuild` (build-time only)
+- **Rendering**: HTML5 Canvas 2D
+- **Networking**: Native `WebSocket`
 
 ## Infrastructure
 
-- **Containerization**: Docker, Docker Compose
-- **Database**: PostgreSQL 16
+- **Containerization**: Docker + Docker Compose
+- **Runtime Base**: Debian slim
+- **Database**: PostgreSQL 15 (running inside the same container)

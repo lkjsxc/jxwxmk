@@ -1,26 +1,26 @@
 # Survival Mechanics
 
-Survival is the primary pressure on the player.
+Survival is the primary pressure on the player. Current implementation focuses on **Hunger** and **Temperature**.
 
-## Vitals
+## Health (HP)
 
-### Health (HP)
-- Reaches 0: Player dies.
-- Regenerates slowly if food is high.
-- Lost via: Combat, Starvation, Freezing.
+- Reaches 0: player dies and is unspawned.
+- Regenerates slowly when hunger is above the heal threshold.
+- Lost via starvation and freezing.
 
-### Food (Hunger)
-- Decreases over time.
-- Decreases faster when moving/working.
-- Replenished by eating.
-- 0 Food: Health begins to drop.
+## Hunger
 
-### Temperature (Cold)
-- Based on biomes and Day/Night cycle.
-- Night is colder.
-- Winter biome is always cold.
-- Fire sources (Campfire) increase temperature.
-- 0 Temp: Health drops rapidly (Freezing).
+- Decays over time (per-second rate defined in `config.json`).
+- At 0, the player takes starvation damage each tick.
+- Eating food restores hunger by a fixed amount.
 
-### Water (Thirst)
-- (Optional - maybe add later for complexity)
+## Temperature (Cold)
+
+- Moves toward a neutral temperature (configurable).
+- If temperature reaches 0, the player takes freezing damage each tick.
+
+## Not Implemented Yet
+
+- Thirst
+- Biome-driven temperature changes
+- Day/night temperature cycles

@@ -5,22 +5,18 @@ Static entities harvestable by players.
 ## Types
 
 ### Tree
-- **HP**: 5 hits (Hand), 2 hits (Axe).
-- **Drops**: 3-5 Wood.
-- **Respawn**: 60 seconds.
+- **Amount**: `balance.resources.tree_amount`
+- **Drops**: Wood x5 (on depletion)
 
 ### Rock
-- **HP**: 10 hits (Hand), 3 hits (Pickaxe).
-- **Drops**: 2-4 Stone.
-- **Respawn**: 120 seconds.
-- **Requirement**: Better to use Pickaxe.
+- **Amount**: `balance.resources.rock_amount`
+- **Drops**: Stone x3 (on depletion)
+- **Rock Multiplier**: Tool damage multiplied by `tools.rock_mult`
 
-### Bush
-- **HP**: 1 hit.
-- **Drops**: 1-3 Berries.
-- **Respawn**: 30 seconds.
+### Food
+- **Amount**: `balance.resources.food_amount`
+- **Drops**: Berry x2 (on depletion)
 
-### Gold Node
-- **HP**: 8 hits (Pickaxe only).
-- **Drops**: 1-2 Gold.
-- **Rarity**: High.
+## Respawn
+
+Resources do not currently respawn after being depleted.

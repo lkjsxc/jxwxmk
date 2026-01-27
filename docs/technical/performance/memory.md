@@ -1,23 +1,26 @@
 # Memory Optimization Strategy
 
-Goal: Maintain runtime memory usage (RSS) around 20MB.
+Goal: keep runtime RSS around ~20MB (single container, single server process, embedded assets).
 
 ## Techniques
 
-### 1. Dependency Pruning
--   **Feature Flags**: Disable unused features in `actix-web`, `tokio`, and `sqlx`.
--   **Allocator**: Use the system allocator (default in Rust) to avoid overhead, or switch to `jemalloc` if fragmentation occurs (though system is usually lighter for small apps).
+### 1. Dependency Control
+- Prefer small dependency surface (Actix Web + RustEmbed + Serde).
+- Avoid extra runtime services in-process beyond PostgreSQL.
 
-### 2. Compilation Optimization
--   `opt-level = "z"`: Optimize for binary size (often correlates with lower instruction cache pressure).
--   `lto = true`: Link Time Optimization removes dead code.
--   `codegen-units = 1`: Maximizes optimization at the cost of compile time.
--   `strip = true`: Removes symbols to reduce binary size.
+### 2. Build Optimizations
+- Favor release builds with LTO and stripping.
+- Keep the Rust binary small by avoiding heavy optional features.
 
 ### 3. Runtime Configuration
--   **Worker Threads**: Limit Tokio/Actix worker threads. Default is equal to CPU cores. For a low-memory target, we constrain this to `1` or `2`.
--   **Connection Pools**: If a DB is used, limit `max_connections` to 1.
+- Run Actix with a single worker (`workers(1)`) to cap memory.
+- Avoid background tasks that allocate large buffers.
+- Keep world snapshot serialization bounded by world size limits.
 
 ### 4. Data Structures
--   **Zero-Copy**: Use `Cow<str>` or references where possible.
--   **String Interning**: If many entities share names, intern them (future work).
+- Prefer small, explicit structs over nested dynamic maps.
+- Avoid per-tick allocations; reuse vectors where possible.
+
+### 5. Static Asset Strategy
+- Compile frontend assets once and embed using `rust-embed`.
+- Serve from memory to avoid file I/O.

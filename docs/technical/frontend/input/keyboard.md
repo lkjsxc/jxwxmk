@@ -1,14 +1,19 @@
-# Keyboard/Mouse Input
+# Keyboard + Mouse Input
 
-## Event Mapping
+## Keyboard Mapping
 
-- `keydown` / `keyup`:
-    - Track state in `keysPressed` object.
-    - WASD -> Vector2 Direction.
-- `mousemove`:
-    - Calculate rotation angle relative to screen center.
-- `mousedown` / `mouseup`:
-    - Set `attack` flag.
+- **WASD**: movement vector.
+- **E / B**: interact action.
+- **1-7**: key state recorded but not currently used for hotbar selection.
+- **Text input**: raw keys are pushed to `keyQueue` for the profile name field.
 
-## Optimization
-Only send packet if state changes (e.g., key press/release or significant mouse delta), but throttle to ~20-50ms to prevent network flooding.
+## Mouse Mapping
+
+- **Left click**: interacts with on-screen UI and A/B buttons.
+- **Right click**: context menu suppressed; interact requires B button or keyboard.
+- **Wheel**: zoom in/out.
+
+## Notes
+
+- Primary attack is triggered by the on-screen A button (mouse click on button or touch). It is not mapped to a standalone keyboard key.
+- UI clicks consume the pointer to avoid sending gameplay input.

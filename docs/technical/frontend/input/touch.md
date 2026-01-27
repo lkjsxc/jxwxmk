@@ -1,23 +1,18 @@
-# Touch Input Implementation
+# Touch Input
 
-## Event Listeners
-- `touchstart`
-- `touchmove`
-- `touchend`
+Touch input is split into three zones:
 
-## Virtual Joystick Class
-Calculates the delta vector from the initial touch point.
+- **Left side**: virtual joystick for movement.
+- **Right side**: A (attack) and B (interact) buttons.
+- **UI overlay**: consumes touches when menus are open.
 
-```typescript
-class Joystick {
-    origin: {x, y} | null;
-    current: {x, y};
-    
-    update(touch) {
-        // Calculate vector
-        // Normalize to -1..1
-    }
-}
-```
+## Joystick
 
-Multi-touch support is critical (Move + Attack simultaneously). `changedTouches` list must be iterated to track IDs.
+- First touch on the left half activates the joystick.
+- Movement vector is normalized to a max radius (50px).
+
+## Buttons
+
+- A button triggers attack.
+- B button triggers interact.
+- Buttons are tracked by touch identifier to support multi-touch.

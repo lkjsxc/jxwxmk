@@ -1,23 +1,20 @@
-# Player Persistence
+# Persistence
 
-Players remain in the world after disconnection and can rejoin.
+The current implementation does not persist game state to PostgreSQL. Player state is held in memory and survives only as long as the server process runs.
 
-## Mechanics
+## Session Tokens
 
-### Disconnect
-- **State**: When a WebSocket closes, the `Player` entity is **NOT** removed from the `World`.
-- **Status**: The entity is marked as `Offline` (optional, for visualization).
-- **Vulnerable**: The body stays in the world and can take damage/die while offline.
+- Each player is assigned a UUID token on first connection.
+- The client stores the token in local storage and presents it on reconnect.
+- The token reattaches the session to the existing player entity (if present in memory).
 
-### Reconnect
-- **Token System**:
-    - Upon first join, the server issues a unique `secret_token` (UUID).
-    - The client saves this token (localStorage).
-- **Possession**:
-    - When connecting, the client sends the `secret_token`.
-    - If a matching Player entity exists, the connection "possesses" that entity.
-    - If no match, a new Player is created.
+## Implications
 
-### Death
-- If `HP <= 0`, the player entity is marked as dead (`spawned = false`) and inventory is cleared.
-- Rejoining with a dead player's token possess the existing entity, prompts a "Game Over" screen, and requires a respawn (fresh start for that entity).
+- Server restart resets the world and all player progress.
+- PostgreSQL is started in the runtime container but is not used yet.
+
+## Future Persistence Targets (Not Implemented)
+
+- Accounts and sessions
+- Player inventory, stats, and quest state
+- World structures and village state

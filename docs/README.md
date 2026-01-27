@@ -1,16 +1,11 @@
 # Documentation Root
 
-This is the comprehensive documentation for the **kkmypk** project.
+This documentation set is designed to be complete enough to re-implement the project without the source code.
 
-## Structure
+## Sections
 
+- [Implementation](implementation/README.md)
 - [Design](design/README.md)
-  - [Mechanics](design/mechanics/README.md) (Survival, Combat, Crafting)
-  - [Content](design/content/README.md) (Entities, Biomes)
-  - [UX](design/ux/README.md) (Controls, Mobile Support)
-- [Technical](technical/README.md)
-  - [Backend](technical/backend/README.md) (Server, DB)
-  - [Frontend](technical/frontend/README.md) (Rendering, Input)
-  - [Deployment](technical/deployment/README.md) (Docker, CI/CD)
+- [Technical Architecture](technical/README.md)
 - [Setup](setup/README.md)
 - [Policy](policy/README.md)

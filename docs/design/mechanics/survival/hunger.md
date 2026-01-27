@@ -1,22 +1,15 @@
 # Hunger Mechanics
 
-## Decay Logic
+## Decay
 
-- **Base Decay**: -0.1 Hunger / second (Reduced for better experience).
-- **Action Penalty**: 
-    - Walking: -0.02 / sec
-    - Attacking/Gathering: -0.2 / action
-- **Cold Penalty**: If Temperature < 20, Decay * 1.5x.
+- Hunger decays at `mechanics.hunger_decay` per second.
+- The server divides this by `tick_rate` each tick.
 
 ## Effects
 
-- **Starvation**: If Hunger <= 0:
-    - HP Decay: -5 HP / second.
-- **Regeneration**: If Hunger >= 90:
-    - HP Regen: +1 HP / second.
+- Hunger <= 0: apply `mechanics.starve_dmg` per second (scaled per tick).
+- Hunger >= `balance.player.heal_threshold`: apply `mechanics.heal_rate` per second (scaled per tick) if health is below max.
 
 ## Restoration
 
-- **Berry**: +5 Hunger.
-- **Cooked Meat**: +30 Hunger.
-- **Bread**: +50 Hunger.
+- Food items restore a fixed amount: `mechanics.food_value`.

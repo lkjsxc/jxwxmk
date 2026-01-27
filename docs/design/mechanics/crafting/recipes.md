@@ -1,15 +1,12 @@
 # Recipes
 
-## Basic (Hand)
-- **Wood Pickaxe**: 15 Wood.
-- **Campfire**: 10 Wood + 5 Stone.
-- **Berry Cake**: 10 Berries.
+Current server-side recipes:
 
-## Workbench
-- **Stone Pickaxe**: 10 Wood + 15 Stone.
-- **Stone Sword**: 10 Wood + 20 Stone.
-- **Wall**: 20 Wood + 5 Stone.
-- **Door**: 30 Wood.
+## Basic
 
-## Furnace
-- **Cooked Meat**: 1 Raw Meat + Fuel (Wood).
+- **Wood Pickaxe**: 10 Wood
+- **Stone Pickaxe**: 10 Wood + 10 Stone
+- **Wood Wall**: 20 Wood
+- **Door**: 30 Wood
+- **Torch**: 2 Wood
+- **Workbench**: 50 Wood

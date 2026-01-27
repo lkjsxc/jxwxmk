@@ -1,11 +1,13 @@
 # Stations
 
-## Workbench
-- Unlocks: Stone tools, Structures.
-- Cost: 50 Wood.
-- Interaction: Stand near to access menu.
+Stations are not yet used to gate recipes in the current implementation.
 
-## Furnace
-- Unlocks: Smelting, Cooking.
-- Cost: 50 Stone.
-- Interaction: Open UI to insert fuel/items.
+## Structures Present
+
+- **Workbench**: Placeable structure with configured health; does not unlock recipes yet.
+- **Torch**: Placeable light source; no gameplay effects beyond visuals.
+
+## Future Ideas (Not Implemented)
+
+- Workbench to unlock advanced recipes.
+- Furnace for cooking and smelting.

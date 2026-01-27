@@ -1,27 +1,24 @@
 # NPC Interaction Mechanics
 
-Interaction with NPCs is a core part of the MMORPG experience, enabling progression and economy.
+NPC interaction is handled by the server and delivered to the client as a modal dialogue.
 
 ## Dialogue System
-- Players trigger dialogue by interacting with an NPC (e.g., clicking or pressing 'E').
-- The server sends a `DialogueState` packet containing text and possible options.
-- Options can lead to:
-  - More dialogue.
-  - Quest acceptance/completion.
-  - Opening the Trade menu.
-  - Ending the conversation.
 
-## Trading System
-- Merchants have a specific inventory and price list.
-- Players can sell items for gold or other resources.
-- Players can buy items using gold or other resources.
-- The server validates all trades to prevent cheating.
+- Player presses Interact near an NPC.
+- Server responds with a dialogue payload (`npcInteraction`) containing text + options.
+- Selecting an option sends `npcAction` with the NPC id and option index.
 
-## Quest System
-- Quests have states: `NotStarted`, `InProgress`, `ReadyToTurnIn`, `Completed`.
-- Objectives can include:
-  - Gathering items.
-  - Killing mobs.
-  - Reaching a location.
-  - Talking to another NPC.
-- Rewards include items, XP, or access to new areas.
+## Current NPC Types
+
+- **Elder**: quest giver (wood gatherer -> wolf hunter).
+- **Merchant**: placeholder dialogue and trade inventory (empty).
+- **Guard**: placeholder dialogue.
+
+## Trading
+
+- Trade messages exist in the protocol, but server-side trade logic is not implemented.
+
+## Quest Integration
+
+- Dialogue options can start quests or complete them.
+- Quest progress is tracked server-side and pushed to the client.

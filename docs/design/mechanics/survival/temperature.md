@@ -1,26 +1,15 @@
 # Temperature Mechanics
 
-## Environmental Factors
+## Target Temperature
 
-- **Base Ambient**: 20°C (Neutral).
-- **Night**: -20°C offset.
-- **Winter Biome**: -40°C offset.
-- **Water**: Wetness factor increases heat loss.
+- Each tick, the player's temperature moves toward `balance.player.neutral_temp` at a rate of `mechanics.cold_decay` per second (scaled per tick).
 
-## Player State (Internal Temp)
+## Effects
 
-The player's internal temperature moves towards the Ambient Temp at a rate of 1°C/sec.
+- Temperature <= 0: apply `mechanics.freeze_dmg` per second (scaled per tick).
 
-## Modifiers
+## Not Implemented Yet
 
-- **Campfire**: +50°C (Radius 200px).
-- **Fur Clothing**: Reduces heat loss rate by 50%.
-- **Roof**: Ignores "Night" cold offset.
-
-## Consequences
-
-- **Freezing**: If Internal Temp < 0:
-    - HP Decay: -2 HP / sec.
-    - Movement Speed: -30%.
-- **Overheating**: If Internal Temp > 80:
-    - Thirst Decay: * 2.0x.
+- Biome-based temperature shifts
+- Day/night cycles
+- Heat sources (campfires)

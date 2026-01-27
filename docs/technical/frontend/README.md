@@ -1,11 +1,11 @@
 # Frontend Architecture
 
-## Stack
-- TypeScript
-- HTML5 Canvas
-- WebSocket (Native)
+The client is a Canvas2D renderer and input device. It never owns authoritative state.
 
-## Components
+## Sections
 
-- [Rendering](rendering/canvas.md)
+- [Client Runtime](runtime.md)
+- [Build Pipeline](build.md)
 - [Input Handling](input/README.md)
+- [Rendering](rendering/README.md)
+- [UI](ui/README.md)

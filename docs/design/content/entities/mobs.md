@@ -1,21 +1,26 @@
 # Mobs
 
-AI-controlled entities.
+AI-controlled entities spawned at world start.
 
 ## Passive
-- **Rabbit**: 
-    - HP: 10.
-    - Behavior: Flees player.
-    - Drop: Meat.
+
+### Rabbit
+- **HP**: `balance.mobs.rabbit_health`
+- **Behavior**: random wandering.
+- **Drop**: Meat x2 on kill.
 
 ## Aggressive
-- **Wolf**:
-    - HP: 50.
-    - Damage: 10.
-    - Behavior: Chases player within radius.
-    - Drop: Fur, Meat.
-- **Bear**:
-    - HP: 200.
-    - Damage: 30.
-    - Behavior: Guards territory.
-    - Drop: Fur, Bone.
+
+### Wolf
+- **HP**: `balance.mobs.wolf_health` (scaled by level)
+- **Damage**: `balance.mobs.wolf_dmg` (scaled by level)
+- **Behavior**: chases nearest spawned player within `aggression_range`.
+
+### Bear
+- **HP**: `balance.mobs.bear_health` (scaled by level)
+- **Damage**: `balance.mobs.bear_dmg` (scaled by level)
+- **Behavior**: chases nearest spawned player within `aggression_range`.
+
+## Leveling
+
+Mob level scales with distance from world center using `leveling.mob_level_factor`.

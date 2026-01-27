@@ -1,16 +1,20 @@
 # Barriers
 
-Barriers are protective zones that eliminate hostile mobs within their range. They are anchored by a **Barrier Core**.
+Barriers are protective zones that eliminate hostile mobs within their range. Each barrier is anchored by a **Barrier Core**.
 
 ## Mechanics
-- **Hostile Elimination**: Any hostile mob (e.g., Wolf, Bear) that enters the barrier's range is eliminated.
-- **Village Safe Zones**: NPCs and villages are always located within barriers.
-- **Range**: The range of the barrier depends on its level.
-- **Levels**: Barriers can have different levels. Higher levels provide a wider range of protection.
+
+- Hostile mobs (Wolf, Bear) are removed if inside a barrier range.
+- Rabbits are ignored.
+- Barrier range scales by level:
+  - `range = base_range + (level - 1) * level_multiplier`
 
 ## Placement Rules
-- **World Center**: A barrier core is always placed at the world center.
-- **Probabilistic Placement**: Additional barriers may be spawned throughout the world. The probability of placement increases as the distance to the world center decreases.
+
+- A level-1 core always spawns at world center.
+- Additional cores spawn probabilistically; the chance increases near the center.
+- The total extra cores are capped by `max_additional_barriers`.
 
 ## Configuration
-Barrier properties like base range and level scaling are configurable in `config.json`.
+
+All parameters live under `barriers` in `config.json`.

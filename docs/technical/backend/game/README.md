@@ -1,10 +1,17 @@
-# Game Logic
+# Game Simulation
 
-This directory contains documentation for the backend game logic.
+Authoritative simulation logic and world state.
 
-## Modules
-- **Achievements**: System for tracking player progress and unlocking rewards.
-- **Engine**: The core game loop and state management.
-- **Entities**: Definitions for Players, Mobs, Resources, Structures, and Items.
-- **Systems**: Functional logic groups (Survival, Crafting, Interaction).
-- **Death**: Logic for player death, inventory clearing, and respawning ([death.md](./death.md)).
+## Contents
+
+- [World State](world_state.md)
+- [Engine](engine.md)
+- [Spawning + AI](spawning_and_ai.md)
+- [Entities](entities.md)
+- [Survival System](systems_survival.md)
+- [Interaction System](systems_interaction.md)
+- [Crafting System](systems_crafting.md)
+- [Achievements System](achievements.md)
+- [Quest System](quests.md)
+- [Barrier System](barriers.md)
+- [Death + Respawn](death.md)

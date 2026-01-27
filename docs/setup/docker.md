@@ -1,6 +1,6 @@
 # Docker Setup
 
-We run a **single container** that includes both the Rust server and PostgreSQL.
+Build and run the single-container runtime.
 
 ## Build
 
@@ -12,15 +12,13 @@ docker build -f src/runtime/Dockerfile -t kkmypk .
 
 ```bash
 docker run --rm \
-    -p 8080:8080 \
-    -e DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/kkmypk \
-    -e APP_BIND=0.0.0.0:8080 \
-    -e TICK_HZ=20 \
-    -v kkmypk_pgdata:/var/lib/postgresql/data \
-    kkmypk
+  -p 8080:8080 \
+  -v kkmypk_pgdata:/var/lib/postgresql/data \
+  -v ./config.json:/app/config.json \
+  kkmypk
 ```
 
 ## Notes
 
-- PostgreSQL is **not** exposed to the host.
-- The server connects to the local DB via `127.0.0.1`.
+- PostgreSQL runs inside the same container and is not exposed externally.
+- The server reads `/app/config.json` at startup.

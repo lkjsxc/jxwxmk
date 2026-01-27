@@ -1,22 +1,22 @@
-# Frontend Achievement UI
+# Achievements UI
 
-## HUD Notification
-- **Component**: `AchievementToast`
-- **Logic**:
-    - Listens for `AchievementUnlocked` WS message.
-    - Pushes notification to a queue.
-    - Renders overlay on `Canvas` or HTML DOM (prefer Canvas for unity with game render).
-    - Timer handles the 3s lifetime.
+## Toast Notification
 
-## Menu Screen
-- **Tab**: Add "Achievements" button to Main Menu.
-- **Layout**: Grid or List view.
-    - **Icon**: Placeholder or generated.
-    - **Title**: Bold text.
-    - **Desc**: Small text.
-    - **Progress**: `10/100` textual or visual bar.
-    - **Status**: Gold border for unlocked, gray for locked.
+- Triggered by `achievement` messages.
+- Displays a 3-second toast with title + name.
 
-## State Management
-- `AppState` includes `achievements: Map<string, AchievementStatus>`.
-- `AchievementStatus` tracks unlocked state and current progress.
+## Achievements Tab
+
+- Left side: list of all achievements (locked vs unlocked).
+- Right side: details for the selected achievement.
+- Progress bars are shown only if the client has requirement metadata.
+
+## Client Data Source
+
+- The client uses a hardcoded `ALL_ACHIEVEMENTS` list.
+- The list does **not** include requirement metadata, so progress bars are usually hidden.
+
+## Pinning
+
+- Selected achievement can be pinned.
+- Pinned achievements appear in the HUD tracker with progress (if requirement metadata is present).

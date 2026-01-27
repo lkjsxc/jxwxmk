@@ -1,16 +1,24 @@
 # Deployment
 
 ## Strategy
-Single runtime container that runs **both** the Rust game server and PostgreSQL.
 
-## Networking
-- The game server binds to `0.0.0.0:8080` (exposed).
-- PostgreSQL listens on `127.0.0.1:5432` inside the same container (not exposed).
-- The server connects via `localhost`.
+A single runtime container runs both:
 
-## Runtime Process Model
-- One container process supervisor starts Postgres and the game server.
-- The world simulation is authoritative and tick-owned; I/O handlers enqueue events.
+- Rust game server (HTTP + WebSocket + embedded static assets)
+- PostgreSQL 15
 
-## Containers
-- **Single container**: Rust binary + embedded static assets + PostgreSQL 16.
+## Container Responsibilities
+
+- Build pipeline compiles TypeScript assets and embeds them in the Rust binary.
+- Runtime starts PostgreSQL locally and then launches the game server.
+
+## Runtime Ports
+
+- Game server: `0.0.0.0:8080` (exposed)
+- PostgreSQL: `127.0.0.1:5432` (internal only)
+
+## Build Stages
+
+1. **Frontend build** (Node): `esbuild` bundles `src/client/index.ts` to `src/static/game.js`.
+2. **Backend build** (Rust): `cargo build --release` embeds `static/` assets.
+3. **Runtime** (Debian): installs PostgreSQL and copies the binary.

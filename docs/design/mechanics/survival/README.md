@@ -1,18 +1,19 @@
 # Survival Mechanics
 
-Survival is the primary pressure on the player.
+This section reflects the current, implemented survival rules.
 
 ## Spawning
-- **Location**: Players spawn randomly within a circular area at the center of the world.
-- **Center**: `(WorldWidth / 2, WorldHeight / 2)`.
-- **Radius**: Configurable via `spawn_radius` in `config.json`. This ensures new players start in a concentrated zone (e.g., a "safe" or "starting" area).
+
+- Players spawn within a circle centered on the world.
+- Radius is `game.spawn_radius` from `config.json`.
 
 ## Vitals
-- **Health (HP)**: 0-100.
-- **Hunger**: 0-100.
-- **Temperature**: 0-100.
+
+- Health: 0-100
+- Hunger: 0-100
+- Temperature: 0-100
 
 ## Consumption
-- **Eating**: Players can consume food items (Berry, Meat, Cooked Meat) from their active hotbar slot.
-- **Input**: Triggered by the [B] Button (Interact) when a food item is held.
-- **Effect**: Increases Hunger by a configured amount. Excess hunger does not overflow 100.
+
+- Food is consumed with the attack action if a food item is in the active slot.
+- Food restores `mechanics.food_value` hunger.

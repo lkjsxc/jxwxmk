@@ -1,27 +1,18 @@
-# Network Stability & Session Lifecycle
-
-Procedures for handling connection errors, latency, and session resets.
+# Network Stability + Lifecycle
 
 ## Session Lifecycle
 
-### 1. Connection Handshake
-- Client requests `ws://` with optional `token`.
-- Server responds with `welcome` packet.
-- Client enters `InGame` state.
+1. Client opens WebSocket `/ws` with optional `token`.
+2. Server sends `welcome` with `id`, `token`, `spawned`.
+3. Client sends `{"spawn": true}` if needed.
+4. Input loop sends `InputState` every 50ms when in game.
 
-### 2. Active Session
-- **Input Loop**: 20Hz (50ms).
-- **Update Loop**: Server broadcasts world state.
-- **Heartbeat**: Standard WebSocket ping/pong managed by Actix.
+## Disconnect
 
-### 3. Termination
-- **Intentional (Logout)**: User closes tab or returns to menu. Socket is closed gracefully.
-- **Unintentional (Drop)**: Client detects `onclose` and returns to `StartScreen`.
-- **Game Over (Death)**: Server removes entity. Client transitions to `GameOver` state.
+- On socket close, the client resets local world state and clears its input interval.
+- Reconnect occurs on page reload.
 
-## Respawn & Cleanup
-To avoid network flooding or redundant reloads:
-1. Set `respawnRequest = false` immediately.
-2. Gracefully close the WebSocket.
-3. Clear all active intervals (`sendInput`).
-4. Invoke `location.reload()`.
+## Game Over
+
+- Client enters Game Over state when its player is missing from world updates.
+- Respawn closes the socket, clears stored token, and reloads the page.

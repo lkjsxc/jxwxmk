@@ -1,15 +1,21 @@
-# Canvas Rendering
+# Canvas Loop
 
-## Optimization
+The render loop is driven by `requestAnimationFrame` and interpolates between server snapshots.
 
-- **Offscreen Canvas**: Pre-render static assets (trees, rocks) to offscreen canvases to avoid re-drawing paths every frame.
-- **Culling**: Only draw entities within `Camera Viewport + Padding`.
-- **Layers**:
-    1.  **Background**: Terrain (Grid tiles).
-    2.  **Ground Items**: Dropped resources.
-    3.  **Entities**: Players, Mobs, Walls (Sorted by Y-coordinate for pseudo-3D depth).
-    4.  **Overlays**: Health bars, Names.
-    5.  **UI**: Hotbar, Chat, Joysticks (Mobile).
+## Frame Flow
 
-## Loop
-`requestAnimationFrame` drives the render loop, decoupled from the network tick rate. Interpolation is used for smooth movement.
+1. Update input animations (button pulses).
+2. Interpolate entity positions using `alpha = (now - lastUpdateAt) / 50`.
+3. Move camera toward the local player.
+4. Draw background grid and all entities.
+5. Render HUD + UI overlays.
+
+## Interpolation
+
+- Each world update overwrites `world` and stores the previous snapshot.
+- Per-entity positions are lerped between `prevWorld` and `world`.
+
+## Notes
+
+- No viewport culling is implemented yet.
+- Visual hit flashes are handled by client-only `lastHitAt` markers.

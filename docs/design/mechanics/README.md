@@ -8,3 +8,4 @@ Core systems that drive the gameplay.
 - [NPC Interaction](npc_interaction.md)
 - [Quests](quests.md)
 - [Barriers](barriers.md)
+- [Achievements](achievements/README.md)

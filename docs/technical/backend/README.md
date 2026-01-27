@@ -1,8 +1,10 @@
 # Backend Architecture
 
-The backend is a monolithic Rust application.
+The backend is a single Rust binary that hosts HTTP/WebSocket endpoints, runs the game simulation, and embeds static assets.
 
-## Core Components
+## Sections
 
-- [Server Model](server/README.md)
+- [Server](server/README.md)
+- [Game](game/README.md)
+- [Persistence](persistence/README.md)
 - [Database](database/README.md)

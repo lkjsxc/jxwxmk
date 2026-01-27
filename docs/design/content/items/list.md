@@ -1,32 +1,30 @@
 # Items & Equipment
 
-A wide variety of items for survival.
+This list reflects current `ItemType` values.
 
-## Categories
+## Resources
 
-### Light Sources
--   **Campfire**: Provides heat and light. De-spawns after time.
--   **Torch**:
-    -   *Handheld*: Emits light radius around player.
-    -   *Placeable*: Static light source on the ground/walls.
+- Wood
+- Stone
+- Gold (defined, not spawned)
+- Diamond (defined, not spawned)
+- Berry
+- Meat
+- CookedMeat (defined, not crafted)
 
-### Tools
--   **Pickaxes**: Wood, Stone, Gold, Diamond (Speed/Durability tiers).
--   **Axes**: For chopping wood.
--   **Hammer**: For repairing structures.
+## Tools
 
-### Weapons
--   **Sword**: Short range, high damage.
--   **Spear**: Medium range, medium damage.
+- WoodPickaxe
+- StonePickaxe
 
-### Wearables
--   **Winter Hat**: Mild cold protection.
--   **Fur Coat**: High cold protection.
--   **Helmet**: Armor against damage.
+## Structures
 
-### Structures
--   **Wood Wall**: Basic defense.
--   **Stone Wall**: Strong defense.
--   **Door**: Owner-only passage.
--   **Spikes**: Damages mobs/players that touch it.
--   **Chest**: Stores items.
+- WoodWall
+- Door
+- Torch
+- Workbench
+
+## Notes
+
+- Gold, Diamond, and CookedMeat exist in the enum but are not produced by current gameplay.
+- No weapons or armor items are implemented yet.

@@ -1,18 +1,18 @@
-# Camera System
+# Camera
 
-The camera determines the visible viewport of the game world.
+The camera smooth-follows the local player and supports zoom.
 
-## Mechanics
+## Follow Behavior
 
-### Tracking (Follow)
--   **Target**: The local player's (X, Y) coordinates.
--   **Smoothing**: Linear interpolation (Lerp) with a factor of ~0.1 to avoid jitter.
--   **Clamping**: Camera cannot view outside the world bounds (0,0 to WorldW, WorldH).
+- `Camera.follow(targetX, targetY)` sets the target.
+- `Camera.update()` lerps current position toward target (`0.1` factor).
+- On first spawn, the camera snaps to the player position.
 
-### Zoom
--   **Controls**: Mouse Wheel (Desktop) or Pinch Gesture (Mobile).
--   **Range**: 0.5x (Wide view) to 2.0x (Close up).
--   **Implementation**: Canvas `scale()` transform applied before drawing world layer.
+## Zoom
 
-## Viewport Culling
-Only entities within `CameraX - Padding` to `CameraX + Width + Padding` (and Y equiv) are rendered to save performance.
+- Mouse wheel adjusts zoom by +/-0.1.
+- Zoom is clamped between `0.5` and `2.0`.
+
+## Notes
+
+- The camera is not clamped to world bounds yet.
