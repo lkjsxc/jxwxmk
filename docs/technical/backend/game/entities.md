@@ -19,7 +19,7 @@ Fields:
 ## Item
 
 - `kind`: enum
-- `amount`, `max_stack`
+- `amount`
 - `level`, `quality`, `xp` (tools/weapons)
 
 ## Resource Node

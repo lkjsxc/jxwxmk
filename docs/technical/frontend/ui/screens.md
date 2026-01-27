@@ -9,9 +9,11 @@
 ## Menu Overlay
 
 - Toggle via the top-right menu button.
-- Tabs: Inventory, Crafting, Profile, Quests, Achievements.
+- Pressing the menu button shows a page list directly underneath it.
+- Selecting a page opens that page; pages are independent and contain no buttons/links to other pages.
+- Each page has only an "X" close button in the top-right; switching pages is done via the page list.
 - Menu consumes pointer input while open.
-- Profile tab includes Player ID copy and a Device Login form (enter Player ID to claim).
+- Profile page includes Player ID copy and a Device Login form (enter Player ID to claim).
 
 ## Session Revoked
 

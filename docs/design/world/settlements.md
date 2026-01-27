@@ -24,6 +24,11 @@ Settlements are generated around barrier cores and define safe zones, services, 
 - **Spawn/respawn binding** to the nearest core a player has attuned to.
 - **Guard escalation**: warnings, then forced teleport out or stun if hostile.
 
+## Scale Notes
+
+- Safe-zone radius is measured in **world units (wu)** (see: `scale_and_chunks.md`).
+- The safe-zone radius must be large enough to cover at least the **Core ring** and most of the **Market ring** so the settlement feels meaningfully protected.
+
 ## Villager Variety
 
 - Each settlement mixes roles (traders, crafters, quest givers, guards, healers).

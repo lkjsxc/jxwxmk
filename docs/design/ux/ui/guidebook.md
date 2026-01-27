@@ -1,6 +1,6 @@
 # Guidebook
 
-A comprehensive in-game manual accessible via the Main Menu.
+A comprehensive in-game manual accessible via the in-game Menu.
 
 ## Structure
 The guidebook is divided into chapters:
@@ -11,7 +11,7 @@ The guidebook is divided into chapters:
 
 ### 2. Survival
 - **Gathering**: How to get Wood, Stone, Food.
-- **Crafting**: How to use the Crafting tab.
+- **Crafting**: How to use the Crafting page.
 - **Building**: Placing walls and doors.
 
 ### 3. Bestiary

@@ -2,6 +2,8 @@
 
 Static entities harvestable by players.
 
+For the full catalog (trees/stones/ores/plants by biome and tier), see `resources/README.md`.
+
 ## Types
 
 ### Tree
@@ -19,4 +21,8 @@ Static entities harvestable by players.
 
 ## Respawn
 
-Resources do not currently respawn after being depleted.
+Resources respawn after being depleted.
+
+- Depletion sets a per-node cooldown timer.
+- When the cooldown expires, the node reappears (optionally with small position jitter within the chunk).
+- Respawn timing and density caps are configured in `config/spawning.json`.

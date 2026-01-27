@@ -13,4 +13,4 @@ Players can place structures in the world.
 
 ## Restrictions
 -   Cannot place within enemy spawn zones (optional).
--   Grid snapping (structures align to a 40x40 pixel grid).
+-   Grid snapping (structures align to a `2.5wu` grid, ~40px at zoom 1.0).

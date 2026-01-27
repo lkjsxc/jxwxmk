@@ -1,18 +1,22 @@
-# Main Menu (The Hub)
+# Menu (Pages)
 
 The central interface for the game. Layout and behavior are identical across devices.
 
-## In-Game Menu
+## Menu Button + Page List
 
-- **Close Button**: "X" icon in top-right to resume immediately.
-- **Tabs**:
-  - **Inventory**: Bag management.
-  - **Crafting**: Recipe list.
-  - **Profile**: Player identity, level, and device login.
-  - **Guidebook**: Manual.
-  - **Settings**: Audio/graphics.
+- **Menu Button**: Top-right button opens a page list **directly underneath** the button.
+- **Page List**: A simple vertical list of pages to open (no nested menus).
+  - Inventory
+  - Crafting
+  - Profile
+  - Guidebook
+  - Settings
+- **No Cross-Page Navigation**:
+  - Pages do **not** contain buttons/links that open other pages.
+  - The only cross-page control is the page list under the Menu Button.
+- **Page Chrome**: Each page has **only** a Close ("X") button in the top-right.
 
-## Profile Tab
+## Profile Page
 
 - **Stats**: Time survived, items gathered, kills, deaths.
 - **Identity**:

@@ -2,7 +2,7 @@
 
 ## Interaction Targeting
 
-- The closest entity within 60px is outlined and shows a tooltip.
+- The closest entity within `4.0wu` (~64px at zoom 1.0) is outlined and shows a tooltip.
 - Tooltips show context: Gather / Attack / Talk / Interact.
 
 ## Health + Damage Feedback
@@ -10,8 +10,6 @@
 - All damageable objects (resources, mobs, structures, players, NPCs) render simple health bars when damaged.
 - Client tracks `lastHitAt` to animate a 0.25s scale pulse (1.0 -> 1.15 -> 1.0).
 - Use a quick ease-out to keep the hit readable without slowing combat.
-
-Hit pulse rendering is not yet wired in the current reconstruction.
 
 ## Barrier Cores
 

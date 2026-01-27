@@ -6,7 +6,7 @@ Keyboard/mouse input mirrors touch gestures; it does not add unique gameplay rul
 
 - **W/A/S/D**: Movement vector.
 - **E**: Interact action (same as long-press).
-- **1-7**: Key state recorded for hotbar selection.
+- **1-7**: Switch active hotbar slot (sends `{ "type": "slot", "data": { "slot": <index> } }`).
 - **Text input**: Raw keys are pushed to `keyQueue` for name fields.
 
 ## Mouse Mapping

@@ -17,6 +17,6 @@
 
 ## Notes
 
-- Number keys 1-7 are not wired to hotbar selection in the current client.
-- Hotbar click handling is stubbed in the current reconstruction.
-- Active item label rendering is stubbed in the current reconstruction.
+- Number keys `1-7` switch the active hotbar slot.
+- Pointer/touch selection on a slot also switches the active slot.
+- Slot switching never triggers a world action; it only changes `active_slot`.

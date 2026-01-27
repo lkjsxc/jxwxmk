@@ -18,5 +18,4 @@
 
 - NPC dialogue options can trigger quest acceptance or completion.
 - Quest updates arrive via `questUpdate` messages and replace the matching quest entry.
-
-Quest acceptance via NPC options is not yet wired in the current reconstruction.
+- Accepting a quest sends `{ "type": "acceptQuest", "data": { "quest_id": "<id>" } }`.

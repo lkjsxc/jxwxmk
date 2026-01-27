@@ -8,6 +8,13 @@ Barrier cores define safe zones and anchor settlements.
 - `integrity` tracks damage and repair state.
 - Range formula: `base_range + (level - 1) * level_multiplier`.
 
+### Canonical Scale
+
+- Range is in **world units (wu)** (see: `../../../design/world/scale_and_chunks.md`).
+- Target parameters (in `config/settlements.json`):
+  - `base_range = 24.0`
+  - `level_multiplier = 6.0`
+
 ## Generation Rules
 
 - Barrier cores seed settlement generation.

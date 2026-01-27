@@ -8,7 +8,7 @@ To improve player experience, the game provides real-time tooltips for interacti
 - **Visual**: White text with a slight shadow for readability.
 
 ## In-World Interaction Tooltips
-When a player is near an interactable object (Distance < 60px):
+When a player is near an interactable object (Distance < `4.0wu`, ~64px at zoom 1.0):
 - **Object Name**: Displayed above the object (e.g., "Tree", "Wolf").
 - **Action Hints**:
     - **Tap/Click**: Shows "Gather" or "Attack".

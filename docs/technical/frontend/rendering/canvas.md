@@ -19,5 +19,4 @@ The render loop is driven by `requestAnimationFrame` and interpolates between ch
 
 - Viewport culling is based on view radius and chunk bounds.
 - Visual hit flashes are handled by client-only `lastHitAt` markers.
-
-Viewport culling is currently minimal; the reconstruction draws all cached entities.
+- The renderer must not draw all cached entities; it draws only entities in currently visible chunks and within the camera viewport.
