@@ -10,6 +10,7 @@ Fields:
 - `inventory` (slots + stacks)
 - `active_slot`
 - `stats` (steps, kills, crafts, gathers, deaths)
+- `level`, `xp`
 - `achievements` (set of unlocked IDs)
 - `quests` (active + completed)
 - `reputation` (per settlement/faction)

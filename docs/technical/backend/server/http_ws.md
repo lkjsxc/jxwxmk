@@ -5,6 +5,12 @@
 - `GET /health`
   - Returns `200 OK` with body `OK`.
 
+- `POST /session/claim`
+  - Body: `{ "player_id": "<uuid>" }`
+  - Returns: `{ "id": "<uuid>", "token": "<uuid>" }`
+  - Invalidates any existing session for that player ID (single-session rule).
+  - Rate-limited to prevent ID brute force.
+
 - `GET /` and `GET /{filename}`
   - Serves embedded static assets from the `static/` directory.
 
@@ -25,9 +31,15 @@ The server injects basic security headers:
 ### WebSocket Handshake Flow
 
 1. Client connects to `/ws` with optional `token` query.
-2. Server sends a `welcome` message containing:
+2. Server validates the token and enforces single-session ownership.
+3. Server sends a `welcome` message containing:
    - `id`: player UUID
    - `token`: session token to store client-side
    - `version`: protocol version
    - `spawned`: whether the player is already in-world
-3. Client sends a `spawn` message to enter the world if needed.
+4. Client sends a `spawn` message to enter the world if needed.
+
+### Single-Session Enforcement
+
+- If a new token is issued for a player ID, any existing session is revoked.
+- Revoked sessions receive a `sessionRevoked` message before disconnect.

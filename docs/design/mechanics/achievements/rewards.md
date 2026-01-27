@@ -12,9 +12,15 @@ Achievements grant additive bonuses that are applied server-side:
 - `resistance`
 - `reputation_gain`
 
+## XP Rewards
+
+- Achievements grant a one-time XP award on completion.
+- XP feeds the player level system and is persisted with the character.
+
 ## Reward Types
 
 - Flat stat bonuses.
+- XP grants.
 - Cosmetic titles.
 - One-time item bundles.
 

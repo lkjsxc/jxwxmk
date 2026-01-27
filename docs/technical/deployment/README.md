@@ -1,5 +1,9 @@
 # Deployment
 
+## Contents
+
+- [CI (GitHub Actions)](ci.md)
+
 ## Strategy
 
 A single runtime container runs both:

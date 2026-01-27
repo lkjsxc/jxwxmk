@@ -15,6 +15,13 @@ The central interface for **jxwxmk**.
 
 ### 4. Profile Tab
 - **Stats**: Total time survived, items gathered.
+- **Identity**:
+    - **Player ID**: Displayed in full with a copy button.
+    - **Copy Action**: Copies the Player ID to clipboard and shows a toast.
+- **Device Login**:
+    - **Input**: Enter a Player ID to claim that character on this device.
+    - **Action**: "Login on this device" requests a new session token.
+    - **Behavior**: Existing sessions for the same Player ID are revoked.
 - **Customization**:
     - **Name Input Box**: A simulated text field. Displays the player's current username by default. Clicking it focuses the input for editing.
     - **Keyboard Input**: While focused, typing updates the character buffer in real-time.

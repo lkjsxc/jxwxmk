@@ -6,9 +6,11 @@ Achievements are data-driven and evaluated server-side.
 
 - `AchievementId`: string key.
 - `Achievement`: metadata (name, description, requirement, rewards).
+  - `rewards` includes `xp` (integer) and stat bonuses.
 - Player stores:
   - `achievements`: set of unlocked IDs.
   - `stat_bonuses`: map of stat -> additive bonus.
+  - `xp`: accumulated player XP.
 
 ## Requirements
 
@@ -33,3 +35,4 @@ Supported requirement types:
 
 - Achievements load from `config/achievements.json`.
 - Rewards apply immediately and persist with the player.
+- XP rewards add to the player's XP and may trigger level-ups.

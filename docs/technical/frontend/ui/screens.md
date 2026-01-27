@@ -11,3 +11,9 @@
 - Toggle via the top-right menu button.
 - Tabs: Inventory, Crafting, Profile, Quests, Achievements.
 - Menu consumes pointer input while open.
+- Profile tab includes Player ID copy and a Device Login form (enter Player ID to claim).
+
+## Session Revoked
+
+- Triggered when the server invalidates the current session (logged in elsewhere).
+- Shows a blocking overlay with a reconnect/login prompt.

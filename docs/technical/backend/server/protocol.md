@@ -50,6 +50,12 @@ All client messages are objects with `type` and `data`.
 { "type": "welcome", "id": "<player_uuid>", "token": "<session_token>", "version": 2, "spawned": false }
 ```
 
+### sessionRevoked
+
+```json
+{ "type": "sessionRevoked", "reason": "login_elsewhere" }
+```
+
 ### chunkAdd
 
 ```json

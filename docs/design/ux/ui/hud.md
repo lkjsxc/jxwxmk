@@ -19,6 +19,6 @@ The persistent on-screen overlay during gameplay.
     -   Translucent background.
     -   Selection via Keyboard or Mouse Click.
 
-4.  **Action Buttons** (Mobile):
-    -   **A/B Buttons**: Translucent, pulse/enlarge when used or during cooldown transition.
-    -   Positioned higher to avoid accidental OS gesture triggers.
+4.  **Interaction Gestures**:
+    -   **No On-Screen A/B Buttons**: Actions are performed via tap and long-press.
+    -   **Gesture Hints**: Optional small labels near the reticle to remind Tap/Long-Press mapping.

@@ -4,7 +4,7 @@ Progression is multi-track: player levels, skill mastery, and tech tiers.
 
 ## Player Levels
 
-- XP from combat, gathering, crafting, quests, and events.
+- XP from combat, gathering, crafting, quests, events, and achievements.
 - Level gates unlock new recipes, biomes, and settlement services.
 
 ## Skill Lines

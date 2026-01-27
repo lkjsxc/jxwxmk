@@ -25,6 +25,7 @@ The client is initialized in `src/client/index.ts`.
 - `notification`: show toast.
 - `npcInteraction`: open NPC modal.
 - `questUpdate`: merge into player quest list.
+- `sessionRevoked`: show blocking overlay and clear stored token.
 
 ## Input Loop
 

@@ -5,8 +5,8 @@
 ## Logical Actions
 
 - **Move**: `dx`, `dy` from WASD or virtual joystick.
-- **Attack**: primary action (mouse button + pointer down or A button).
-- **Interact**: secondary action (Key E/B or B button).
+- **Attack**: primary action (tap/click on world).
+- **Interact**: long-press/hold on world or `E` key.
 
 ## Cooldowns
 
@@ -19,4 +19,5 @@ These are client-side rate limits; the server still enforces its own cooldowns.
 
 - `mouseX`, `mouseY` track the current pointer location.
 - `isPointerDown` is true for mouse down or active touches.
+- `pressStartMs` tracks when the current pointer press started for long-press detection.
 - UI hit-testing uses these values to consume input.

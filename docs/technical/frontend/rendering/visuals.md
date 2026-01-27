@@ -7,8 +7,8 @@
 
 ## Health + Damage Feedback
 
-- Resources, mobs, structures, and players render simple health bars when damaged.
-- Client tracks `lastHitAt` to animate a brief scale pulse.
+- All damageable objects (resources, mobs, structures, players, NPCs) render simple health bars when damaged.
+- Client tracks `lastHitAt` to animate a 0.25s scale pulse (e.g., 1.0 -> 1.15 -> 1.0).
 
 ## Barrier Cores
 

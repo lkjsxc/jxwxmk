@@ -11,13 +11,12 @@ To improve player experience, the game provides real-time tooltips for interacti
 When a player is near an interactable object (Distance < 60px):
 - **Object Name**: Displayed above the object (e.g., "Tree", "Wolf").
 - **Action Hints**:
-    - **A Button**: Shows "Gather" or "Attack".
-    - **B Button**: Shows "Open" or "Use" (for structures).
+    - **Tap/Click**: Shows "Gather" or "Attack".
+    - **Long-Press/Hold**: Shows "Open" or "Use" (for structures).
 
 ## Self-Action Tooltips
 When holding a useable item in the Hotbar:
 - **Display**: Shown above the Hotbar next to the item name.
-- **A Button Hint**:
-    - **Food**: "[A] Eat"
-    - **Placeable**: "[A] Place"
-
+- **Primary Action Hint**:
+    - **Food**: "Tap/Click: Eat"
+    - **Placeable**: "Tap/Click: Place"

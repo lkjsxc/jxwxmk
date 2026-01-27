@@ -6,6 +6,7 @@
 - One HTTP server instance with one worker (`workers(1)`), intentionally low memory.
 - `GameEngine` owns world state, chunk cache, and tick loop.
 - Each WebSocket connection runs a `GameSession` actor that forwards input to `GameEngine`.
+- A session registry enforces one active session per player ID.
 
 ## Startup Flow
 

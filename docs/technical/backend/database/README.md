@@ -22,6 +22,8 @@ The persistence layer is implemented using `sqlx` and PostgreSQL.
 | id | UUID | Primary Key (Player ID) |
 | token | UUID | Unique session token |
 | username | TEXT | Display name |
+| level | INT | Player level |
+| xp | BIGINT | Player experience points |
 | x, y | DOUBLE | Position |
 | health | DOUBLE | Current health |
 | hunger | DOUBLE | Current hunger |
@@ -37,3 +39,4 @@ The persistence layer is implemented using `sqlx` and PostgreSQL.
   - Periodically (every 10s) for all spawned players.
   - On `Leave` (disconnect).
   - On creation of a new player.
+- **Session Claim**: When a player ID is claimed, the stored token is rotated and existing sessions are revoked.
