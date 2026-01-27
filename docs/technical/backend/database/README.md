@@ -1,18 +1,39 @@
-# Database
+# Database Persistence
 
-PostgreSQL runs inside the runtime container but is not currently used by the server code.
+The persistence layer is implemented using `sqlx` and PostgreSQL.
 
-## Current State
+## Connection
 
-- No tables or migrations are defined in the codebase.
-- The runtime entrypoint ensures the `kkmypk` database exists.
+- The server connects to the database URL specified in `DATABASE_URL` env var.
+- Default: `postgres://postgres:postgres@127.0.0.1:5432/kkmypk`
 
-## Intended Usage (Future)
+## Initialization
 
-- Accounts and sessions
-- Player persistence (inventory, stats, quests)
-- World structures/villages
+- `src/server/database.rs` contains `init_pool`.
+- It executes a raw SQL query to create the `players` table if it does not exist.
+- No separate migration tool is required at this stage.
 
-## Schema Notes
+## Schema
 
-See [schema.md](schema.md) for a placeholder schema outline.
+### players
+
+| Column | Type | Description |
+|---|---|---|
+| id | UUID | Primary Key (Player ID) |
+| token | UUID | Unique session token |
+| username | TEXT | Display name |
+| x, y | DOUBLE | Position |
+| health | DOUBLE | Current health |
+| hunger | DOUBLE | Current hunger |
+| inventory | JSONB | Serialized inventory slots |
+| stats | JSONB | Serialized stats |
+| spawned | BOOLEAN | Whether player is currently in-world |
+| updated_at | TIMESTAMPTZ | Last save time |
+
+## Usage
+
+- **Load**: On `Join`, the `GameEngine` checks for a provided token. If valid, it loads the player state.
+- **Save**:
+  - Periodically (every 10s) for all spawned players.
+  - On `Leave` (disconnect).
+  - On creation of a new player.

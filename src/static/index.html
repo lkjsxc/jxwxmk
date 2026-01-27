@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survival Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <div id="craftingMenu" style="display: none; position: absolute; top: 50px; right: 50px; background: rgba(0,0,0,0.8); color: white; padding: 20px;">
+        <h3>Crafting</h3>
+        <button onclick="craft('WoodPickaxe')">Wood Pickaxe (10 Wood)</button><br>
+        <button onclick="craft('StonePickaxe')">Stone Pickaxe (10 Wood, 10 Stone)</button><br>
+        <button onclick="craft('WoodWall')">Wood Wall (20 Wood)</button><br>
+        <button onclick="craft('Door')">Door (30 Wood)</button><br>
+        <button onclick="craft('Torch')">Torch (2 Wood)</button><br>
+        <button onclick="craft('Workbench')">Workbench (50 Wood)</button>
+    </div>
+    
+    <div id="npcDialog" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #222; color: white; padding: 20px; border: 2px solid white;">
+        <h3 id="npcName">NPC</h3>
+        <p id="npcText">...</p>
+        <div id="npcOptions"></div>
+        <button onclick="document.getElementById('npcDialog').style.display='none'">Close</button>
+    </div>
+
+    <div id="hud" style="position: absolute; top: 10px; left: 10px; color: white;">
+        <div id="questList" style="margin-top: 20px; font-family: monospace;"></div>
+    </div>
+    
+    <script src="game.js"></script>
+</body>
+</html>
