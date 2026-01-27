@@ -1,0 +1,13 @@
+{
+  "name": "jxwxmk-client",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "esbuild index.ts --bundle --format=iife --outfile=../static/game.js",
+    "watch": "esbuild index.ts --bundle --format=iife --outfile=../static/game.js --watch"
+  },
+  "devDependencies": {
+    "esbuild": "^0.20.0",
+    "typescript": "^5.4.0"
+  }
+}

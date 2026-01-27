@@ -17,3 +17,4 @@ This documentation set is the source of truth for the project. It must be suffic
 - [Assets](assets/README.md)
 - [Plans](plan/README.md)
 - [Policy](policy/README.md)
+- [Decisions](decisions/README.md)
