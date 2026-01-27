@@ -125,10 +125,112 @@ window.addEventListener("mousedown", (e) => {
     ws.send(JSON.stringify({ attack: true }));
 });
 
+// Touch to attack (Tap Empty Space)
+window.addEventListener("touchstart", (e) => {
+    // Ignore if touching controls
+    const target = e.target as HTMLElement;
+    if (target.id === "joystickZone" || target.id === "joystickKnob" || target.id === "btnA" || target.tagName === "BUTTON") {
+        return;
+    }
+    
+    // Inventory Grid Logic for Touch? 
+    // Reusing mousedown logic for now, or just mapping tap to attack if not UI.
+    const invX = canvas.width - 220;
+    const invY = 100;
+    const slotS = 40;
+    const cols = 5;
+    const touch = e.changedTouches[0];
+    
+    if (touch.clientX >= invX && touch.clientX <= invX + cols * slotS && touch.clientY >= invY) {
+        // Inventory interaction logic handled by mousedown usually, 
+        // but for touch we might need explicit handling or rely on click emulation.
+        // Let's rely on click/mousedown emulation for inventory swap to avoid double firing.
+        return;
+    }
+
+    // Tap on empty space = Attack (A Button)
+    ws.send(JSON.stringify({ attack: true }));
+});
+
 function craft(item: string) {
     ws.send(JSON.stringify({ craft: item }));
 }
 (window as any).craft = craft;
+
+// Mobile Controls Logic
+const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+if (isTouch) {
+    document.getElementById("mobileControls")!.style.display = "block";
+    
+    // Joystick
+    const joyZone = document.getElementById("joystickZone")!;
+    const joyKnob = document.getElementById("joystickKnob")!;
+    let joyTouchId: number | null = null;
+    let joyStartX = 0;
+    let joyStartY = 0;
+    const maxDist = 35;
+
+    joyZone.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        const touch = e.changedTouches[0];
+        joyTouchId = touch.identifier;
+        joyStartX = touch.clientX;
+        joyStartY = touch.clientY;
+    });
+
+    joyZone.addEventListener("touchmove", (e) => {
+        e.preventDefault();
+        for (let i = 0; i < e.changedTouches.length; i++) {
+            if (e.changedTouches[i].identifier === joyTouchId) {
+                const touch = e.changedTouches[i];
+                let dx = touch.clientX - joyStartX;
+                let dy = touch.clientY - joyStartY;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist > maxDist) {
+                    dx = (dx / dist) * maxDist;
+                    dy = (dy / dist) * maxDist;
+                }
+                joyKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+                
+                // Update global input keys simulation
+                // Reset WASD first? No, mixing inputs is fine.
+                // We need global dx/dy variables outside the loop if we want joystick to persist?
+                // The loop calculates dx/dy from keys every frame. 
+                // Let's add global joystick vector.
+                joyVector.x = dx / maxDist;
+                joyVector.y = dy / maxDist;
+            }
+        }
+    });
+
+    const endJoy = (e: TouchEvent) => {
+        e.preventDefault();
+        for (let i = 0; i < e.changedTouches.length; i++) {
+            if (e.changedTouches[i].identifier === joyTouchId) {
+                joyTouchId = null;
+                joyKnob.style.transform = `translate(-50%, -50%)`;
+                joyVector.x = 0;
+                joyVector.y = 0;
+            }
+        }
+    };
+    joyZone.addEventListener("touchend", endJoy);
+    joyZone.addEventListener("touchcancel", endJoy);
+
+    // A Button
+    const btnA = document.getElementById("btnA")!;
+    btnA.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        btnA.style.background = "rgba(255, 0, 0, 0.8)";
+        ws.send(JSON.stringify({ attack: true }));
+    });
+    btnA.addEventListener("touchend", (e) => {
+        e.preventDefault();
+        btnA.style.background = "rgba(200, 0, 0, 0.5)";
+    });
+}
+
+const joyVector = { x: 0, y: 0 };
 
 function loop() {
     // Input
@@ -138,6 +240,12 @@ function loop() {
     if (keys["KeyS"]) dy += 1;
     if (keys["KeyA"]) dx -= 1;
     if (keys["KeyD"]) dx += 1;
+
+    // Apply joystick
+    if (joyVector.x !== 0 || joyVector.y !== 0) {
+        dx = joyVector.x;
+        dy = joyVector.y;
+    }
 
     if (dx !== 0 || dy !== 0) {
         ws.send(JSON.stringify({ dx, dy }));

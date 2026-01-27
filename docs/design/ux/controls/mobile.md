@@ -12,10 +12,8 @@ Since the game supports smartphones, a Virtual Joystick overlay is required.
 - **Positioning**: Buttons are moved higher from the bottom edge for ergonomic comfort and to avoid system navigation interference.
 - **A Button (Action/Attack)**:
     -   Primary interaction button.
-    -   Pulse animation on press.
-- **B Button (Interact)**:
-    -   Secondary interaction button.
-    -   Pulse animation on press.
+    -   Triggers attack or gathering.
+    -   Also triggered by tapping anywhere in empty space.
 
 ### UI Overlay
 - **Hotbar**: Centered bottom. Tap to select item.
@@ -24,4 +22,4 @@ Since the game supports smartphones, a Virtual Joystick overlay is required.
 
 ## Gestures
 - **Pinch**: Zoom camera.
-- **Two-finger Tap**: Cancel/Back.
+- **Tap Empty Space**: Triggers A Button (Action).
