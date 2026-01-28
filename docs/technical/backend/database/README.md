@@ -2,6 +2,10 @@
 
 The persistence layer is implemented using `sqlx` and PostgreSQL.
 
+## Contents
+
+- [Canonical schema (SQL)](schema.md)
+
 ## Connection
 
 - The server connects to the database URL specified in `DATABASE_URL` env var.

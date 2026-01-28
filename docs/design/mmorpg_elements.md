@@ -2,6 +2,17 @@
 
 This checklist defines the minimum expected scope for a large-scale MMORPG survival game. Treat it as a baseline contract and cross-reference the design/technical docs below.
 
+## Scope note (important)
+
+This document mixes “MVP required” items with long-term MMO targets.
+
+For **initial full reconstruction** of `src/`, the scope boundary is defined by:
+
+- `docs/decisions/0001-reconstruction-scope.md`, and
+- `docs/implementation/reconstruction_acceptance.md`.
+
+Items that are described here but do not yet have dedicated technical specifications (protocol + persistence + UI) are treated as **planned** until promoted into scope by a decision/update.
+
 ## Identity + Sessions
 
 - Persistent Player ID visible in the profile UI with a copy action.

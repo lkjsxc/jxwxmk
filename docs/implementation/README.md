@@ -4,4 +4,5 @@ Authoritative, step-by-step build guidance for recreating the full system from s
 
 ## Contents
 
-- [Rebuild TODO](todo.md)
+- [Reconstruction Acceptance Criteria](reconstruction_acceptance.md)
+- [Implementation TODOs (Reconstruction Backlog)](todo/README.md)

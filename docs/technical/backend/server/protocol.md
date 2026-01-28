@@ -9,8 +9,15 @@ All client messages are objects with `type` and `data`.
 ### input
 
 ```json
-{ "type": "input", "data": { "dx": -1.0, "dy": 0.0, "attack": false, "interact": false } }
+{ "type": "input", "data": { "dx": -1.0, "dy": 0.0, "attack": false, "interact": false, "aim": { "x": 12.5, "y": 9.0 } } }
 ```
+
+- `dx`, `dy`: movement vector components (recommended clamp to `[-1.0, 1.0]`).
+- `attack`: primary action (tap/click).
+- `interact`: secondary action (long-press/hold).
+- `aim`: world-space target point in **world units (wu)** (see: `../../../design/world/scale_and_chunks.md`).
+  - Required when `attack` or `interact` is `true`.
+  - Used for authoritative targeting (gather/attack/NPC interact) and structure placement.
 
 ### spawn
 

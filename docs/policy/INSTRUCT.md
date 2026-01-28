@@ -49,12 +49,19 @@ Project root may contain only:
 
 Anything else at root is a regression. Move it under `docs/`, `src/`.
 
+Notes:
+- Local, tool-specific artifacts that are intentionally untracked/ignored (e.g., `GEMINI.md`, `.gemini/`) are acceptable as long as they remain uncommitted.
+
 ### 1.2 Documentation topology (recursive TOC discipline)
 - **Every directory** must contain **exactly one** `README.md` (acts as that directory’s TOC and index).
 - All other docs must live as:
   - additional `.md` files in the directory, and/or
   - subdirectories (each with their own `README.md`).
 - Delete documentation that is no longer used. No “deprecated” placeholders.
+
+### 1.2.1 Unfinished work is isolated
+- Do not leave “TODO/TBD/not implemented” placeholders in production docs/code.
+- The only acceptable place for unfinished work checklists is `docs/implementation/todo/`.
 
 ### 1.3 Code topology (short files; deep trees)
 - Prefer many small files and deep directories over large files.

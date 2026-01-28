@@ -20,8 +20,8 @@ docker run --rm \
 
 ## Compose Examples
 
-- Build from source: `docs/setup/compose/docker-compose.build.yml`
-- Run a prebuilt tag: `docs/setup/compose/docker-compose.image.yml`
+- Build from source: `src/runtime/compose/docker-compose.build.yml`
+- Run a prebuilt tag: `src/runtime/compose/docker-compose.image.yml`
 
 ## Notes
 

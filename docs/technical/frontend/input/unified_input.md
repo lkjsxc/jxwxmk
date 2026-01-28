@@ -26,3 +26,10 @@ These are client-side rate limits; the server still enforces its own cooldowns.
 - `isPointerDown` is true for mouse down or active touches.
 - `pressStartMs` tracks when the current pointer press started for long-press detection.
 - UI hit-testing uses these values to consume input.
+
+## Protocol target (`aim`)
+
+The client sends a world-space target point for authoritative action resolution:
+
+- Convert the current pointer position to world coordinates using the camera transform.
+- Include it as `aim: { x, y }` in the `input` message whenever `attack` or `interact` is true.

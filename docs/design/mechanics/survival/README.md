@@ -2,6 +2,11 @@
 
 Survival pressure scales with biome, weather, and progression tier.
 
+## Contents
+
+- [Hunger](hunger.md)
+- [Temperature](temperature.md)
+
 ## Spawning
 
 - Players bind to a settlement core for respawn.

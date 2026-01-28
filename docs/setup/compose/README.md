@@ -2,7 +2,9 @@
 
 Compose files for running the single-container runtime locally.
 
-## Contents
+Compose YAML is kept under `src/` (not under `docs/`). See: `src/runtime/compose/README.md`.
+
+## Files (in `src/runtime/compose/`)
 
 - `docker-compose.yml`: regular build-from-source compose file.
 - `docker-compose.build.yml`: builds from source and runs the container.

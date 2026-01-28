@@ -7,11 +7,19 @@ This plan is for reconstructing the entire source tree from documentation.
 - `src/` is deleted.
 - Documentation in `docs/` is authoritative.
 - Runtime must be a single container that runs Rust server + PostgreSQL.
+- Reconstruction scope and “done” are defined by:
+  - `docs/decisions/0001-reconstruction-scope.md`
+  - `docs/implementation/reconstruction_acceptance.md`
+- Implementation tasks are tracked in:
+  - `docs/implementation/todo/README.md`
 
 ## Plan
 
 1. **Read Policies and Constraints**
    - `docs/policy/INSTRUCT.md`
+   - `docs/decisions/0001-reconstruction-scope.md`
+   - `docs/implementation/reconstruction_acceptance.md`
+   - `docs/implementation/todo/README.md`
 
 2. **Recreate Repo Layout**
    - Recreate `src/` with required README.md files.
@@ -39,6 +47,7 @@ This plan is for reconstructing the entire source tree from documentation.
 7. **Validate**
    - Build Docker image.
    - Run container and confirm `/health` and `/`.
+   - Check off every item in `docs/implementation/reconstruction_acceptance.md`.
 
 ## Output Targets
 

@@ -1,0 +1,37 @@
+# 09 — Tests (Dockerized unit + integration)
+
+Goal: make reconstruction “done” only when tests pass in Docker/Compose.
+
+References:
+- `docs/policy/INSTRUCT.md` (Docker-first tests)
+- `docs/technical/module_map.md` (testing seams)
+- `docs/implementation/reconstruction_acceptance.md` (test acceptance)
+
+## A) Test harness (Dockerized)
+
+- [ ] Provide a Docker command path that runs:
+  - unit tests
+  - integration tests (including DB + migrations)
+- [ ] Prefer running tests using the runtime image + an internal Postgres (single container rule).
+- [ ] If an additional test-only container or compose file is needed, keep it under `src/` (not `docs/`).
+
+## B) Unit tests (deterministic)
+
+Add deterministic unit tests for at least:
+
+- [ ] Survival tick math (hunger decay, heal threshold, freeze damage).
+- [ ] Crafting (ingredient consumption + output insertion).
+- [ ] Placement validation (grid snapping + collision checks).
+- [ ] Barrier safe-zone rules (PvP disabled; hostile handling).
+- [ ] Death + respawn cooldown rules.
+
+## C) Integration tests (containerized)
+
+- [ ] DB migrations apply successfully.
+- [ ] Session claim rotates token and revokes existing session.
+- [ ] WebSocket handshake works (`welcome` + `spawn` flow).
+- [ ] Config loading works with only `/app/config/*.json`.
+
+## Done when
+
+- [ ] The Docker test command(s) pass consistently.

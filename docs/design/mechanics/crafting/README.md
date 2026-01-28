@@ -2,6 +2,12 @@
 
 Crafting is tiered and tied to settlement infrastructure.
 
+## Contents
+
+- [Recipes](recipes.md)
+- [Stations](stations.md)
+- [Crafting UI](ui.md)
+
 ## Principles
 
 - Server-authoritative recipes and validation.

@@ -1,0 +1,52 @@
+# 03 — Configuration (`config/*.json` + loader)
+
+Goal: implement config files + a strict loader so the server is data-driven and reproducible.
+
+References:
+- `docs/technical/config/README.md`
+- `docs/technical/config/files.md`
+- `docs/technical/backend/game/*` (systems consume config values)
+
+## A) Create the config file set (minimal seed values)
+
+Files required by `docs/technical/config/files.md`:
+
+- `server.json`
+- `world.json`
+- `balance.json`
+- `survival.json`
+- `crafting.json`
+- `spawning.json`
+- `biomes.json`
+- `settlements.json`
+- `economy.json`
+- `quests.json`
+- `achievements.json`
+
+Tasks:
+
+- [ ] Create `config/` directory containing the full file set above.
+- [ ] Provide minimal-but-valid JSON in each file (seed values sufficient to run the game loop).
+- [ ] Ensure config values cover the parameters explicitly referenced by systems docs:
+  - tick rate (`server.tick_rate`)
+  - survival rates (`survival.*`)
+  - barrier core parameters (`settlements.base_range`, `settlements.level_multiplier`)
+  - crafting recipes (seed at least the items listed in `docs/design/mechanics/crafting/recipes.md`)
+
+## B) Implement the config loader (Rust)
+
+- [ ] Server loads all `*.json` from `/app/config` at startup.
+- [ ] Each file is parsed and validated independently; missing files fall back to defaults.
+- [ ] Validation rejects malformed JSON, wrong types, NaNs/Infs, and out-of-range values.
+- [ ] Conflicts are resolved by explicit priority (as documented in `docs/technical/config/README.md`).
+
+## C) Config usage wiring
+
+- [ ] `server.json` values are applied (ports, tick rate, rate limits).
+- [ ] `world.json` values are applied (chunk size, streaming radii, world seed).
+- [ ] Systems read config values (no “loaded then ignored” configs).
+
+## Done when
+
+- [ ] Server starts with only `/app/config/*.json` mounted and does not crash.
+- [ ] Config-driven values demonstrably affect behavior (tick rate, survival decay, etc.).

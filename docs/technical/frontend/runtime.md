@@ -29,7 +29,10 @@ The client is initialized in `src/client/index.ts`.
 
 ## Input Loop
 
-- Every 50ms, sends `{ "type": "input" }` if movement or actions are active.
+- Every ~50ms, sends an `input` message if movement or actions are active.
+- Payload matches `docs/technical/backend/server/protocol.md`:
+  - always includes `dx`, `dy`, `attack`, `interact`
+  - includes `aim` (world coords) whenever `attack` or `interact` is true
 - One-off messages are sent for crafting, trades, NPC actions, and quests.
 
 ## Render Loop
