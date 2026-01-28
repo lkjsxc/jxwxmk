@@ -1,0 +1,2 @@
+// Network
+export function init() {}

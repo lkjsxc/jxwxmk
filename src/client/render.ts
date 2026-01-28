@@ -1,0 +1,2 @@
+// Render
+export function draw() {}
