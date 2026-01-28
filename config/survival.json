@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "hunger_decay": 2.0,
+  "starve_damage": 5.0,
+  "heal_threshold": 60.0,
+  "heal_rate": 2.0,
+  "neutral_temp": 50.0,
+  "temperature_converge_rate": 0.5,
+  "freeze_damage": 5.0,
+  "thirst_enabled": false,
+  "thirst_decay": 2.0,
+  "dehydrate_damage": 5.0
+}

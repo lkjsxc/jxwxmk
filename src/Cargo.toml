@@ -1,0 +1,14 @@
+[workspace]
+resolver = "2"
+members = [
+    "bin/server",
+    "crates/protocol",
+    "crates/config",
+    "crates/world",
+    "crates/systems",
+    "crates/game",
+    "crates/persistence",
+    "crates/net",
+    "crates/assets",
+    "crates/integration_tests",
+]

@@ -1,0 +1,22 @@
+FROM rust:1.84-slim-bookworm
+RUN apt-get update && apt-get install -y postgresql-15 postgresql-client-15 && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY src ./src
+COPY config ./config
+
+# Set up test environment
+ENV DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/jxwxmk
+ENV RUST_LOG=info
+
+# Test runner script
+RUN echo '#!/bin/bash\n\
+service postgresql start\n\
+until su - postgres -c "pg_isready"; do sleep 1; done\n\
+su - postgres -c "psql -c \"ALTER USER postgres WITH PASSWORD '\''postgres'\'';\""\n\
+su - postgres -c "createdb jxwxmk"\n\
+cd src\n\
+cargo test --workspace\n\
+' > /app/run_tests.sh && chmod +x /app/run_tests.sh
+
+CMD ["/app/run_tests.sh"]

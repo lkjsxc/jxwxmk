@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "seed": "12345",
+  "chunk_size_wu": 128,
+  "view_radius_chunks": 3,
+  "sim_radius_chunks": 2,
+  "max_active_chunks": 512
+}

@@ -1,0 +1,19 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build Runtime Image
+      run: docker build -f src/runtime/Dockerfile -t jxwxmk .
+    - name: Build and Run Tests
+      run: |
+        docker build -f src/runtime/Dockerfile.test -t jxwxmk-test .
+        docker run --rm jxwxmk-test

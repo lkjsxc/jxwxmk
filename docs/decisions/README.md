@@ -9,6 +9,7 @@ Decision log for documented ambiguities encountered during reconstruction.
 - [0003 — Protocol v3 + structured errors](0003-protocol-v3-errors.md)
 - [0004 — Schema-first config + strict validation](0004-config-schema-first.md)
 - [0005 — Operability baseline: `/metrics` + structured logs](0005-operability-metrics-and-logs.md)
+- [0006 — Player State Synchronization](0006-player-state-message.md)
 
 ## Format (for new decisions)
 
