@@ -7,6 +7,11 @@
 - Stats: kills, deaths, crafted, steps.
 - Session state: connected / revoked / invalid.
 
+Data sources:
+
+- Player ID and session state come from `welcome` / `sessionRevoked`.
+- Level/XP/stats come from `playerUpdate`.
+
 ## Copy Player ID
 
 - Copy button writes full Player ID to clipboard.
@@ -17,6 +22,7 @@
 - Clicking the name field focuses input.
 - Keyboard input is appended to the name buffer.
 - Clicking "Update Name" sends `{ "type": "name", "data": { "name": "<new_name>" } }`.
+- The UI updates only after the server confirms via the next `playerUpdate` (authoritative).
 
 ## Device Login
 

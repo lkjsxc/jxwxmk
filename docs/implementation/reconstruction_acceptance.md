@@ -68,6 +68,7 @@ References:
 - [ ] All protocol messages listed in `docs/technical/backend/server/protocol.md` are implemented with strict JSON validation.
 - [ ] Structured protocol errors are implemented:
   - invalid/rejected messages result in an `error` message (or a disconnect if abusive).
+- [ ] Private player state is synchronized via `playerUpdate` (inventory, vitals, quests, achievements) and is never broadcast via public `entityDelta`.
 - [ ] `input` targeting semantics are implemented as documented (`aim` required for actions; server validates and uses it).
 - [ ] Rust server embeds `src/static/` with `rust-embed` and serves assets from memory.
 
@@ -140,6 +141,7 @@ References:
 
 - [ ] `src/client/` TypeScript sources exist and build via `esbuild` to `src/static/game.js`.
 - [ ] Client connects to `/ws`, handles `welcome`, and performs the spawn flow.
+- [ ] Client handles `playerUpdate` and uses it as the authoritative source for HUD/hotbar/inventory/profile/quests/achievements.
 - [ ] Client maintains chunk cache and applies entity deltas.
 - [ ] Canvas render loop works (camera + entity rendering).
 - [ ] UI is present at minimum:

@@ -10,4 +10,4 @@
 - Clicking an item starts a drag operation.
 - Releasing over another slot sends `{ "type": "swapSlots", "data": { "from": <index>, "to": <index> } }`.
 - Dragged item is rendered under the pointer.
-- Swap confirmation is authoritative: the UI reflects the server’s next `entityDelta` inventory state.
+- Swap confirmation is authoritative: the UI reflects the server’s next `playerUpdate` inventory state.

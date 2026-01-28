@@ -9,6 +9,11 @@
   - Description
   - Objectives with progress
 
+Data sources:
+
+- Initial quest list comes from `playerUpdate.quests`.
+- Incremental updates arrive via `questUpdate` (and/or a fresh `playerUpdate` snapshot).
+
 ## Pinning
 
 - Each quest card has a Pin/Unpin button.

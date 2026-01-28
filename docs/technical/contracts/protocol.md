@@ -19,6 +19,22 @@ Client → server:
 Server → client:
 
 - Server messages use the same envelope pattern, except `welcome` which includes top-level fields as documented.
+- The client must treat server messages as authoritative and should ignore unknown server→client message types (useful when docs evolve), as long as `welcome.version` is supported.
+
+## Public vs private state (privacy boundary)
+
+The protocol separates:
+
+- **Public world state**: chunk membership and entity visibility (`chunkAdd` / `chunkRemove` / `entityDelta`).
+- **Private player state**: owner-only state that must never be broadcast to other players (`playerUpdate`).
+
+Examples of private state:
+
+- inventory contents and counts
+- hunger/temperature meters
+- quest log and achievements set
+
+This boundary is required to prevent data leakage and unnecessary bandwidth.
 
 ## Strictness and unknown fields
 

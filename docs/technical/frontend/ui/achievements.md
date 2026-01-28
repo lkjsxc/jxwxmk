@@ -11,6 +11,11 @@
 - Right side: details for the selected achievement.
 - Progress bars are shown only if the client has requirement metadata.
 
+Data sources:
+
+- The set of unlocked achievements comes from `playerUpdate.achievements`.
+- `achievement` messages are used for the toast UX (the server should also update `playerUpdate` so the tab stays in sync).
+
 ## Client Data Source
 
 - The client uses a hardcoded `ALL_ACHIEVEMENTS` list.

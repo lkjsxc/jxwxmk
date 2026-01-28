@@ -16,6 +16,16 @@ Fields:
 - `reputation` (per settlement/faction)
 - `spawned` (bool)
 
+Synchronization boundary:
+
+- Public world visibility (position and other visible entity fields) is streamed via `entityDelta`.
+- Private player-only state (inventory, vitals, quests, achievements, progression) is sent to the session owner via `playerUpdate`.
+
+See:
+
+- `docs/technical/backend/server/protocol.md` (`playerUpdate`, `entityDelta`)
+- `docs/technical/contracts/protocol.md` (public vs private state)
+
 ## Item
 
 - `kind`: enum

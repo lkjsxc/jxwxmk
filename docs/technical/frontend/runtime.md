@@ -21,11 +21,12 @@ The client is initialized in `src/client/index.ts`.
 
 ## Other Messages
 
+- `playerUpdate`: replace/merge the local `PlayerState` store (inventory, vitals, progression, quests, achievements). UI surfaces render from this store.
 - `achievement`: show toast.
 - `notification`: show toast.
 - `error`: show toast (and optionally highlight the relevant UI surface based on `code`).
 - `npcInteraction`: open NPC modal.
-- `questUpdate`: merge into player quest list.
+- `questUpdate`: merge into the local `PlayerState.quests` (the server may also send a `playerUpdate` snapshot).
 - `sessionRevoked`: show blocking overlay and clear stored token.
 
 ## Input Loop

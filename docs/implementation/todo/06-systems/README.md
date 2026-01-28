@@ -19,20 +19,20 @@ References (design anchors):
 
 ## A) Survival system
 
-- [x] Hunger decay and thresholds per `systems_survival.md` (tick-rate scaled).
-- [x] Temperature convergence per `systems_survival.md` (lerp toward biome target).
+- [ ] Hunger decay and thresholds per `systems_survival.md` (tick-rate scaled).
+- [ ] Temperature convergence per `systems_survival.md` (lerp toward biome target).
 - [ ] Optional thirst when `survival.thirst_enabled` is true.
-- [x] Clamp vitals each tick.
+- [ ] Clamp vitals each tick.
 - [ ] Emit notifications for meaningful state changes (e.g., “hungry”, “freezing”) using `notification`.
 
 ## B) Interaction system
 
 Movement:
-- [x] Apply movement per tick using `balance.player.base_speed` and stat bonuses.
+- [ ] Apply movement per tick using `balance.player.base_speed` and stat bonuses.
 - [ ] Update step stats for achievements.
 
 Targeting:
-- [x] Validate and use `input.data.aim` for target selection (`docs/decisions/0002-input-aim.md`).
+- [ ] Validate and use `input.data.aim` for target selection (`docs/decisions/0002-input-aim.md`).
 - [ ] Enforce max interaction range (in `wu`) and reject invalid `aim`.
 
 Actions (priority order):
@@ -57,30 +57,30 @@ Actions (priority order):
   - apply combat resolution (see combat tasks below)
 
 Inventory/slots:
-- [x] `slot` changes active slot server-side.
-- [x] `swapSlots` swaps inventory slots server-side.
+- [ ] `slot` changes active slot server-side.
+- [ ] `swapSlots` swaps inventory slots server-side.
 
 ## C) Crafting system
 
-- [x] Load recipes from `config/crafting.json` and any needed balance tables.
-- [x] Validate recipe id and requirements.
-- [x] Consume ingredients from inventory and add output item.
+- [ ] Load recipes from `config/crafting.json` and any needed balance tables.
+- [ ] Validate recipe id and requirements.
+- [ ] Consume ingredients from inventory and add output item.
 - [ ] Update crafting stats and XP.
-- [x] Station gating is currently a no-op unless promoted by config/docs.
+- [ ] Station gating is currently a no-op unless promoted by config/docs.
 
 ## D) Spawning + AI
 
-- [x] Chunk-local spawn budgets for resources and mobs.
+- [ ] Chunk-local spawn budgets for resources and mobs.
 - [ ] Respawn timers stored per node/mob type.
-- [x] Deterministic seeding for baseline spawns; persist deltas for depletion/placements.
+- [ ] Deterministic seeding for baseline spawns; persist deltas for depletion/placements.
 - [ ] Implement minimal AI loops:
   - passive wander
   - predator aggro + leash
 
 ## E) Barrier safe zones
 
-- [x] Safe-zone radius formula per `docs/technical/backend/game/barriers.md`.
-- [x] Enforce rules:
+- [ ] Safe-zone radius formula per `docs/technical/backend/game/barriers.md`.
+- [ ] Enforce rules:
   - no PvP inside radius
   - hostile mobs removed/pushed outside
 
@@ -105,5 +105,5 @@ Inventory/slots:
 
 ## Done when
 
-- [x] All systems run inside the tick loop without network code inside systems.
-- [x] Each system has deterministic unit tests (see `docs/implementation/todo/09-tests/README.md`).
+- [ ] All systems run inside the tick loop without network code inside systems.
+- [ ] Each system has deterministic unit tests (see `docs/implementation/todo/09-tests/README.md`).

@@ -85,6 +85,44 @@ Identifier convention:
 { "type": "sessionRevoked", "reason": "login_elsewhere" }
 ```
 
+### playerUpdate
+
+Private player-only state update for the **session owner**.
+
+This message is the authoritative source for:
+
+- inventory + hotbar selection (`active_slot`)
+- vitals (HP / hunger / temperature)
+- profile/progression (level / XP / stats)
+- quest list (initial state and changes)
+- unlocked achievements list (initial state and changes)
+
+```json
+{
+  "type": "playerUpdate",
+  "data": {
+    "id": "<player_uuid>",
+    "name": "NewName",
+    "spawned": true,
+    "vitals": { "hp": 30.0, "max_hp": 30.0, "hunger": 80.0, "max_hunger": 100.0, "temperature": 50.0, "max_temperature": 100.0 },
+    "inventory": [null, { "item": "wood", "count": 12 }, null],
+    "active_slot": 1,
+    "level": 1,
+    "xp": 100,
+    "stats": { "steps": 123, "kills": 0, "crafts": 1, "gathers": 5, "deaths": 0 },
+    "quests": [
+      { "id": "caravan_guard", "name": "Guard the Caravan", "state": "InProgress", "objectives": [] }
+    ],
+    "achievements": ["first_steps"]
+  }
+}
+```
+
+- `inventory`: fixed-size array of length 30.
+  - Each element is either `null` (empty slot) or `{ "item": "<snake_case_id>", "count": <int> }`.
+- `active_slot`: hotbar selection index in `[0, 6]`.
+  - The hotbar corresponds to inventory slots `0..=6`.
+
 ### chunkAdd
 
 ```json
@@ -150,6 +188,7 @@ Structured error message for rejected inputs or recoverable failures.
 - `kind`: `player | resource | mob | structure | npc` (players arrive via `entityDelta`).
 - `subtype`: resource/mob/structure/NPC type identifier.
 - `hp`, `max_hp`, `level`, `name`, `range` are optional and omitted when irrelevant.
+- Private player-only state (inventory, vitals, quests, achievements, etc.) is synchronized separately via `playerUpdate`.
 
 ### Entity Removal
 
