@@ -12,6 +12,8 @@ This repo is **docs-first**: the documentation is intended to be sufficient to r
 - `docs/implementation/reconstruction_acceptance.md` (definition of “done”)
 - `docs/implementation/todo/README.md` (multi-file reconstruction backlog)
 
+If you’re using a tool that supports repo instruction files (for example, `gemini-cli` reads `GEMINI.md`), prefer that; `GEMINI.md` is kept identical to `docs/tmp/src-recreate.md`.
+
 ## Architecture (at a glance)
 
 - Single runtime container: **Rust server + PostgreSQL** (no separate runtime Node service).

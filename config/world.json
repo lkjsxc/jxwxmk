@@ -1,9 +1,0 @@
-# World Configuration
-
-See `docs/technical/config/schemas/world.md`.
-
-{
-  "seed": 12345,
-  "chunk_size": 32,
-  "view_distance": 2
-}

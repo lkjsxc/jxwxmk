@@ -1,7 +1,0 @@
-# Quests Configuration
-
-See `docs/technical/config/schemas/quests.md`.
-
-{
-  "quests": []
-}
