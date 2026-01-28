@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "recipes": {
+    "wood_pickaxe": {
+      "ingredients": [
+        { "item": "wood", "count": 10 }
+      ],
+      "output": "wood_pickaxe",
+      "count": 1,
+      "station_required": null
+    },
+    "wood_axe": {
+      "ingredients": [
+        { "item": "wood", "count": 8 }
+      ],
+      "output": "wood_axe",
+      "count": 1,
+      "station_required": null
+    }
+  }
+}

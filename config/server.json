@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "port": 8080,
+  "tick_rate": 30,
+  "rate_limits": {
+    "ws_messages_per_second": 60,
+    "session_claim_per_minute": 10
+  }
+}
