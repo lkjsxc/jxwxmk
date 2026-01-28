@@ -6,6 +6,8 @@ References:
 - `docs/technical/backend/game/engine.md`
 - `docs/technical/backend/game/world_state.md`
 - `docs/technical/module_map.md` (single writer, event queues)
+- `docs/technical/contracts/tick.md` (backpressure contract)
+- `docs/technical/operability/metrics.md` (tick/queue metrics)
 - `docs/design/world/scale_and_chunks.md`
 - `docs/design/world/settlements.md` (villages as anchors)
 
@@ -16,6 +18,7 @@ References:
   - network handlers enqueue events
   - only the tick owner mutates `World`
 - [ ] Bounded queues for inputs/events (avoid unbounded memory growth).
+- [ ] Define explicit overflow behavior for bounded queues (drop policy and/or disconnect) and expose it via logs/metrics.
 
 ## B) World state + chunk storage
 
@@ -38,6 +41,7 @@ References:
 
 - [ ] Build `entityDelta` per tick per interested player.
 - [ ] Cap update sizes per tick (performance docs).
+- [ ] Track and export per-tick metrics (tick duration, bytes sent, queue lengths) via `/metrics`.
 
 ## E) Settlements/villages baseline
 

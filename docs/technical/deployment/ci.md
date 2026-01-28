@@ -8,11 +8,11 @@ The CI pipeline must build the single runtime container on every push and pull r
 - Build the container from the repository Dockerfile.
 - Fail the job on any build error.
 - No publishing by default (publishing can be added later on tags).
-- Optional: run the container and hit `/health`.
+- Optional: run the container and hit `/health` and `/metrics`.
 
 ## Suggested Job Outline
 
 1. Checkout repository.
 2. Set up Docker Buildx (and QEMU if multi-arch is required).
 3. Run `docker build -f src/runtime/Dockerfile -t jxwxmk:ci .`.
-4. (Optional) Run the container and validate `/health`.
+4. (Optional) Run the container and validate `/health` and `/metrics`.

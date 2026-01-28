@@ -8,6 +8,7 @@ References:
 - `docs/setup/docker.md` (run command)
 - `docs/technical/backend/server/overview.md` (bind `0.0.0.0:8080`)
 - `docs/technical/backend/database/README.md` (default DB URL)
+- `docs/technical/operability/lifecycle.md` (startup/shutdown contract)
 
 ## A) Multi-stage Docker build
 
@@ -24,6 +25,10 @@ References:
   - initializes the Postgres data directory when empty
   - starts Postgres bound to `127.0.0.1:5432`
   - launches the Rust server (which applies migrations on startup)
+- [ ] Ensure the entrypoint handles SIGTERM/SIGINT:
+  - forwards the signal to the Rust server
+  - waits for graceful shutdown (final checkpoint)
+  - stops Postgres cleanly
 - [ ] Ensure Postgres is not exposed externally (no `0.0.0.0:5432`).
 - [ ] Document runtime environment variables supported (at minimum: `DATABASE_URL`).
 
@@ -43,3 +48,4 @@ Policy note: compose YAML must live under `src/` (not under `docs/`).
 
 - [ ] `docker build -f src/runtime/Dockerfile -t jxwxmk .` succeeds.
 - [ ] Running the container and hitting `/health` works (see: `docs/implementation/reconstruction_acceptance.md`).
+- [ ] Running the container and hitting `/metrics` works (Prometheus text).

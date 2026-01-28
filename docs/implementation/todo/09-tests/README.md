@@ -5,6 +5,7 @@ Goal: make reconstruction “done” only when tests pass in Docker/Compose.
 References:
 - `docs/policy/INSTRUCT.md` (Docker-first tests)
 - `docs/technical/module_map.md` (testing seams)
+- `docs/technical/testing/README.md`
 - `docs/implementation/reconstruction_acceptance.md` (test acceptance)
 
 ## A) Test harness (Dockerized)
@@ -31,6 +32,10 @@ Add deterministic unit tests for at least:
 - [ ] Session claim rotates token and revokes existing session.
 - [ ] WebSocket handshake works (`welcome` + `spawn` flow).
 - [ ] Config loading works with only `/app/config/*.json`.
+- [ ] `/metrics` returns parsable Prometheus text.
+- [ ] `/metrics` contains required metric names from `docs/technical/operability/metrics.md`.
+- [ ] Invalid WS messages yield a structured `error` (or disconnect if abusive), without mutating world state.
+- [ ] Validation errors use stable `error.code` values from `docs/technical/contracts/protocol.md`.
 
 ## Done when
 

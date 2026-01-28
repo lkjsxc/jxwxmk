@@ -15,6 +15,7 @@
 3. `GameEngine` starts the fixed-rate tick loop.
 4. Actix Web binds `0.0.0.0:8080` and exposes routes:
    - `GET /health`
+   - `GET /metrics`
    - `GET /ws`
    - `GET /` and `GET /{filename}` for static assets
 

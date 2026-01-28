@@ -23,6 +23,7 @@ The client is initialized in `src/client/index.ts`.
 
 - `achievement`: show toast.
 - `notification`: show toast.
+- `error`: show toast (and optionally highlight the relevant UI surface based on `code`).
 - `npcInteraction`: open NPC modal.
 - `questUpdate`: merge into player quest list.
 - `sessionRevoked`: show blocking overlay and clear stored token.

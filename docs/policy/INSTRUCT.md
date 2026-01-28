@@ -163,8 +163,10 @@ A slice is done only when:
 - server implements it authoritatively (tick-owned state)
 - client can exercise it (even minimally)
 - protocol supports it explicitly (versioned; validated)
+- protocol failures are surfaced (structured error codes, not silent drops)
 - persistence exists if required (otherwise documented why not)
 - tests exist for critical logic
+- operability is preserved (structured logs + `/metrics` for the slice)
 - docs and TOCs are updated
 - commits are clean and ordered
 

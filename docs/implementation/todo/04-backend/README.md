@@ -8,10 +8,13 @@ References:
 - `docs/technical/backend/server/protocol.md`
 - `docs/technical/backend/server/static_assets.md`
 - `docs/decisions/0002-input-aim.md`
+- `docs/technical/contracts/protocol.md`
+- `docs/technical/operability/metrics.md`
 
 ## A) HTTP routes
 
 - [ ] `GET /health` returns `200 OK` with body `OK`.
+- [ ] `GET /metrics` returns `200 OK` with Prometheus text format.
 - [ ] `POST /session/claim`:
   - accepts `{ "player_id": "<uuid>" }`
   - rotates the session token for that player
@@ -33,7 +36,7 @@ References:
   - no token: new session is created (or claimed flow required; decide and document if unclear)
   - token present: validate and reattach to existing player state
 - [ ] Server sends `welcome` exactly as documented:
-  - `{ "type": "welcome", "id": "...", "token": "...", "version": 2, "spawned": false }`
+  - `{ "type": "welcome", "id": "...", "token": "...", "version": 3, "spawned": false }`
 - [ ] Single-session enforcement:
   - when a new token is issued, the old session receives `sessionRevoked` then disconnects
 
@@ -43,11 +46,14 @@ References:
   - `input` (includes `aim` when action booleans are true)
   - `spawn`, `craft`, `trade`, `npcAction`, `acceptQuest`, `slot`, `swapSlots`, `name`
 - [ ] Implement all server→client messages:
-  - `welcome`, `sessionRevoked`, `chunkAdd`, `chunkRemove`, `entityDelta`, `achievement`, `notification`, `npcInteraction`, `questUpdate`
+  - `welcome`, `sessionRevoked`, `chunkAdd`, `chunkRemove`, `entityDelta`, `achievement`, `notification`, `error`, `npcInteraction`, `questUpdate`
 - [ ] Strict inbound validation:
   - reject unknown message types
   - reject missing/invalid fields
   - enforce numeric bounds and cooldown/rate limits server-side
+- [ ] Rejected inputs yield structured errors (`error.code` uses the baseline contract set; `error.message` is user-facing).
+- [ ] Identifier convention is enforced:
+  - all protocol IDs (recipes, items, achievements, quests, subtypes) are `snake_case`.
 
 ## E) Static assets (rust-embed)
 

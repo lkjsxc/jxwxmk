@@ -22,6 +22,49 @@ These are **domains**, not necessarily exact filesystem paths, but the names sho
 - **`assets`**: build-time client assets + embedding/serving static files.
 - **`runtime`**: container entrypoint and operational wiring (start Postgres, run server).
 
+## Enforcement (make boundaries real)
+
+The rules above are only effective if the code structure makes violations hard or impossible.
+
+Recommended enforcement approach:
+
+1. **Separate crates for boundary modules** (preferred).
+2. If a single crate is used early, simulate boundaries with:
+   - `pub(crate)` visibility
+   - “ports” traits in narrow modules
+   - no cross-module `use` of implementation types
+
+### Recommended crate graph (Rust)
+
+Organize the Rust code as a workspace under `src/` (do not require root-level Cargo files).
+
+Suggested layout (example):
+
+- `protocol` (no dependencies on any other project crate)
+- `config` → `protocol` (for shared ID types/enums only; avoid pulling in net)
+- `world` → `config`
+- `systems` → `world` + `config`
+- `game` → `systems` + `world` + `config` + `protocol` + `persistence` (engine orchestrator)
+- `persistence` → `world` + `protocol` + `config` (DB adapter; no `net`)
+- `net` → `protocol` + `game` (adapter; no `world`/`systems`/`persistence`)
+- `assets` (embedding + static responses; avoid `world`/`systems`)
+
+The binary crate composes adapters + engine but should not become a “god module”.
+
+### Adapter boundaries (ports)
+
+Avoid passing large structs like `World` across module boundaries.
+Instead expose **narrow handles**:
+
+- `game` exposes a `GameHandle` for:
+  - enqueueing validated events
+  - subscribing to outbound deltas/messages
+- `persistence` exposes a `PersistenceHandle` for:
+  - loading player/world snapshots
+  - checkpointing dirty state
+
+This implements the “ports and adapters” contract (see: `docs/technical/contracts/authority.md`).
+
 ## Dependency Rules (Hard)
 
 To preserve modularity, treat these as “build-breaking” constraints:
@@ -40,6 +83,14 @@ To preserve modularity, treat these as “build-breaking” constraints:
 - **Deterministic seams**:
   - `systems` operate on explicit inputs: `dt`, typed config, and world state.
   - randomness affecting simulation uses a seeded RNG stream owned by the tick loop.
+
+## Boundary hygiene rules (modern baseline)
+
+- Do not leak framework types across boundaries:
+  - `systems`/`world` must not depend on Actix types, WebSocket types, or SQL client types.
+- Centralize validation in `protocol`/`net` so simulation code can assume invariants.
+- Use stable IDs (`snake_case` for string IDs; UUIDs for identity) and document them (see: `docs/technical/contracts/world_space.md`).
+- Prefer explicit error codes at boundaries (see: `docs/technical/contracts/protocol.md`).
 
 ## Scaling Patterns
 

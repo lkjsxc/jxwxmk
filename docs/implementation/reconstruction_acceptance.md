@@ -43,10 +43,13 @@ References:
 References:
 - `docs/technical/config/README.md`
 - `docs/technical/config/files.md`
+- `docs/technical/config/schemas/README.md`
 
 - [ ] `config/` exists and includes all files listed in `docs/technical/config/files.md`.
 - [ ] Server loads all `*.json` at startup, validates them, and applies defaults for optional fields.
 - [ ] Missing config files fall back to documented defaults (no crash-on-missing unless explicitly required).
+- [ ] Every config file conforms to its documented schema under `docs/technical/config/schemas/`.
+- [ ] Unknown fields are rejected (prevents silent typos and config drift).
 - [ ] Config values are actually used by the server systems (not loaded-and-ignored).
 
 ### D) Backend HTTP + WebSocket (authoritative server)
@@ -56,12 +59,15 @@ References:
 - `docs/technical/backend/server/http_ws.md`
 - `docs/technical/backend/server/protocol.md`
 - `docs/technical/backend/server/static_assets.md`
+- `docs/technical/contracts/protocol.md`
 
-- [ ] HTTP routes exist and match docs: `/health`, `/session/claim`, `/` + `/{filename}`, `/ws?token=...`.
+- [ ] HTTP routes exist and match docs: `/health`, `/metrics`, `/session/claim`, `/` + `/{filename}`, `/ws?token=...`.
 - [ ] Single-session enforcement works:
   - new `/session/claim` rotates token and revokes an existing live session (`sessionRevoked` then disconnect).
 - [ ] Security headers are present as documented.
 - [ ] All protocol messages listed in `docs/technical/backend/server/protocol.md` are implemented with strict JSON validation.
+- [ ] Structured protocol errors are implemented:
+  - invalid/rejected messages result in an `error` message (or a disconnect if abusive).
 - [ ] `input` targeting semantics are implemented as documented (`aim` required for actions; server validates and uses it).
 - [ ] Rust server embeds `src/static/` with `rust-embed` and serves assets from memory.
 
@@ -72,10 +78,12 @@ References:
 - `docs/technical/backend/game/engine.md`
 - `docs/technical/backend/game/world_state.md`
 - `docs/technical/module_map.md`
+- `docs/technical/contracts/tick.md`
 - Design anchors: `docs/design/world/README.md`, `docs/design/core_loop.md`
 
 - [ ] Fixed tick loop exists (target 20–60Hz; configured by `server.tick_rate`).
 - [ ] Single-writer rule is enforced: only the tick owner mutates world state; I/O only enqueues events.
+- [ ] Tick backpressure is implemented (bounded queues; defined overflow behavior; visible via logs/metrics).
 - [ ] Chunk streaming works end-to-end:
   - server maintains interest sets and sends `chunkAdd`/`chunkRemove`
   - server sends `entityDelta` updates scoped to chunk coords
@@ -148,13 +156,35 @@ References:
 References:
 - `docs/policy/INSTRUCT.md` (Docker-first)
 - `docs/technical/module_map.md` (testing seams)
+- `docs/technical/testing/README.md`
 
 - [ ] Unit tests cover deterministic logic (survival tick math, crafting consumption/outputs, barrier rules, respawn rules, etc.).
 - [ ] Integration tests cover at minimum:
   - DB migrations apply successfully
   - session claim/token rotation + single-session enforcement
   - protocol handshake (welcome/spawn) roundtrip
+- [ ] Integration tests cover:
+  - structured error behavior for invalid messages
+  - `/metrics` returns parsable Prometheus text
 - [ ] Tests run in Docker or Docker Compose (no host-only test path).
+
+### J) Operability (logs, metrics, lifecycle)
+
+References:
+- `docs/technical/operability/README.md`
+
+- [ ] Logs are structured and include key context for debugging (player/session, error code, tick overruns).
+- [ ] `/metrics` exports bounded, low-cardinality metrics (no UUID labels) and includes the required metric names from `docs/technical/operability/metrics.md`.
+- [ ] Server startup and shutdown follow the documented lifecycle (migrations at startup; graceful shutdown flushes checkpoints).
+
+### K) Modularity (enforced boundaries)
+
+References:
+- `docs/technical/module_map.md`
+- `docs/technical/contracts/authority.md`
+
+- [ ] Dependency rules are enforced by structure (preferred: crate boundaries) so forbidden edges do not compile (e.g., `net` cannot import `world`).
+- [ ] Framework types do not leak into core domain modules (`world`/`systems` are free of Actix/DB types).
 
 ## Required evidence in an agent final report
 

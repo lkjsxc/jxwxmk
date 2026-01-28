@@ -16,7 +16,7 @@ References:
 
 ## B) Optional smoke test
 
-- [ ] Optionally run the container and hit `/health` (per `docs/technical/deployment/ci.md`).
+- [ ] Optionally run the container and hit `/health` and `/metrics` (per `docs/technical/deployment/ci.md`).
 
 ## Done when
 

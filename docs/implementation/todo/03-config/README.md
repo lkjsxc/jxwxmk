@@ -5,6 +5,7 @@ Goal: implement config files + a strict loader so the server is data-driven and 
 References:
 - `docs/technical/config/README.md`
 - `docs/technical/config/files.md`
+- `docs/technical/config/schemas/README.md`
 - `docs/technical/backend/game/*` (systems consume config values)
 
 ## A) Create the config file set (minimal seed values)
@@ -27,10 +28,12 @@ Tasks:
 
 - [ ] Create `config/` directory containing the full file set above.
 - [ ] Provide minimal-but-valid JSON in each file (seed values sufficient to run the game loop).
+- [ ] Ensure each file includes `version` and matches its schema under `docs/technical/config/schemas/`.
+- [ ] Reject unknown fields (implementation should fail fast on startup).
 - [ ] Ensure config values cover the parameters explicitly referenced by systems docs:
   - tick rate (`server.tick_rate`)
   - survival rates (`survival.*`)
-  - barrier core parameters (`settlements.base_range`, `settlements.level_multiplier`)
+  - barrier core parameters (`settlements.barrier.base_range_wu`, `settlements.barrier.level_multiplier_wu`)
   - crafting recipes (seed at least the items listed in `docs/design/mechanics/crafting/recipes.md`)
 
 ## B) Implement the config loader (Rust)
@@ -38,6 +41,7 @@ Tasks:
 - [ ] Server loads all `*.json` from `/app/config` at startup.
 - [ ] Each file is parsed and validated independently; missing files fall back to defaults.
 - [ ] Validation rejects malformed JSON, wrong types, NaNs/Infs, and out-of-range values.
+- [ ] Validation rejects unknown fields (prevents silent config drift).
 - [ ] Conflicts are resolved by explicit priority (as documented in `docs/technical/config/README.md`).
 
 ## C) Config usage wiring

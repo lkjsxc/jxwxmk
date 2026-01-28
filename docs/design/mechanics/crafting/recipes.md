@@ -4,9 +4,9 @@ Current server-side recipes:
 
 ## Basic
 
-- **Wood Pickaxe**: 10 Wood
-- **Stone Pickaxe**: 10 Wood + 10 Stone
-- **Wood Wall**: 20 Wood
-- **Door**: 30 Wood
-- **Torch**: 2 Wood
-- **Workbench**: 50 Wood
+- **Wood Pickaxe** (`wood_pickaxe`): 10 Wood (`wood`)
+- **Stone Pickaxe** (`stone_pickaxe`): 10 Wood (`wood`) + 10 Stone (`stone`)
+- **Wood Wall** (`wood_wall`): 20 Wood (`wood`)
+- **Door** (`wood_door`): 30 Wood (`wood`)
+- **Torch** (`torch`): 2 Wood (`wood`)
+- **Workbench** (`workbench`): 50 Wood (`wood`)

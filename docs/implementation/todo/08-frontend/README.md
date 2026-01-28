@@ -25,6 +25,9 @@ References:
 - [ ] On `sessionRevoked`:
   - clear token
   - show blocking overlay and return to login
+- [ ] On `error`:
+  - show a toast with the error message
+  - optionally highlight the relevant UI surface based on `code`
 
 ## C) World replication
 

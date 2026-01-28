@@ -2,8 +2,13 @@
 
 ## Toasts
 
-- Used for achievements and general notifications.
+- Used for achievements, general notifications, and recoverable errors.
 - Single active toast displayed near the bottom center.
+
+### Error toasts
+
+- The `error` protocol message (see: `docs/technical/backend/server/protocol.md`) should surface as a toast.
+- If the error code maps to a specific UI surface (e.g., crafting), the UI may also highlight that surface.
 
 ## NPC Interaction Overlay
 

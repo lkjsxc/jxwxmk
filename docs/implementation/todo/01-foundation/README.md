@@ -39,7 +39,10 @@ References:
 - `docs/technical/backend/server/static_assets.md` (`rust-embed`)
 - `docs/technical/backend/database/README.md` (`sqlx`, Postgres URL)
 
-- [ ] Create a Rust crate under `src/server/` (keep root allowlist: do not add `Cargo.toml` at repo root).
+- [ ] Create a Rust workspace under `src/server/` (keep root allowlist: do not add `Cargo.toml` at repo root).
+- [ ] Split boundary modules into separate crates to enforce `docs/technical/module_map.md` at compile time:
+  - `protocol`, `config`, `world`, `systems`, `game`, `persistence`, `net`, `assets`
+- [ ] Create a small binary crate that wires adapters + engine together (avoid a “god module”).
 - [ ] Add dependencies per `docs/technical/tech_stack.md`:
   - `actix-web`, `actix`, `actix-web-actors`
   - `serde`, `serde_json`
@@ -47,7 +50,7 @@ References:
   - `rust-embed`, `mime_guess`
   - `log`, `env_logger`
   - `sqlx` (Postgres)
-- [ ] Add a minimal binary entrypoint that starts Actix and exposes `GET /health` (full behavior later).
+- [ ] Add a minimal binary entrypoint that starts Actix and exposes `GET /health` and `GET /metrics` (full behavior later).
 
 ## D) TypeScript client scaffolding (inside `src/`)
 

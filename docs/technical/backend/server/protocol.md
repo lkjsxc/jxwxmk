@@ -6,6 +6,10 @@ Gameplay traffic is JSON over WebSocket with explicit message types.
 
 All client messages are objects with `type` and `data`.
 
+Identifier convention:
+
+- All identifiers inside `data` (recipe IDs, item IDs, achievement IDs, quest IDs, entity subtypes) are `snake_case` strings unless explicitly noted.
+
 ### input
 
 ```json
@@ -28,13 +32,13 @@ All client messages are objects with `type` and `data`.
 ### craft
 
 ```json
-{ "type": "craft", "data": { "recipe": "IronPickaxe" } }
+{ "type": "craft", "data": { "recipe": "wood_pickaxe" } }
 ```
 
 ### trade
 
 ```json
-{ "type": "trade", "data": { "npc_id": "<uuid>", "item": "SaltCrate", "count": 2, "buy": true } }
+{ "type": "trade", "data": { "npc_id": "<uuid>", "item": "salt_crate", "count": 2, "buy": true } }
 ```
 
 ### npcAction
@@ -72,7 +76,7 @@ All client messages are objects with `type` and `data`.
 ### welcome
 
 ```json
-{ "type": "welcome", "id": "<player_uuid>", "token": "<session_token>", "version": 2, "spawned": false }
+{ "type": "welcome", "id": "<player_uuid>", "token": "<session_token>", "version": 3, "spawned": false }
 ```
 
 ### sessionRevoked
@@ -110,6 +114,18 @@ All client messages are objects with `type` and `data`.
 ```json
 { "type": "notification", "data": { "text": "You feel hungry." } }
 ```
+
+### error
+
+Structured error message for rejected inputs or recoverable failures.
+
+```json
+{ "type": "error", "data": { "code": "invalid_message", "message": "Invalid message.", "details": null } }
+```
+
+- `code`: stable machine-readable identifier (`snake_case`).
+- `message`: user-facing text suitable for a toast.
+- `details`: optional extra info (may be null/omitted).
 
 ### npcInteraction
 

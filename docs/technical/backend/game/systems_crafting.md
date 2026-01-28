@@ -14,3 +14,7 @@ Crafting is server-authoritative and data-driven.
 3. Ingredients are consumed from inventory.
 4. Output item is added with derived level.
 5. Craft stats and XP are updated.
+
+## Identifier rules
+
+- Recipe IDs and item IDs are `snake_case` strings (see: `docs/technical/contracts/protocol.md`).

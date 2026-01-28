@@ -5,6 +5,10 @@
 - `GET /health`
   - Returns `200 OK` with body `OK`.
 
+- `GET /metrics`
+  - Returns `200 OK` with Prometheus text format.
+  - This is an admin/operability endpoint (see: `docs/technical/operability/metrics.md`).
+
 - `POST /session/claim`
   - Body: `{ "player_id": "<uuid>" }`
   - Returns: `{ "id": "<uuid>", "token": "<uuid>" }`
