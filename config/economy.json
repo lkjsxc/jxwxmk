@@ -1,0 +1,7 @@
+# Economy Configuration
+
+See `docs/technical/config/schemas/economy.md`.
+
+{
+  "tax_rate": 0.05
+}

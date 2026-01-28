@@ -1,0 +1,7 @@
+# Achievements Configuration
+
+See `docs/technical/config/schemas/achievements.md`.
+
+{
+  "achievements": []
+}

@@ -1,0 +1,7 @@
+# Biomes Configuration
+
+See `docs/technical/config/schemas/biomes.md`.
+
+{
+  "biomes": {}
+}

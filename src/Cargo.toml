@@ -1,0 +1,14 @@
+[workspace]
+resolver = "2"
+members = [
+    "protocol",
+    "config",
+    "world",
+    "systems",
+    "persistence",
+    "game",
+    "net",
+    "server",
+]
+
+

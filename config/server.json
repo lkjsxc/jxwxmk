@@ -1,0 +1,10 @@
+# Server Configuration
+
+See `docs/technical/config/schemas/server.md`.
+
+{
+  "host": "0.0.0.0",
+  "port": 8080,
+  "tick_rate": 30,
+  "db_url": "postgres://jxwxmk:jxwxmk@localhost:5432/jxwxmk"
+}

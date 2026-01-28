@@ -1,0 +1,9 @@
+[package]
+name = "systems"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+world = { path = "../world" }
+config = { path = "../config" }
+protocol = { path = "../protocol" }

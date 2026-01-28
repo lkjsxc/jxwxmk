@@ -1,0 +1,7 @@
+# Settlements Configuration
+
+See `docs/technical/config/schemas/settlements.md`.
+
+{
+  "tiers": []
+}
