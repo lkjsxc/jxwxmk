@@ -11,12 +11,17 @@
 
 ## Hotbar
 
-- 7 slots rendered at the bottom center.
+- 7 slots rendered at the **bottom of the screen**, centered horizontally (viewport-anchored, not world-anchored).
 - Active slot is highlighted in yellow.
 - Clicking a slot sends `{ "type": "slot", "data": { "slot": <index> } }` to the server.
 - Active item name is displayed above the hotbar.
 - Hotbar items are read from `playerUpdate.inventory[0..=6]`.
 - Hotbar selection is `playerUpdate.active_slot` (authoritative).
+
+Layout notes:
+
+- Always visible during gameplay.
+- Keep a small bottom padding; on mobile, respect safe-area insets so the hotbar is not under the OS gesture area.
 
 ## Notes
 

@@ -14,10 +14,11 @@ The persistent on-screen overlay during gameplay.
     -   **Object HP**: When an entity (Resource, Mob, Structure) is damaged, a semi-transparent HP gauge is displayed directly above the object in the game world.
     -   **Fade**: The gauge only appears when HP is below 100% or recently hit.
 
-3.  **Hotbar** (Bottom Center):
+3.  **Hotbar** (Bottom of Screen, Centered):
     -   **7 Slots** (Keys 1-7).
     -   Translucent background.
     -   Selection via Keyboard or Mouse Click.
+    -   Anchored to the viewport bottom edge (not the world), with padding; on mobile, respect safe-area insets.
 
 4.  **Interaction Gestures**:
     -   **No On-Screen A/B Buttons**: Actions are performed via tap and long-press.

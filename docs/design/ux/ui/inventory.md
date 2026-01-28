@@ -1,7 +1,7 @@
 # Inventory & Hotbar
 
 ## Hotbar
--   **Always Visible**: Bottom center of HUD.
+-   **Always Visible**: Bottom of the screen, centered (viewport-anchored).
 -   **Slots**: 7 (Keys 1-7).
 -   **Selection**:
     -   **Keyboard**: Press 1-7 to select.
@@ -10,6 +10,10 @@
     -   **Visual**: Highlight active slot with a yellow border.
     -   **Translucency**: UI elements use semi-transparent backgrounds.
 -   **Function**: The "Active Slot" determines what item is held/used (e.g., placing a wall, eating food).
+
+Layout note:
+
+- On mobile, keep the hotbar above the OS gesture area (safe-area insets).
 
 ## Items & Stacking
 

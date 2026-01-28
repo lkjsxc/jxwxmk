@@ -176,7 +176,7 @@ If you cannot reach full DoD, explicitly list what is missing and why.
 
 ## 5. If you are uncertain
 Do not stall. Make the best coherent decision consistent with this document and:
-- write the decision into docs (ADR or a short rationale file)
+- append the decision into `docs/implementation/decision_log.md`
 - implement accordingly
 - leave a follow-up note
 

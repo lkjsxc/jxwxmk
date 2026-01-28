@@ -9,9 +9,9 @@ Implementation tasks for reaching this state are tracked in:
 
 ## Scope anchor
 
-The reconstruction scope is defined by: `docs/decisions/0001-reconstruction-scope.md`.
+The reconstruction scope is defined by: `docs/implementation/reconstruction_scope.md`.
 
-Anything explicitly marked **Planned / Out of scope (for initial reconstruction)** in that decision is **not required** to satisfy this checklist.
+Anything explicitly marked **Planned / Out of scope (for initial reconstruction)** in that scope document is **not required** to satisfy this checklist.
 
 ## Definition of done (all boxes must be checked)
 

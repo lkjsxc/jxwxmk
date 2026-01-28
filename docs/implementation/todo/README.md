@@ -7,10 +7,10 @@ It is intentionally split across **multiple files and directories** so agents ca
 ## How to use this backlog
 
 1. Read and obey `docs/policy/INSTRUCT.md`.
-2. Read the scope boundary: `docs/decisions/0001-reconstruction-scope.md`.
+2. Read the scope boundary: `docs/implementation/reconstruction_scope.md`.
 3. Use `docs/implementation/reconstruction_acceptance.md` as the definition of “done”.
 4. Execute tasks in the order linked below (foundation → runtime → backend → game → frontend → tests).
-5. If something is unclear or conflicts, record a decision under `docs/decisions/` and continue.
+5. If something is unclear or conflicts, record a decision in `docs/implementation/decision_log.md` and continue.
 
 ## Rules for items in this backlog
 

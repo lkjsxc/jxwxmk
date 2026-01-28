@@ -7,7 +7,7 @@ References:
 - `docs/technical/module_map.md` (testing seams)
 - `docs/technical/testing/README.md`
 - `docs/implementation/reconstruction_acceptance.md` (test acceptance)
-- `docs/decisions/0006-player-state-message.md` (`playerUpdate`)
+- `docs/technical/backend/server/protocol.md` (`playerUpdate`)
 
 ## A) Test harness (Dockerized)
 

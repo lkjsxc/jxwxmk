@@ -15,6 +15,6 @@ Desktop uses the same interaction rules as mobile, with keyboard shortcuts retai
 
 ## HUD
 
-- **Hotbar**: Always visible at bottom.
+- **Hotbar**: Always visible at the bottom of the screen (centered).
 - **Vitals**: Top-left corner bars.
 - **Minimap**: Bottom-right (optional).

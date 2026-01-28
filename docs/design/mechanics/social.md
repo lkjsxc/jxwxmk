@@ -5,7 +5,7 @@ MMORPG-scale play requires durable social tools and shared goals.
 ## Implementation status
 
 These systems require explicit protocol messages, persistence, and UI.
-They are **planned** for now unless/ until promoted into scope (see: `docs/decisions/0001-reconstruction-scope.md`).
+They are **planned** for now unless/ until promoted into scope (see: `docs/implementation/reconstruction_scope.md`).
 
 ## Parties
 

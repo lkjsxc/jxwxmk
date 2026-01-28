@@ -18,6 +18,10 @@ Mobile uses the same interaction rules as desktop, expressed through touch gestu
 - **Crafting Menu**: Toggle button top-right.
 - **Chat**: Semi-transparent overlay top-left.
 
+Safe-area note:
+
+- Keep the hotbar above the OS gesture area (safe-area insets) so taps do not conflict with system navigation.
+
 ## Gestures
 
 - **Pinch**: Zoom camera.

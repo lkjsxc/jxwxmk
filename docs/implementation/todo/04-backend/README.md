@@ -7,8 +7,6 @@ References:
 - `docs/technical/backend/server/http_ws.md`
 - `docs/technical/backend/server/protocol.md`
 - `docs/technical/backend/server/static_assets.md`
-- `docs/decisions/0002-input-aim.md`
-- `docs/decisions/0006-player-state-message.md`
 - `docs/technical/contracts/protocol.md`
 - `docs/technical/operability/metrics.md`
 

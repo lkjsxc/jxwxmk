@@ -32,7 +32,7 @@ Movement:
 - [ ] Update step stats for achievements.
 
 Targeting:
-- [ ] Validate and use `input.data.aim` for target selection (`docs/decisions/0002-input-aim.md`).
+- [ ] Validate and use `input.data.aim` for target selection (see `docs/technical/backend/server/protocol.md` and `docs/technical/backend/game/systems_interaction.md`).
 - [ ] Enforce max interaction range (in `wu`) and reject invalid `aim`.
 
 Actions (priority order):
