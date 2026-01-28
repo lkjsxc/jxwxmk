@@ -4,6 +4,7 @@ use super::messages::{ClientConnected, ClientDisconnected, ClientRequest};
 use std::time::Duration;
 use log::info;
 use crate::config::GameConfig;
+use crate::game::systems::survival::SurvivalSystem;
 
 pub struct GameEngine {
     world: World,
@@ -18,10 +19,13 @@ impl GameEngine {
         }
     }
 
-    fn tick(&mut self, ctx: &mut Context<Self>) {
-        // TODO: Implement tick loop logic
-        // 1. Systems update
-        // 2. Broadcast updates
+    fn tick(&mut self, _ctx: &mut Context<Self>) {
+        let dt = 1.0 / self.config.server.tick_rate as f64;
+        
+        // Systems update
+        SurvivalSystem::update(&mut self.world, dt);
+        
+        // Broadcast updates
     }
 }
 

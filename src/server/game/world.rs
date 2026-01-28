@@ -40,6 +40,8 @@ pub struct PlayerState {
     pub y: f64,
     pub health: f64,
     pub max_health: f64,
+    pub hunger: f64,
+    pub temperature: f64,
     pub spawned: bool,
     // TODO: Inventory, stats, etc.
 }
