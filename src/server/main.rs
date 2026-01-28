@@ -42,8 +42,8 @@ async fn main() -> std::io::Result<()> {
             .route("/health", web::get().to(|| async { "OK" }))
             .route("/session/claim", web::post().to(net::http::claim_session))
             .route("/ws", web::get().to(net::ws::ws_route))
-            .route("/{filename:.*}", web::get().to(net::http::serve_asset))
             .route("/", web::get().to(net::http::serve_index))
+            .route("/{filename:.*}", web::get().to(net::http::serve_asset))
     })
     .bind(bind_addr)?
     .run()
