@@ -1,6 +1,6 @@
 # Runtime
 
-Configuration for the production container.
+Docker container configuration and runtime scripts.
 
 ## Contents
 

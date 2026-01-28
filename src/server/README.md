@@ -1,19 +1,17 @@
-# Server
+# Server Source
 
-The backend is a single Rust binary that runs the game simulation and API.
+Backend application source code.
 
-## Responsibilities
+## Tech Stack
 
-- **Simulation**: Fixed-tick game loop.
-- **Persistence**: PostgreSQL storage via `sqlx`.
-- **Network**: HTTP API and WebSocket game channel.
-- **Config**: Loading JSON configuration.
+- Rust (Edition 2021)
+- Actix Web (HTTP/WebSocket)
+- SQLx (PostgreSQL)
 
 ## Modules
 
-- `main.rs`: Entrypoint and server setup.
-- `config.rs`: Configuration loading and structs.
-- `protocol.rs`: JSON message definitions.
-- `handlers.rs`: Actix Web route handlers.
-- `persistence.rs`: Database connection and queries.
-- `game/`: Core game engine and systems.
+- **[protocol](protocol/README.md)**: Shared types and validation.
+- **[net](net/README.md)**: HTTP and WebSocket handlers.
+- **[game](game/README.md)**: Authoritative simulation engine.
+- **[persistence](persistence/README.md)**: Database layer.
+- **[config](config/README.md)**: Configuration loading.

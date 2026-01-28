@@ -1,0 +1,11 @@
+{
+  "name": "jxwxmk-client",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "esbuild index.ts --bundle --outfile=../static/game.js"
+  },
+  "devDependencies": {
+    "esbuild": "^0.19.0",
+    "typescript": "^5.0.0"
+  }
+}

@@ -1,13 +1,11 @@
-# Gameplay Systems
+# Game Systems
 
-Deterministic logic blocks that run every tick.
+Deterministic logic units invoked by the tick loop.
 
 ## Systems
 
-- `survival.rs`: Hunger, temperature, health regeneration.
-- `interaction.rs`: Movement and entity interaction resolution.
-- `crafting.rs`: Item creation logic.
-- `spawning.rs`: Resource and mob spawning.
-- `barriers.rs`: Safe zone enforcement.
-- `quests.rs`: Quest progress tracking.
-- `achievements.rs`: Achievement evaluation.
+- `survival`: Hunger, temp, regen.
+- `interaction`: Movement, gathering, combat.
+- `crafting`: Recipe validation and production.
+- `spawning`: Resource and mob management.
+- `ai`: Mob behavior.

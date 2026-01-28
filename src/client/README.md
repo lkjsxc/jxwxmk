@@ -1,17 +1,19 @@
-# Client
+# Client Source
 
-The client is a "dumb" terminal that renders state and captures input.
+Frontend application source code.
 
-## Responsibilities
+## Tech Stack
 
-- **Rendering**: Draw the world state received from the server via WebSocket.
-- **Input**: Capture mouse/keyboard/touch events and send them to the server.
-- **UI**: Overlay HTML interfaces for inventory, crafting, etc.
+- TypeScript
+- Canvas2D
+- No framework (vanilla DOM/Canvas)
 
 ## Modules
 
-- `index.ts`: Entrypoint and main loop.
-- `net.ts`: WebSocket handling and protocol parsing.
-- `input.ts`: InputManager (Unified Input).
-- `render.ts`: Canvas2D rendering logic.
-- `ui.ts`: HTML UI state management.
+- **[rendering](rendering/README.md)**: Canvas loop, visuals, camera.
+- **[input](input/README.md)**: Unified input manager (touch/mouse/keyboard).
+- **[ui](ui/README.md)**: UI overlay manager and screens.
+
+## Entrypoint
+
+- `index.ts`: Application bootstrap.

@@ -1,17 +1,23 @@
 #!/bin/bash
 set -e
 
+# Start PostgreSQL
+# We need to initialize the DB if it's empty (data volume).
+if [ -z "$(ls -A /var/lib/postgresql/data)" ]; then
+    echo "Initializing Database..."
+    mkdir -p /var/lib/postgresql/data
+    chown -R postgres:postgres /var/lib/postgresql
+    su postgres -c "initdb -D /var/lib/postgresql/data"
+    
+    # Start momentarily to create user/db
+    su postgres -c "pg_ctl -D /var/lib/postgresql/data -w start"
+    su postgres -c "psql -c \"CREATE USER postgres WITH SUPERUSER PASSWORD 'postgres';\"" || true # might exist
+    su postgres -c "createdb jxwxmk" || true
+    su postgres -c "pg_ctl -D /var/lib/postgresql/data -m fast -w stop"
+fi
+
 echo "Starting PostgreSQL..."
-service postgresql start
+su postgres -c "pg_ctl -D /var/lib/postgresql/data -w start"
 
-echo "Waiting for PostgreSQL..."
-until su - postgres -c "pg_isready"; do
-  sleep 1
-done
-
-echo "Configuring Database..."
-su - postgres -c "psql -c \"ALTER USER postgres WITH PASSWORD 'postgres';\""
-su - postgres -c "psql -c \"CREATE DATABASE jxwxmk;\"" || true
-
-echo "Starting Server..."
-exec ./server
+echo "Starting Game Server..."
+./server
