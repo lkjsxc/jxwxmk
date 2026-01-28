@@ -1,8 +1,0 @@
-{
-  "version": 1,
-  "tax_rate": 0.05,
-  "vendor_prices": {
-    "wood": { "buy": 1, "sell": 0 },
-    "stone": { "buy": 1, "sell": 0 }
-  }
-}
