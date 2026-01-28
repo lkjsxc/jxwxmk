@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use std::collections::HashMap;
+use actix::Message;
 
 // --- Client -> Server Messages ---
 
@@ -124,6 +125,10 @@ pub enum ServerMessage {
     QuestUpdate {
         data: QuestUpdateData,
     },
+}
+
+impl Message for ServerMessage {
+    type Result = ();
 }
 
 #[derive(Debug, Serialize)]
