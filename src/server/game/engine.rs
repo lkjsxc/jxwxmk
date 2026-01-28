@@ -3,15 +3,18 @@ use super::world::World;
 use super::messages::{ClientConnected, ClientDisconnected, ClientRequest};
 use std::time::Duration;
 use log::info;
+use crate::config::GameConfig;
 
 pub struct GameEngine {
     world: World,
+    config: GameConfig,
 }
 
 impl GameEngine {
-    pub fn new() -> Self {
+    pub fn new(config: GameConfig) -> Self {
         Self {
             world: World::new(),
+            config,
         }
     }
 
@@ -27,8 +30,9 @@ impl Actor for GameEngine {
 
     fn started(&mut self, ctx: &mut Self::Context) {
         info!("GameEngine started");
-        // 20Hz tick rate -> 50ms
-        ctx.run_interval(Duration::from_millis(50), |act, ctx| {
+        // Use configured tick rate
+        let tick_ms = 1000 / self.config.server.tick_rate;
+        ctx.run_interval(Duration::from_millis(tick_ms), |act, ctx| {
             act.tick(ctx);
         });
     }
@@ -64,10 +68,15 @@ impl Handler<ClientRequest> for GameEngine {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::config::{ServerConfig, WorldConfig};
 
     #[actix::test]
     async fn test_engine_startup() {
-        let engine = GameEngine::new().start();
+        let config = GameConfig {
+            server: ServerConfig { port: 8080, tick_rate: 20 },
+            world: WorldConfig { seed: 12345, chunk_size: 16 },
+        };
+        let engine = GameEngine::new(config).start();
         assert!(engine.connected());
     }
 }

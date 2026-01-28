@@ -1,1 +1,4 @@
-{ "port": 8080, "tick_rate": 20 }
+{
+    "port": 8080,
+    "tick_rate": 20
+}

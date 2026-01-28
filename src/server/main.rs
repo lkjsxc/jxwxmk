@@ -1,11 +1,13 @@
 mod protocol;
 mod persistence;
 mod game;
-mod net; // Need to create this too for ws/http if I reference it
+mod net;
+mod config;
 
 use actix_web::{App, HttpServer, middleware, web};
 use actix::Actor;
 use std::env;
+use std::path::Path;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -14,7 +16,11 @@ async fn main() -> std::io::Result<()> {
     // Load env vars if .env exists (optional)
     dotenvy::dotenv().ok();
 
-    let port = env::var("PORT").unwrap_or_else(|_| "8080".to_string());
+    // Load Config
+    let config_dir = env::var("CONFIG_DIR").unwrap_or_else(|_| "config".to_string());
+    let game_config = config::loader::load_config(Path::new(&config_dir));
+
+    let port = env::var("PORT").unwrap_or_else(|_| game_config.server.port.to_string());
     let bind_addr = format!("0.0.0.0:{}", port);
     
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
@@ -26,7 +32,7 @@ async fn main() -> std::io::Result<()> {
     persistence::run_migrations(&pool).await.expect("Failed to run migrations");
 
     // Start Game Engine
-    let game_engine = game::GameEngine::new().start();
+    let game_engine = game::GameEngine::new(game_config).start();
 
     HttpServer::new(move || {
         App::new()

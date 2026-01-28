@@ -94,10 +94,15 @@ mod tests {
     use actix_web::{test, App};
     use crate::game::GameEngine;
     use actix_test;
+    use crate::config::{GameConfig, ServerConfig, WorldConfig};
 
     #[actix_web::test]
     async fn test_ws_connection() {
-        let engine = GameEngine::new().start();
+        let config = GameConfig {
+            server: ServerConfig { port: 8080, tick_rate: 20 },
+            world: WorldConfig { seed: 12345, chunk_size: 16 },
+        };
+        let engine = GameEngine::new(config).start();
         
         let srv = actix_test::start(move || {
             App::new()
