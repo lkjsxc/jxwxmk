@@ -1,8 +1,0 @@
-{
-  "version": 1,
-  "hunger_enabled": true,
-  "hunger_decay_per_second": 0.5,
-  "temperature_enabled": true,
-  "temperature_convergence_rate": 0.1,
-  "thirst_enabled": false
-}
