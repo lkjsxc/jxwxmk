@@ -1,2 +1,0 @@
-// Network
-export function init() {}

@@ -1,2 +1,0 @@
-// UI
-export function update() {}

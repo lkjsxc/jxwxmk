@@ -1,2 +1,0 @@
-// Render
-export function draw() {}

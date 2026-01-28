@@ -1,2 +1,0 @@
-// Input
-export function init() {}
