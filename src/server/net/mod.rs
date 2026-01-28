@@ -1,1 +1,2 @@
-// Placeholder for networking modules
+pub mod http;
+pub mod ws;
