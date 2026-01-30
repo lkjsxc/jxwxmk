@@ -9,9 +9,10 @@ References:
 
 ## A) Root invariants (must hold before any implementation)
 
-- [x] Root contains only allowlisted items from `docs/policy/INSTRUCT.md` (no new root files/dirs).
-- [x] Every directory created under `src/` includes **exactly one** `README.md`.
-- [x] Every directory created under `config/` includes **exactly one** `README.md` (if subdirs are introduced later).
+- [ ] Root contains only allowlisted items from `docs/policy/INSTRUCT.md` (no new root files/dirs).
+- [ ] Every directory created under `src/` includes **exactly one** `README.md`.
+- [ ] Every directory created under `config/` includes **exactly one** `README.md` (if subdirs are introduced later).
+- [ ] Human-maintained source files are kept ≤ 200 lines (split by responsibility; see `docs/technical/src_layout.md`).
 
 ## B) Create the `src/` skeleton (no behavior yet)
 
@@ -25,12 +26,12 @@ Recommended module layout (aligns with `docs/technical/module_map.md`):
 
 Tasks:
 
-- [x] Create `src/README.md` describing the intended tree and entrypoints.
-- [x] Create `src/runtime/README.md` explaining Docker/entrypoint responsibilities.
-- [x] Create `src/runtime/compose/README.md` explaining compose file variants (files live in `src/runtime/compose/`).
-- [x] Create `src/static/README.md` describing required files (`index.html`, `styles.css`, `game.js`, optional `favicon.ico`).
-- [x] Create `src/client/README.md` describing build outputs and constraints (no runtime Node).
-- [x] Create `src/server/README.md` describing crates/modules and the single-writer tick model.
+- [ ] Create `src/README.md` describing the intended tree and entrypoints.
+- [ ] Create `src/runtime/README.md` explaining Docker/entrypoint responsibilities.
+- [ ] Create `src/runtime/compose/README.md` explaining compose file variants (files live in `src/runtime/compose/`).
+- [ ] Create `src/static/README.md` describing required files (`index.html`, `styles.css`, `game.js`, optional `favicon.ico`).
+- [ ] Create `src/client/README.md` describing build outputs and constraints (no runtime Node).
+- [ ] Create `src/server/README.md` describing crates/modules and the single-writer tick model.
 
 ## C) Rust crate scaffolding (inside `src/`)
 
@@ -39,18 +40,18 @@ References:
 - `docs/technical/backend/server/static_assets.md` (`rust-embed`)
 - `docs/technical/backend/database/README.md` (`sqlx`, Postgres URL)
 
-- [x] Create a Rust workspace under `src/server/` (keep root allowlist: do not add `Cargo.toml` at repo root).
-- [x] Split boundary modules into separate crates to enforce `docs/technical/module_map.md` at compile time:
+- [ ] Create a Rust workspace under `src/server/` (keep root allowlist: do not add `Cargo.toml` at repo root).
+- [ ] Split boundary modules into separate crates to enforce `docs/technical/module_map.md` at compile time:
   - `protocol`, `config`, `world`, `systems`, `game`, `persistence`, `net`, `assets`
-- [x] Create a small binary crate that wires adapters + engine together (avoid a "god module").
-- [x] Add dependencies per `docs/technical/tech_stack.md`:
+- [ ] Create a small binary crate that wires adapters + engine together (avoid a "god module").
+- [ ] Add dependencies per `docs/technical/tech_stack.md`:
   - `actix-web`, `actix`, `actix-web-actors`
   - `serde`, `serde_json`
   - `uuid`, `rand`
   - `rust-embed`, `mime_guess`
   - `log`, `env_logger`
   - `sqlx` (Postgres)
-- [x] Add a minimal binary entrypoint that starts Actix and exposes `GET /health` and `GET /metrics` (full behavior later).
+- [ ] Add a minimal binary entrypoint that starts Actix and exposes `GET /health` and `GET /metrics` (full behavior later).
 
 ## D) TypeScript client scaffolding (inside `src/`)
 
@@ -58,9 +59,9 @@ References:
 - `docs/technical/frontend/build.md`
 - `docs/technical/frontend/runtime.md`
 
-- [x] Create `src/client/package.json` with `esbuild` build script outputting `../static/game.js`.
-- [x] Create `src/client/tsconfig.json` (ES2020 target).
-- [x] Create `src/client/index.ts` skeleton that can be bundled (full runtime later).
+- [ ] Create `src/client/package.json` with `esbuild` build script outputting `../static/game.js`.
+- [ ] Create `src/client/tsconfig.json` (ES2020 target).
+- [ ] Create `src/client/index.ts` skeleton that can be bundled (full runtime later).
 
 ## E) Static assets scaffolding
 
@@ -68,11 +69,11 @@ References:
 - `docs/technical/backend/server/static_assets.md`
 - `docs/technical/frontend/build.md`
 
-- [x] Create `src/static/index.html` that loads `styles.css` and `game.js`.
-- [x] Create `src/static/styles.css` (minimal base styling).
-- [x] Ensure the server will embed `src/static/` via `rust-embed` (implementation later).
+- [ ] Create `src/static/index.html` that loads `styles.css` and `game.js`.
+- [ ] Create `src/static/styles.css` (minimal base styling).
+- [ ] Ensure the server will embed `src/static/` via `rust-embed` (implementation later).
 
 ## Done when
 
-- [x] All directories above exist with one `README.md` each.
-- [x] The repo can build a "skeleton" Docker image (even if gameplay is not implemented yet).
+- [ ] All directories above exist with one `README.md` each.
+- [ ] The repo can build a "skeleton" Docker image (even if gameplay is not implemented yet).

@@ -70,6 +70,8 @@ Notes:
   - source code: target ≤ 200 lines
   - docs: target ≤ 200–300 lines
   - if you must exceed, split the file instead of stretching the limit
+  - treat `lib.rs`/`index.ts` as thin entrypoints; split logic into modules (see: `docs/technical/src_layout.md`)
+  - generated artifacts (lockfiles, bundles) are exempt; do not hand-edit them
 
 ### 1.4 Runtime constraint (single runtime container, includes database)
 - The runtime environment must be **one container that runs**:

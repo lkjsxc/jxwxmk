@@ -12,56 +12,56 @@ References:
 
 ## A) HTTP routes
 
-- [x] `GET /health` returns `200 OK` with body `OK`.
-- [x] `GET /metrics` returns `200 OK` with Prometheus text format.
-- [x] `POST /session/claim`:
+- [ ] `GET /health` returns `200 OK` with body `OK`.
+- [ ] `GET /metrics` returns `200 OK` with Prometheus text format.
+- [ ] `POST /session/claim`:
   - accepts `{ "player_id": "<uuid>" }`
   - rotates the session token for that player
   - enforces the single-session rule (revokes any live session)
   - rate-limits to prevent brute force
-- [x] `GET /` and `GET /{filename}` serve embedded assets from `src/static/`.
+- [ ] `GET /` and `GET /{filename}` serve embedded assets from `src/static/`.
 
 ## B) Default security headers
 
-- [x] Inject headers as documented in `docs/technical/backend/server/http_ws.md`:
+- [ ] Inject headers as documented in `docs/technical/backend/server/http_ws.md`:
   - `Content-Security-Policy` (self-only; allow unsafe-inline styles and unsafe-eval for bundle)
   - `X-Content-Type-Options: nosniff`
   - `X-Frame-Options: DENY`
 
 ## C) WebSocket route + handshake
 
-- [x] `GET /ws?token=<uuid>` establishes a WebSocket connection.
-- [x] Token handling:
+- [ ] `GET /ws?token=<uuid>` establishes a WebSocket connection.
+- [ ] Token handling:
   - no token: new session is created
   - token present: validate and reattach to existing player state
-- [x] Server sends `welcome` exactly as documented:
+- [ ] Server sends `welcome` exactly as documented:
   - `{ "type": "welcome", "id": "...", "token": "...", "version": 3, "spawned": false }`
-- [x] Single-session enforcement:
+- [ ] Single-session enforcement:
   - when a new token is issued, the old session receives `sessionRevoked` then disconnects
 
 ## D) Protocol types + validation
 
-- [x] Implement all client→server messages from `docs/technical/backend/server/protocol.md`:
+- [ ] Implement all client→server messages from `docs/technical/backend/server/protocol.md`:
   - `input` (includes `aim` when action booleans are true)
   - `spawn`, `craft`, `trade`, `npcAction`, `acceptQuest`, `slot`, `swapSlots`, `name`
-- [x] Implement all server→client messages:
+- [ ] Implement all server→client messages:
   - `welcome`, `sessionRevoked`, `playerUpdate`, `chunkAdd`, `chunkRemove`, `entityDelta`, `achievement`, `notification`, `error`, `npcInteraction`, `questUpdate`
-- [x] Strict inbound validation:
+- [ ] Strict inbound validation:
   - reject unknown message types
   - reject missing/invalid fields
   - enforce numeric bounds and cooldown/rate limits server-side
-- [x] Rejected inputs yield structured errors (`error.code` uses the baseline contract set; `error.message` is user-facing).
-- [x] `playerUpdate` is sent only to the session owner (private state); inventory/quests are never broadcast via public `entityDelta`.
-- [x] Identifier convention is enforced:
+- [ ] Rejected inputs yield structured errors (`error.code` uses the baseline contract set; `error.message` is user-facing).
+- [ ] `playerUpdate` is sent only to the session owner (private state); inventory/quests are never broadcast via public `entityDelta`.
+- [ ] Identifier convention is enforced:
   - all protocol IDs (recipes, items, achievements, quests, subtypes) are `snake_case`.
 
 ## E) Static assets (rust-embed)
 
-- [x] Embed `src/static/` into the Rust binary with `rust-embed`.
-- [x] Implement `serve_index` (`/`) and `serve_asset` (`/{filename}`) per `docs/technical/backend/server/static_assets.md`.
-- [x] Use `mime_guess` for MIME type inference.
+- [ ] Embed `src/static/` into the Rust binary with `rust-embed`.
+- [ ] Implement `serve_index` (`/`) and `serve_asset` (`/{filename}`) per `docs/technical/backend/server/static_assets.md`.
+- [ ] Use `mime_guess` for MIME type inference.
 
 ## Done when
 
-- [x] A browser can load `/` and establish `/ws`.
-- [x] Handshake and spawn flow works end-to-end with strict validation.
+- [ ] A browser can load `/` and establish `/ws`.
+- [ ] Handshake and spawn flow works end-to-end with strict validation.

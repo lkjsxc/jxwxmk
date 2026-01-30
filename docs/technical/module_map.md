@@ -95,6 +95,7 @@ To preserve modularity, treat these as “build-breaking” constraints:
 ## Scaling Patterns
 
 - Prefer **deep trees** and small files (≤ ~200 LoC) over large modules.
+- Keep `lib.rs`/`index.ts` thin and split implementation into modules (see: `docs/technical/src_layout.md`).
 - Add features as **vertical slices**:
   1) protocol type + validation
   2) enqueue + engine event

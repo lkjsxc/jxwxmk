@@ -11,6 +11,7 @@ Implementation-focused documentation for the running system.
 - [Security](security/README.md): threat model, rate limits, validation rules.
 - [Operability](operability/README.md): logging/metrics, lifecycle, backups.
 - [Testing](testing/README.md): Docker-first test strategy and commands.
+- [Source Layout](src_layout.md): intended `src/` tree + file splitting rules (≤ 200 lines).
 
 ## Sections
 
