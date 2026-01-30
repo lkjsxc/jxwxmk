@@ -1,9 +1,0 @@
-[package]
-name = "assets"
-version.workspace = true
-edition.workspace = true
-
-[dependencies]
-rust-embed = { workspace = true }
-mime_guess = { workspace = true }
-actix-web = { workspace = true }
