@@ -2,13 +2,21 @@
 
 Build and run the single-container runtime.
 
-## Build
+## Compose (preferred)
+
+```bash
+docker compose -f src/runtime/compose/docker-compose.yml up --build
+```
+
+## Direct Docker (alternatives)
+
+Build:
 
 ```bash
 docker build -f src/runtime/Dockerfile -t jxwxmk .
 ```
 
-## Run
+Run:
 
 ```bash
 docker run --rm \

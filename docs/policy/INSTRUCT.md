@@ -43,6 +43,7 @@ Project root may contain only:
 - `.gitignore`
 - `config/`
 - `docs/`
+- `scripts/`
 - `src/`
 - `.github/`
 - hidden files/dirs (e.g. `.env.example`, `.vscode/`)

@@ -49,6 +49,10 @@ pub struct ServerLimits {
     pub ws_messages_per_sec: u32,
     #[serde(default = "default_ws_burst")]
     pub ws_burst: u32,
+    #[serde(default = "default_ws_idle_timeout_secs")]
+    pub ws_idle_timeout_secs: u64,
+    #[serde(default = "default_ws_heartbeat_interval_secs")]
+    pub ws_heartbeat_interval_secs: u64,
     #[serde(default = "default_max_name_len")]
     pub max_name_len: usize,
 }
@@ -59,6 +63,8 @@ impl Default for ServerLimits {
             ws_max_message_bytes: default_ws_max_message(),
             ws_messages_per_sec: default_ws_msgs_per_sec(),
             ws_burst: default_ws_burst(),
+            ws_idle_timeout_secs: default_ws_idle_timeout_secs(),
+            ws_heartbeat_interval_secs: default_ws_heartbeat_interval_secs(),
             max_name_len: default_max_name_len(),
         }
     }
@@ -74,6 +80,14 @@ fn default_ws_msgs_per_sec() -> u32 {
 
 fn default_ws_burst() -> u32 {
     60
+}
+
+fn default_ws_idle_timeout_secs() -> u64 {
+    10
+}
+
+fn default_ws_heartbeat_interval_secs() -> u64 {
+    5
 }
 
 fn default_max_name_len() -> usize {

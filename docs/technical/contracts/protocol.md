@@ -50,10 +50,18 @@ The server must enforce hard caps to prevent abuse:
 
 - max WS message bytes
 - max messages per second (and burst)
+- max idle time without application traffic
 - max string lengths (names, IDs)
 - max counts in arrays/maps (inventory size, entity delta counts)
 
 The caps are configured via `server.json` (see: `docs/technical/config/schemas/server.md`).
+
+## Keepalive / idle timeout (session stability)
+
+The server treats the absence of client→server WebSocket traffic as a dead or stalled connection and may disconnect.
+
+- Idle timeout is configured by `server.limits.ws_idle_timeout_secs` (`server.json`).
+- Clients must send keepalive traffic while idle. In browsers, the baseline keepalive is an `input` message with zero movement and no actions (see: `docs/technical/backend/server/protocol.md`).
 
 ## Error model (modern baseline)
 

@@ -99,8 +99,12 @@ async fn main() -> std::io::Result<()> {
 
     // Start HTTP/WebSocket server
     let bind_addr = config.server.bind_http.clone();
+    let ws_config = net::WsSessionConfig {
+        heartbeat_interval: Duration::from_secs(config.server.limits.ws_heartbeat_interval_secs),
+        client_timeout: Duration::from_secs(config.server.limits.ws_idle_timeout_secs),
+    };
     
     log::info!("Starting server on {}", bind_addr);
     
-    run_server(&bind_addr, game_handle, persistence, sessions).await
+    run_server(&bind_addr, game_handle, persistence, sessions, ws_config).await
 }

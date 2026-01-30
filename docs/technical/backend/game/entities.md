@@ -20,6 +20,7 @@ Synchronization boundary:
 
 - Public world visibility (position and other visible entity fields) is streamed via `entityDelta`.
 - Private player-only state (inventory, vitals, quests, achievements, progression) is sent to the session owner via `playerUpdate`.
+- The session owner also receives their own `x`, `y` in `playerUpdate` (camera follow convenience); other entities’ positions remain public-only via `entityDelta`.
 
 See:
 

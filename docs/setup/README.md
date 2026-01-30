@@ -6,3 +6,4 @@ Instructions to build and run the project.
 
 - [Docker Setup](docker.md)
 - [Compose Examples](compose/README.md)
+- [Troubleshooting](troubleshooting.md)

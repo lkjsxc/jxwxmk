@@ -43,7 +43,7 @@ References:
 ## D) Input
 
 - [x] Implement `InputManager` (keyboard + touch unified).
-- [x] Every ~50ms, send `input` when movement/actions are active.
+- [x] Every ~50ms, send `input` during gameplay (including idle keepalive frames).
 - [x] Include `aim` world coordinates when `attack` or `interact` is true.
 - [x] Implement slot switching:
   - number keys / clicking hotbar sends `slot`

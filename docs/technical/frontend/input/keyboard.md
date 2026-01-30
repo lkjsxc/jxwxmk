@@ -20,3 +20,5 @@ Keyboard/mouse input mirrors touch gestures; it does not add unique gameplay rul
 
 - Primary attack is triggered by tap/click in the world; no dedicated key.
 - UI clicks consume the pointer to avoid sending gameplay input.
+- When a text input is focused (`input`, `textarea`, or content-editable), gameplay bindings must not trigger.
+- On window blur/visibility loss, clear pressed-key state to prevent “stuck movement” on return.

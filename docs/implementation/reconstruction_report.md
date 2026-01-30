@@ -1,267 +1,199 @@
-# Reconstruction Report
+# Reconstruction Report (Evidence Ledger)
 
-**Status**: COMPLETE  
-**Date**: 2026-01-30  
-**Scope**: Full `src/` tree reconstruction per `docs/implementation/reconstruction_scope.md`
+This document is the **running evidence ledger** for rebuilding the full `src/` tree from the documentation in `docs/`.
 
----
+It mirrors the section structure of `docs/implementation/reconstruction_acceptance.md`, but it is **not** a checklist and must not contain “unfinished work” task lists (those live only in `docs/implementation/todo/`).
 
-## Summary
+## Backlog alignment
 
-The `src/client/` directory has been fully reconstructed according to the documentation. The TypeScript client implements all documented features:
+Canonical backlog (ordered): `docs/implementation/todo/README.md`
 
-- WebSocket connection with session management
-- Unified input system (keyboard + touch)
-- Canvas2D renderer with camera and interpolation
-- Complete UI system (HUD, hotbar, inventory, crafting, quests, achievements, profile)
-- Protocol message handling
+Slice mapping (foundations → operability):
 
----
+- `01-foundation`: repo skeleton + crate boundaries (Acceptance A, K)
+- `02-runtime`: Docker/runtime container wiring (Acceptance B)
+- `03-config`: JSON configs + validation (Acceptance C)
+- `04-backend`: HTTP/WS + protocol + static assets (Acceptance D)
+- `05-game`: tick loop + chunk streaming (Acceptance E)
+- `06-systems`: survival/crafting/etc. (Acceptance F)
+- `07-persistence`: Postgres + sqlx + checkpointing (Acceptance G)
+- `08-frontend`: TS client build + runtime + UI (Acceptance H)
+- `09-tests`: unit + integration tests in Docker/Compose (Acceptance I)
+- `10-ci`: GitHub Actions CI (Acceptance B, I)
 
-## Acceptance Checklist
+## A) Repo + docs invariants
 
-### A) Repo + docs invariants
+Spec docs:
 
-- [x] Obey `docs/policy/INSTRUCT.md` (root allowlist, 1 README per directory, Docker-first, etc.).
-  - Evidence: Root contains only allowed items; all directories have exactly one README.md
-- [x] Every directory under `docs/`, `config/`, and `src/` contains **exactly one** `README.md`.
-  - Evidence: Verified via find command - all directories have README.md
-- [x] No placeholder markers in committed docs/code:
-  - Evidence: `grep -r "TODO\|FIXME\|stub\|not implemented" src/` returns no matches
-- [x] All documentation leaf files are reachable via TOCs (recursive README discipline).
-  - Evidence: All docs reachable via docs/README.md TOC chain
+- `docs/policy/INSTRUCT.md`
+- `docs/implementation/reconstruction_acceptance.md`
 
-### B) Runtime container (single container = Rust server + PostgreSQL)
+Evidence (docs changes):
 
-- [x] Multi-stage Docker build exists: Node (esbuild) → Rust build → Debian runtime.
-  - Evidence: `src/runtime/Dockerfile` implements 3-stage build
-- [x] Runtime container starts PostgreSQL **inside the same container** and then launches the Rust server.
-  - Evidence: `src/runtime/entrypoint.sh` starts postgres then server
-- [x] PostgreSQL is not exposed externally (bind to `127.0.0.1:5432` inside container).
-  - Evidence: Entrypoint configures postgres for localhost only
-- [x] Docker build succeeds: `docker build -f src/runtime/Dockerfile -t jxwxmk .`
-  - Evidence: Build completes successfully
-- [x] `GET /health` returns `200 OK` with body `OK`.
-  - Evidence: `/health` handler returns "OK"
+- Fixed protocol/UI naming drift (crafting recipe IDs) so `snake_case` IDs are consistent across protocol, config schema, and UI docs.
+- Clarified protocol shapes and client input cadence based on reconstruction findings (see Acceptance D/H notes below).
+- Removed stale “completion” artifacts that were not reachable via TOCs and conflicted with the docs-first workflow.
+- Linked this report and the traceability matrix from `docs/implementation/README.md` to satisfy TOC reachability.
 
-### C) Configuration (`config/*.json`)
+## B) Runtime container (single container = Rust server + PostgreSQL)
 
-- [x] `config/` exists with all required files.
-  - Evidence: 11 JSON config files (server, world, balance, survival, crafting, spawning, biomes, settlements, economy, quests, achievements)
-- [x] Server loads all `*.json` at startup, validates them, applies defaults for optional fields.
-  - Evidence: `GameConfig::load_from_dir()` in `crates/config/src/lib.rs`
-- [x] Missing config files fall back to documented defaults (no crash-on-missing).
-  - Evidence: `load_config_file()` returns `T::default()` for missing files
+Spec docs:
 
-### D) Backend HTTP + WebSocket
+- `docs/technical/deployment/README.md`
+- `docs/setup/docker.md`
+- `docs/setup/compose/README.md`
 
-- [x] HTTP routes: `/health`, `/metrics`, `/session/claim`, `/` + `/{filename}`, `/ws`
-  - Evidence: `crates/net/src/server.rs` route handlers
-- [x] Security headers present (X-Content-Type-Options, X-Frame-Options, CSP)
-  - Evidence: `DefaultHeaders` middleware in server.rs
-- [x] Protocol messages implemented with strict JSON validation
-  - Evidence: `crates/protocol/src/messages.rs` with serde derive
-- [x] Rust server embeds `src/static/` with `rust-embed`
-  - Evidence: `crates/assets/src/lib.rs` uses `#[derive(RustEmbed)]`
+Expected implementation locations:
 
-### E) Game simulation (tick loop + chunked world)
+- `src/runtime/Dockerfile`
+- `src/runtime/entrypoint.sh`
+- `src/runtime/compose/`
 
-- [x] Fixed tick loop exists (20–60Hz configured by `server.tick_rate`)
-  - Evidence: `GameEngine::tick()` called at configured rate in `crates/game/src/engine.rs`
-- [x] Single-writer rule: only tick owner mutates world state; I/O only enqueues events
-  - Evidence: `GameHandle::enqueue()` adds to queue; `tick()` processes events
-- [x] Chunk streaming: interest sets, chunkAdd/chunkRemove, entityDelta
-  - Evidence: `World::update_interest_set()`, `activate_chunks()` in `crates/world/src/world.rs`
-- [x] Villages/settlements as first-class world structures
-  - Evidence: `Settlement` struct in `crates/world/src/settlement.rs`
+Verification commands:
 
-### F) Gameplay systems (server-authoritative)
+- `docker build -f src/runtime/Dockerfile -t jxwxmk .`
+- `docker compose -f src/runtime/compose/docker-compose.yml up --build`
 
-- [x] Survival system (hunger, temperature)
-  - Evidence: `SurvivalSystem` in `crates/systems/src/survival.rs`
-- [x] Crafting consumes inventory materials and produces output
-  - Evidence: `CraftingSystem::try_craft()` in `crates/systems/src/crafting.rs`
-- [x] Death + respawn flow
-  - Evidence: `DeathSystem` in `crates/systems/src/death.rs`
-- [x] Achievements system
-  - Evidence: `AchievementSystem` in `crates/systems/src/achievements.rs`
+## C) Configuration (`config/*.json`)
 
-### G) Persistence (PostgreSQL + sqlx)
+Spec docs:
 
-- [x] SQL migrations for players, settlements, chunks tables
-  - Evidence: `PersistenceHandle::migrate()` in `crates/persistence/src/lib.rs`
-- [x] Player state loads on join and saves on disconnect
-  - Evidence: `load_player()`, `save_player()` methods
+- `docs/technical/config/README.md`
+- `docs/technical/config/files.md`
+- `docs/technical/config/schemas/README.md`
 
-### H) Frontend (Canvas renderer + input + UI) ✅ RECONSTRUCTED
+Expected implementation locations:
 
-- [x] `src/client/` TypeScript sources exist and build via `esbuild` to `src/static/game.js`.
-  - Evidence: `src/client/*.ts` source files; `npm run build` outputs `src/static/game.js` (68KB)
-- [x] Client connects to `/ws`, handles `welcome`, and performs the spawn flow.
-  - Evidence: `src/client/connection.ts` WebSocket handling; `src/client/index.ts` spawn logic
-- [x] Client handles `playerUpdate` and uses it as the authoritative source for HUD/hotbar/inventory/profile/quests/achievements.
-  - Evidence: `src/client/index.ts` routes playerUpdate to UI components
-- [x] Client maintains chunk cache and applies entity deltas.
-  - Evidence: `src/client/world.ts` chunk management and entity interpolation
-- [x] Canvas render loop works (camera + entity rendering).
-  - Evidence: `src/client/renderer.ts` requestAnimationFrame loop with Camera
-- [x] UI is present at minimum:
-  - [x] HUD (HP/hunger/temp) from `playerUpdate.vitals` - `src/client/ui/hud.ts`
-  - [x] Hotbar (7 slots) from `playerUpdate.inventory[0..=6]` - `src/client/ui/hotbar.ts`
-  - [x] Inventory view from `playerUpdate.inventory` (30 slots) - `src/client/ui/inventory.ts`
-  - [x] Crafting menu wired to `craft` messages - `src/client/ui/crafting.ts`
-  - [x] Quests + Achievements surfaces - `src/client/ui/quests.ts`, `achievements.ts`
-  - [x] Notifications/toasts - `src/client/ui/notifications.ts`
-  - [x] Session revoked overlay / login flow - `src/client/ui/screens.ts`
-- [x] Input: Unified InputManager (keyboard + touch) with ~50ms sampling
-  - Evidence: `src/client/input.ts` implements keyboard, mouse, and touch handling
-- [x] Camera smooth-follows player with zoom support
-  - Evidence: `src/client/camera.ts` implements lerp follow and zoom clamping
+- `config/*.json`
+- `src/server/crates/config/`
 
-### I) Tests (Dockerized)
+Verification commands:
 
-- [x] Integration tests: DB migrations, session claim, protocol handshake
-  - Evidence: `tests/` directory with integration tests
+- Runtime startup must validate config and fail closed on schema violations.
 
-### J) Operability
+## D) Backend HTTP + WebSocket (authoritative server)
 
-- [x] Structured logs with key context
-  - Evidence: `log::info!`, `log::error!` macros used throughout
-- [x] `/metrics` exports Prometheus format
-  - Evidence: `metrics_handler()` in `crates/net/src/server.rs`
+Spec docs:
 
-### K) Modularity
+- `docs/technical/backend/server/README.md`
+- `docs/technical/backend/server/http_ws.md`
+- `docs/technical/backend/server/protocol.md`
+- `docs/technical/contracts/protocol.md`
 
-- [x] Dependency rules enforced by crate boundaries
-  - Evidence: 9 separate crates with explicit dependencies in Cargo.toml files
-- [x] Framework types don't leak into domain modules
-  - Evidence: `world/` and `systems/` crates have no Actix/DB imports
+Evidence (docs changes):
 
----
+- Added application-level keepalive and documented idle timeout controls in `server.json`.
+- Clarified `playerUpdate` and `chunkAdd` shapes to remove client/server drift vectors.
 
-## Evidence Ledger
+Expected implementation locations:
 
-| Requirement | Code Location | Test Location |
-|-------------|---------------|---------------|
-| Docker build | `src/runtime/Dockerfile` | `docker build -t jxwxmk .` |
-| HTTP routes | `crates/net/src/server.rs` | `curl http://localhost:8080/health` |
-| WebSocket | `crates/net/src/session.rs` | Integration tests |
-| Protocol | `crates/protocol/src/messages.rs` | Unit tests |
-| Tick loop | `crates/game/src/engine.rs` | `GameEngine::tick()` |
-| World state | `crates/world/src/world.rs` | Unit tests |
-| Persistence | `crates/persistence/src/lib.rs` | `migrate()`, `load_player()` |
-| Client connection | `src/client/connection.ts` | WebSocket integration |
-| Client input | `src/client/input.ts` | Manual test (keyboard/touch) |
-| Client renderer | `src/client/renderer.ts` | Visual verification |
-| Client UI | `src/client/ui/*.ts` | Visual verification |
-| Client types | `src/client/types.ts` | Protocol compliance |
+- `src/server/crates/net/` (HTTP/WS)
+- `src/server/crates/protocol/` (schema + validation)
+- `src/server/crates/assets/` (static embed/serve)
 
----
+Verification commands:
 
-## Client Source Tree
+- `curl http://localhost:8080/health`
+- `curl http://localhost:8080/metrics`
 
-```
-src/client/
-├── README.md              # Client documentation
-├── package.json           # npm manifest with esbuild
-├── tsconfig.json          # TypeScript configuration
-├── index.ts               # Entry point (219 lines)
-├── types.ts               # Protocol types (271 lines)
-├── connection.ts          # WebSocket manager (126 lines)
-├── input.ts               # InputManager (380 lines)
-├── camera.ts              # Camera controller (75 lines)
-├── renderer.ts            # Canvas2D renderer (283 lines)
-├── world.ts               # Chunk/entity cache (186 lines)
-└── ui/                    # UI components
-    ├── README.md
-    ├── manager.ts         # UIManager (470 lines)
-    ├── hud.ts             # Vitals bars (61 lines)
-    ├── hotbar.ts          # 7-slot hotbar (84 lines)
-    ├── inventory.ts       # 30-slot inventory (142 lines)
-    ├── crafting.ts        # Crafting menu (152 lines)
-    ├── quests.ts          # Quest log (116 lines)
-    ├── achievements.ts    # Achievements tab (95 lines)
-    ├── notifications.ts   # Toast notifications (66 lines)
-    ├── screens.ts         # Login/game over (141 lines)
-    └── profile.ts         # Profile page (201 lines)
-```
+## E) Game simulation (tick loop + chunked world)
 
-**Total**: ~3,068 lines of TypeScript across 18 source files.
+Spec docs:
 
----
+- `docs/technical/backend/game/engine.md`
+- `docs/technical/backend/game/world_state.md`
+- `docs/technical/contracts/tick.md`
 
-## Full Acceptance Checklist Copy
+Evidence (docs changes):
 
-```markdown
-### A) Repo + docs invariants
-- [x] Obey `docs/policy/INSTRUCT.md` (root allowlist, 1 README per directory, Docker-first, etc.).
-- [x] Every directory under `docs/`, `config/`, and `src/` contains **exactly one** `README.md`.
-- [x] No placeholder markers in committed docs/code
-- [x] All documentation leaf files are reachable via TOCs
+- Expanded chunk streaming requirements: interest set vs loaded set and diff rules.
 
-### B) Runtime container
-- [x] Multi-stage Docker build: Node → Rust → Debian
-- [x] PostgreSQL starts inside same container
-- [x] Docker build succeeds
-- [x] `/health` returns 200 OK
+Expected implementation locations:
 
-### C) Configuration
-- [x] All config files exist
-- [x] Server loads and validates config
-- [x] Defaults for missing files
+- `src/server/crates/game/` (tick owner + event queue)
+- `src/server/crates/world/` (chunks/entities)
 
-### D) Backend HTTP + WebSocket
-- [x] All routes implemented
-- [x] Security headers
-- [x] Protocol messages
-- [x] rust-embed for static assets
+## F) Gameplay systems (server-authoritative)
 
-### E) Game simulation
-- [x] Fixed tick loop
-- [x] Single-writer rule
-- [x] Chunk streaming
-- [x] Villages/settlements
+Spec docs:
 
-### F) Gameplay systems
-- [x] Survival
-- [x] Crafting
-- [x] Death + respawn
-- [x] Achievements
+- `docs/technical/backend/game/systems_survival.md`
+- `docs/technical/backend/game/systems_interaction.md`
+- `docs/technical/backend/game/systems_crafting.md`
+- `docs/technical/backend/game/death.md`
+- `docs/technical/backend/game/barriers.md`
 
-### G) Persistence
-- [x] SQL migrations
-- [x] Player load/save
+Expected implementation locations:
 
-### H) Frontend
-- [x] TypeScript sources build via esbuild
-- [x] WebSocket client with session management
-- [x] PlayerUpdate handling for all UI surfaces
-- [x] Chunk cache with entity deltas
-- [x] Canvas2D renderer with camera
-- [x] HUD (HP/hunger/temp)
-- [x] Hotbar (7 slots)
-- [x] Inventory (30 slots)
-- [x] Crafting menu
-- [x] Quests + Achievements
-- [x] Notifications/toasts
-- [x] Session revoked overlay
-- [x] Unified InputManager (keyboard + touch)
-- [x] Camera smooth-follow + zoom
+- `src/server/crates/systems/`
 
-### I) Tests
-- [x] Dockerized tests
+## G) Persistence (PostgreSQL + sqlx)
 
-### J) Operability
-- [x] Structured logs
-- [x] Metrics endpoint
+Spec docs:
 
-### K) Modularity
-- [x] Crate boundaries
-- [x] No framework leakage
-```
+- `docs/technical/backend/persistence/README.md`
+- `docs/technical/backend/database/README.md`
+- `docs/technical/backend/database/schema.md`
 
----
+Expected implementation locations:
 
-**Report Complete** ✅
+- `src/runtime/migrations/`
+- `src/server/crates/persistence/`
 
-Client reconstruction completed successfully. All documented features are implemented and the Docker build passes.
+## H) Frontend (Canvas renderer + input + UI)
+
+Spec docs:
+
+- `docs/technical/frontend/README.md`
+- `docs/technical/frontend/build.md`
+- `docs/technical/frontend/runtime.md`
+- `docs/technical/frontend/input/README.md`
+- `docs/technical/frontend/ui/README.md`
+
+Evidence (docs changes):
+
+- Fixed the crafting UI doc to use `snake_case` recipe IDs matching `crafting.json` and the `craft` protocol message.
+- Clarified idle keepalive behavior and touch “gesture vs joystick” interpretation for mobile parity and stability.
+
+Expected implementation locations:
+
+- `src/client/` (TypeScript)
+- `src/static/` (embedded output)
+
+## I) Tests (Dockerized)
+
+Spec docs:
+
+- `docs/technical/testing/README.md`
+- `docs/technical/testing/strategy.md`
+- `docs/technical/testing/docker_commands.md`
+
+Expected implementation locations:
+
+- `src/server/**/tests` and/or `src/server/**/src/*` unit tests
+- `src/runtime/compose/` test runner wiring (if used)
+
+## J) Operability (logs, metrics, lifecycle)
+
+Spec docs:
+
+- `docs/technical/operability/README.md`
+- `docs/technical/operability/logging.md`
+- `docs/technical/operability/metrics.md`
+- `docs/technical/operability/lifecycle.md`
+
+Expected implementation locations:
+
+- `src/server/crates/net/` (HTTP endpoints, metrics)
+- `src/server/crates/game/` (tick overrun visibility)
+
+## K) Modularity (enforced boundaries)
+
+Spec docs:
+
+- `docs/technical/module_map.md`
+- `docs/technical/contracts/authority.md`
+
+Expected implementation locations:
+
+- Rust crate boundaries under `src/server/crates/` enforce forbidden edges at compile time.

@@ -14,6 +14,8 @@ References:
 - [x] Provide a Docker command path that runs:
   - unit tests
   - integration tests (including DB + migrations)
+- [x] Provide a **single-command** test runner via Docker Compose:
+  - `docker compose -f src/runtime/compose/docker-compose.test.yml up --build --abort-on-container-exit --exit-code-from test`
 - [x] Prefer running tests using the runtime image + an internal Postgres (single container rule).
 - [x] If an additional test-only container or compose file is needed, keep it under `src/` (not `docs/`).
 

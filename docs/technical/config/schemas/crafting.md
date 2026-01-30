@@ -4,6 +4,7 @@ Purpose: data-driven recipes for server-authoritative crafting.
 
 References:
 - `docs/technical/backend/game/systems_crafting.md`
+- `docs/technical/backend/server/protocol.md` (`craft`)
 - `docs/design/mechanics/crafting/recipes.md`
 
 ## Schema (v1)

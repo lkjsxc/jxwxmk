@@ -48,3 +48,12 @@ The server injects basic security headers:
 - If a new token is issued for a player ID, any existing session is revoked.
 - Revoked sessions receive `sessionRevoked` before disconnect.
 - UI must surface the revoke reason and return to login.
+
+### Keepalive / idle timeout
+
+The server enforces an application-level idle timeout:
+
+- `server.limits.ws_idle_timeout_secs`: maximum time without receiving a client WebSocket frame (text/ping/pong) before disconnect.
+- `server.limits.ws_heartbeat_interval_secs`: how often the server checks for idle sessions.
+
+Clients must keep the connection alive by sending `input` keepalives while idle (see: `docs/technical/backend/server/protocol.md`).

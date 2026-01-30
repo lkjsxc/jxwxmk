@@ -10,7 +10,7 @@ use persistence::PersistenceHandle;
 use protocol::*;
 use assets::*;
 
-use crate::session::{SessionsMap, ws_handler};
+use crate::session::{SessionsMap, WsSessionConfig, ws_handler};
 use crate::metrics::Metrics;
 
 pub struct ServerState {
@@ -25,6 +25,7 @@ pub async fn run_server(
     game: GameHandle,
     persistence: PersistenceHandle,
     sessions: SessionsMap,
+    ws_config: WsSessionConfig,
 ) -> std::io::Result<()> {
     let state = Arc::new(ServerState {
         game,
@@ -41,6 +42,7 @@ pub async fn run_server(
             .app_data(web::Data::new(state.persistence.clone()))
             .app_data(web::Data::new(state.sessions.clone()))
             .app_data(web::Data::new(state.metrics.clone()))
+            .app_data(web::Data::new(ws_config))
             .wrap(Logger::default())
             .wrap(DefaultHeaders::new()
                 .add(("X-Content-Type-Options", "nosniff"))
@@ -110,8 +112,9 @@ async fn ws_route(
     game: web::Data<GameHandle>,
     persistence: web::Data<PersistenceHandle>,
     sessions: web::Data<SessionsMap>,
+    ws_config: web::Data<WsSessionConfig>,
 ) -> Result<HttpResponse, actix_web::Error> {
-    ws_handler(req, body, game, persistence, sessions).await
+    ws_handler(req, body, game, persistence, sessions, ws_config).await
 }
 
 async fn index_handler() -> HttpResponse {

@@ -7,6 +7,7 @@
 3. Server sends `welcome` with `id`, `token`, `version`, `spawned`.
 4. Client sends `{ "type": "spawn" }` if needed.
 5. Input loop sends `input` messages every 50ms when in game.
+   - Send idle keepalives (`dx=0, dy=0`) so the connection is not dropped during inactivity.
 
 ## Disconnect
 

@@ -16,12 +16,17 @@ Identifier convention:
 { "type": "input", "data": { "dx": -1.0, "dy": 0.0, "attack": false, "interact": false, "aim": { "x": 12.5, "y": 9.0 } } }
 ```
 
-- `dx`, `dy`: movement vector components (recommended clamp to `[-1.0, 1.0]`).
+- `dx`, `dy`: movement vector components (clamp to `[-1.0, 1.0]`).
 - `attack`: primary action (tap/click).
 - `interact`: secondary action (long-press/hold).
 - `aim`: world-space target point in **world units (wu)** (see: `../../../design/world/scale_and_chunks.md`).
   - Required when `attack` or `interact` is `true`.
   - Used for authoritative targeting (gather/attack/NPC interact) and structure placement.
+
+Cadence:
+
+- The client sends `input` every ~50ms while connected during gameplay.
+- When idle, it still sends `input` with `dx=0, dy=0, attack=false, interact=false` (keepalive).
 
 ### spawn
 
@@ -97,6 +102,10 @@ This message is the authoritative source for:
 - quest list (initial state and changes)
 - unlocked achievements list (initial state and changes)
 
+Cadence:
+
+- While `spawned` is true, the server sends `playerUpdate` at the server tick rate (so the client can drive camera follow and HUD updates authoritatively).
+
 ```json
 {
   "type": "playerUpdate",
@@ -104,6 +113,8 @@ This message is the authoritative source for:
     "id": "<player_uuid>",
     "name": "NewName",
     "spawned": true,
+    "x": 12.5,
+    "y": 9.0,
     "vitals": { "hp": 30.0, "max_hp": 30.0, "hunger": 80.0, "max_hunger": 100.0, "temperature": 50.0, "max_temperature": 100.0 },
     "inventory": [null, { "item": "wood", "count": 12 }, null],
     "active_slot": 1,
@@ -118,6 +129,8 @@ This message is the authoritative source for:
 }
 ```
 
+- `x`, `y`: local player position in world units (wu).
+  - This duplicates public world state for the session owner only and is used by the client to drive camera follow even before/without a local `entityDelta` snapshot.
 - `inventory`: fixed-size array of length 30.
   - Each element is either `null` (empty slot) or `{ "item": "<snake_case_id>", "count": <int> }`.
 - `active_slot`: hotbar selection index in `[0, 6]`.
@@ -126,8 +139,10 @@ This message is the authoritative source for:
 ### chunkAdd
 
 ```json
-{ "type": "chunkAdd", "data": { "coord": [12, -4], "biome": "forest", "entities": { "resources": {}, "mobs": {}, "structures": {}, "npcs": {} } } }
+{ "type": "chunkAdd", "data": { "coord": [12, -4], "biome": "forest", "entities": { "resources": [], "mobs": [], "structures": [], "npcs": [] } } }
 ```
+
+`entities.*` are arrays of entity snapshots.
 
 ### chunkRemove
 

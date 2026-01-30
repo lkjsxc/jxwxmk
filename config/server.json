@@ -7,6 +7,8 @@
     "ws_max_message_bytes": 16384,
     "ws_messages_per_sec": 30,
     "ws_burst": 60,
+    "ws_idle_timeout_secs": 10,
+    "ws_heartbeat_interval_secs": 5,
     "max_name_len": 24
   },
   "rate_limits": {

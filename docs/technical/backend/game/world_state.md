@@ -28,3 +28,17 @@ The server owns a single `World` struct with chunked storage.
 - Clients receive only entities inside their interest set.
 - Updates are delta-based (no full-world snapshots).
 - Far chunks are frozen and not ticked until reactivated.
+
+## Interest set + streaming diffs (required)
+
+Chunk streaming requires the server to track two related sets per connected player:
+
+- **interest set**: which chunk coords should be visible now (based on player position and `world.view_radius_chunks`).
+- **loaded set**: which chunk coords the client currently has in memory (the server’s view of what it has sent via `chunkAdd` minus `chunkRemove`).
+
+On each tick (or at a bounded cadence), the server computes diffs:
+
+- `to_add = interest - loaded` → send `chunkAdd` for each coord (full chunk snapshot).
+- `to_remove = loaded - interest` → send `chunkRemove` for each coord.
+
+Entity changes within loaded chunks are sent via `entityDelta`.

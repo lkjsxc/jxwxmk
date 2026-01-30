@@ -31,7 +31,7 @@ The client is initialized in `src/client/index.ts`.
 
 ## Input Loop
 
-- Every ~50ms, sends an `input` message if movement or actions are active.
+- Every ~50ms during gameplay, sends an `input` message (including idle keepalive frames).
 - Payload matches `docs/technical/backend/server/protocol.md`:
   - always includes `dx`, `dy`, `attack`, `interact`
   - includes `aim` (world coords) whenever `attack` or `interact` is true
@@ -42,3 +42,4 @@ The client is initialized in `src/client/index.ts`.
 - Uses `requestAnimationFrame`.
 - Interpolates entity positions within active chunks.
 - Delegates UI and HUD rendering to `UIManager`.
+- Camera follow uses the authoritative local player position from `playerUpdate` (`x`, `y`).

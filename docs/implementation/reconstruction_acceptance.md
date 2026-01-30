@@ -34,8 +34,8 @@ References:
 - [ ] Runtime container starts PostgreSQL **inside the same container** and then launches the Rust server.
 - [ ] PostgreSQL is not exposed externally (bind to `127.0.0.1:5432` inside container).
 - [ ] The following commands succeed:
-  - `docker build -f src/runtime/Dockerfile -t jxwxmk .`
-  - `docker run --rm -p 8080:8080 -v jxwxmk_pgdata:/var/lib/postgresql/data -v ./config:/app/config jxwxmk`
+  - `docker compose -f src/runtime/compose/docker-compose.yml up --build`
+  - `docker build -f src/runtime/Dockerfile -t jxwxmk .` (alternative path)
 - [ ] `GET /health` returns `200 OK` with body `OK`.
 
 ### C) Configuration (`config/*.json`)
@@ -169,6 +169,8 @@ References:
   - structured error behavior for invalid messages
   - `/metrics` returns parsable Prometheus text
 - [ ] Tests run in Docker or Docker Compose (no host-only test path).
+- [ ] A single-command Docker Compose test runner exists and succeeds:
+  - `docker compose -f src/runtime/compose/docker-compose.test.yml up --build --abort-on-container-exit --exit-code-from test`
 
 ### J) Operability (logs, metrics, lifecycle)
 

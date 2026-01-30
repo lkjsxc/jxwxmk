@@ -5,6 +5,7 @@
 - Catch logic bugs with deterministic unit tests.
 - Catch integration drift (protocol/persistence/config) with containerized tests.
 - Prevent “works on host” paths: Docker is canonical.
+- Keep agent execution cost bounded by providing a single-command test runner (Docker Compose).
 
 ## Test layers
 

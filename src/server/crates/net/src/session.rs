@@ -12,8 +12,11 @@ use game::{GameHandle, GameEvent, GameResponse};
 use persistence::PersistenceHandle;
 use protocol::*;
 
-const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
-const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
+#[derive(Clone, Copy)]
+pub struct WsSessionConfig {
+    pub heartbeat_interval: Duration,
+    pub client_timeout: Duration,
+}
 
 pub type SessionsMap = Arc<RwLock<HashMap<Uuid, mpsc::UnboundedSender<ServerMessage>>>>;
 
@@ -21,6 +24,7 @@ pub struct GameSession {
     game: GameHandle,
     persistence: PersistenceHandle,
     sessions: SessionsMap,
+    ws_config: WsSessionConfig,
     player_id: Option<Uuid>,
     token: Option<Uuid>,
     hb: Instant,
@@ -34,11 +38,13 @@ impl GameSession {
         persistence: PersistenceHandle,
         sessions: SessionsMap,
         token: Option<Uuid>,
+        ws_config: WsSessionConfig,
     ) -> Self {
         Self {
             game,
             persistence,
             sessions,
+            ws_config,
             player_id: None,
             token,
             hb: Instant::now(),
@@ -75,7 +81,7 @@ impl GameSession {
         }
         
         // Start heartbeat
-        let mut heartbeat = interval(HEARTBEAT_INTERVAL);
+        let mut heartbeat = interval(self.ws_config.heartbeat_interval);
         
         loop {
             tokio::select! {
@@ -101,7 +107,7 @@ impl GameSession {
                     }
                     
                     // Check heartbeat timeout
-                    if Instant::now().duration_since(self.hb) > CLIENT_TIMEOUT {
+                    if Instant::now().duration_since(self.hb) > self.ws_config.client_timeout {
                         log::debug!("Client timeout, disconnecting");
                         let _ = session.close(None).await;
                         break;
@@ -121,7 +127,7 @@ impl GameSession {
                 
                 // Heartbeat check
                 _ = heartbeat.tick() => {
-                    if Instant::now().duration_since(self.hb) > CLIENT_TIMEOUT {
+                    if Instant::now().duration_since(self.hb) > self.ws_config.client_timeout {
                         log::debug!("Client timeout, disconnecting");
                         let _ = session.close(None).await;
                         break;
@@ -235,6 +241,7 @@ pub async fn ws_handler(
     game: web::Data<GameHandle>,
     persistence: web::Data<PersistenceHandle>,
     sessions: web::Data<SessionsMap>,
+    ws_config: web::Data<WsSessionConfig>,
 ) -> Result<HttpResponse, actix_web::Error> {
     let token: Option<Uuid> = req.uri()
         .query()
@@ -250,8 +257,9 @@ pub async fn ws_handler(
     let game = game.get_ref().clone();
     let persistence = persistence.get_ref().clone();
     let sessions = sessions.get_ref().clone();
+    let ws_config = *ws_config.get_ref();
     
-    let game_session = GameSession::new(game, persistence, sessions, token);
+    let game_session = GameSession::new(game, persistence, sessions, token, ws_config);
     
     actix_web::rt::spawn(async move {
         game_session.run(session, msg_stream).await;

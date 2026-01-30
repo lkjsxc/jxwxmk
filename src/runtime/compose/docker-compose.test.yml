@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+      - POSTGRES_DB=jxwxmk
+    volumes:
+      - jxwxmk_test_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d jxwxmk"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  test:
+    build:
+      context: ../../..
+      dockerfile: src/runtime/Dockerfile
+      target: rust-builder
+    working_dir: /build
+    environment:
+      - DATABASE_URL=postgres://postgres@db/jxwxmk
+      - CONFIG_PATH=/app/config
+    volumes:
+      - ../../../config:/app/config:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["cargo", "test", "--workspace"]
+
+volumes:
+  jxwxmk_test_pgdata:

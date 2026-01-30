@@ -9,7 +9,7 @@ Desktop uses the same interaction rules as mobile, with keyboard shortcuts retai
 - **Left Click (Tap)**: Primary action (attack/gather).
 - **Click-and-Hold (Long-Press)**: Interact (open/use/talk).
 - **E**: Interact (keyboard shortcut).
-- **Number Keys (1-9)**: Select hotbar slot.
+- **Number Keys (1-7)**: Select hotbar slot.
 - **Enter**: Chat.
 - **M**: Map.
 

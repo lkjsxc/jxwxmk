@@ -5,6 +5,7 @@ const INPUT_INTERVAL_MS = 50; // ~20Hz input sampling
 const ATTACK_COOLDOWN_MS = 500;
 const INTERACT_COOLDOWN_MS = 400;
 const LONG_PRESS_MS = 275; // ~250-300ms
+const JOYSTICK_ACTIVATION_PX = 12;
 
 interface PointerState {
   id: number;
@@ -32,6 +33,7 @@ export class InputManager {
   private pointers = new Map<number, PointerState>();
   private isPointerDown = false;
   private pressStartTime = 0;
+  private pressConsumedByLongPress = false;
 
   // Cooldowns
   private lastAttackTime = 0;
@@ -39,11 +41,13 @@ export class InputManager {
 
   // Joystick (touch)
   private joystickActive = false;
+  private joystickPointerId: number | null = null;
   private joystickCenterX = 0;
   private joystickCenterY = 0;
   private joystickCurrentX = 0;
   private joystickCurrentY = 0;
   private readonly joystickMaxRadius = 50;
+  private gesturePointerId: number | null = null;
 
   // Input loop
   private intervalId: number | null = null;
@@ -111,11 +115,13 @@ export class InputManager {
     }
 
     // Check for long-press interact (only if not clicking on UI)
-    if (this.isPointerDown && !this.interact && !this.attack) {
+    if (this.isPointerDown && !this.pressConsumedByLongPress && !this.interact && !this.attack) {
       const pressDuration = Date.now() - this.pressStartTime;
       if (pressDuration >= LONG_PRESS_MS && this.canInteract()) {
         this.interact = true;
         this.updateAim();
+        this.lastInteractTime = Date.now();
+        this.pressConsumedByLongPress = true;
       }
     }
 
@@ -240,19 +246,25 @@ export class InputManager {
 
       this.isPointerDown = true;
       this.pressStartTime = Date.now();
+      this.pressConsumedByLongPress = false;
       this.mouseX = e.clientX;
       this.mouseY = e.clientY;
+    });
 
-      // Tap = attack
-      if (this.canAttack()) {
+    window.addEventListener('mouseup', () => {
+      if (!this.isPointerDown) return;
+
+      const pressDuration = Date.now() - this.pressStartTime;
+      const wasConsumed = this.pressConsumedByLongPress;
+      this.isPointerDown = false;
+      this.pressConsumedByLongPress = false;
+
+      // Tap = attack (only if we didn't long-press)
+      if (!wasConsumed && pressDuration < LONG_PRESS_MS && this.canAttack()) {
         this.attack = true;
         this.updateAim();
         this.lastAttackTime = Date.now();
       }
-    });
-
-    window.addEventListener('mouseup', () => {
-      this.isPointerDown = false;
     });
 
     // Zoom with mouse wheel
@@ -297,30 +309,15 @@ export class InputManager {
         const x = touch.clientX;
         const y = touch.clientY;
 
-        const screenWidth = window.innerWidth;
-
-        // Left side = joystick
-        if (x < screenWidth / 2 && !this.joystickActive) {
-          this.joystickActive = true;
-          this.joystickCenterX = x;
-          this.joystickCenterY = y;
-          this.joystickCurrentX = x;
-          this.joystickCurrentY = y;
-        }
-
-        // Right side = actions
-        if (x >= screenWidth / 2) {
+        // Allocate this touch as the current gesture pointer if we don't have one.
+        // Gestures are interpreted dynamically: a drag becomes the joystick.
+        if (this.gesturePointerId === null) {
+          this.gesturePointerId = touch.identifier;
           this.isPointerDown = true;
           this.pressStartTime = Date.now();
+          this.pressConsumedByLongPress = false;
           this.mouseX = x;
           this.mouseY = y;
-
-          // Tap = attack
-          if (this.canAttack()) {
-            this.attack = true;
-            this.updateAim();
-            this.lastAttackTime = Date.now();
-          }
         }
 
         this.pointers.set(touch.identifier, {
@@ -347,8 +344,29 @@ export class InputManager {
         pointer.x = touch.clientX;
         pointer.y = touch.clientY;
 
+        // Promote this touch to joystick once it moves beyond the activation threshold.
+        if (this.joystickPointerId === null && this.gesturePointerId === touch.identifier) {
+          const dx = pointer.x - pointer.startX;
+          const dy = pointer.y - pointer.startY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist > JOYSTICK_ACTIVATION_PX && this.modalsOpen.size === 0) {
+            this.joystickPointerId = touch.identifier;
+            this.joystickActive = true;
+            this.joystickCenterX = pointer.startX;
+            this.joystickCenterY = pointer.startY;
+            this.joystickCurrentX = pointer.x;
+            this.joystickCurrentY = pointer.y;
+
+            // This press is now movement; cancel gesture interpretation.
+            this.gesturePointerId = null;
+            this.isPointerDown = false;
+            this.pressConsumedByLongPress = false;
+          }
+        }
+
         // Update joystick with clamping
-        if (this.joystickActive && pointer.startX < window.innerWidth / 2) {
+        if (this.joystickPointerId === touch.identifier) {
           // Clamp joystick position to max radius
           const dx = touch.clientX - this.joystickCenterX;
           const dy = touch.clientY - this.joystickCenterY;
@@ -364,8 +382,8 @@ export class InputManager {
           }
         }
 
-        // Update aim for right side
-        if (pointer.x >= window.innerWidth / 2) {
+        // Update aim for the active gesture pointer
+        if (this.gesturePointerId === touch.identifier) {
           this.mouseX = touch.clientX;
           this.mouseY = touch.clientY;
         }
@@ -381,15 +399,27 @@ export class InputManager {
         if (!pointer) continue;
 
         // Release joystick if this was the joystick finger
-        if (this.joystickActive && pointer.startX < window.innerWidth / 2) {
+        if (this.joystickPointerId === touch.identifier) {
           this.joystickActive = false;
+          this.joystickPointerId = null;
           this.dx = 0;
           this.dy = 0;
         }
 
-        // Release actions if this was the action finger
-        if (pointer.startX >= window.innerWidth / 2) {
+        // Resolve gesture on release (tap if not consumed by long-press)
+        if (this.gesturePointerId === touch.identifier) {
+          const pressDuration = Date.now() - this.pressStartTime;
+          const wasConsumed = this.pressConsumedByLongPress;
+
           this.isPointerDown = false;
+          this.gesturePointerId = null;
+          this.pressConsumedByLongPress = false;
+
+          if (!wasConsumed && pressDuration < LONG_PRESS_MS && this.canAttack()) {
+            this.attack = true;
+            this.updateAim();
+            this.lastAttackTime = Date.now();
+          }
         }
 
         this.pointers.delete(touch.identifier);
@@ -399,7 +429,10 @@ export class InputManager {
     canvas.addEventListener('touchcancel', (e) => {
       this.pointers.clear();
       this.joystickActive = false;
+      this.joystickPointerId = null;
       this.isPointerDown = false;
+      this.gesturePointerId = null;
+      this.pressConsumedByLongPress = false;
       this.dx = 0;
       this.dy = 0;
     });
