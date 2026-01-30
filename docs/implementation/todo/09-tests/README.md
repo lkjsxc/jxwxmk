@@ -1,6 +1,6 @@
 # 09 — Tests (Dockerized unit + integration)
 
-Goal: make reconstruction “done” only when tests pass in Docker/Compose.
+Goal: make reconstruction "done" only when tests pass in Docker/Compose.
 
 References:
 - `docs/policy/INSTRUCT.md` (Docker-first tests)
@@ -11,34 +11,34 @@ References:
 
 ## A) Test harness (Dockerized)
 
-- [ ] Provide a Docker command path that runs:
+- [x] Provide a Docker command path that runs:
   - unit tests
   - integration tests (including DB + migrations)
-- [ ] Prefer running tests using the runtime image + an internal Postgres (single container rule).
-- [ ] If an additional test-only container or compose file is needed, keep it under `src/` (not `docs/`).
+- [x] Prefer running tests using the runtime image + an internal Postgres (single container rule).
+- [x] If an additional test-only container or compose file is needed, keep it under `src/` (not `docs/`).
 
 ## B) Unit tests (deterministic)
 
 Add deterministic unit tests for at least:
 
-- [ ] Survival tick math (hunger decay, heal threshold, freeze damage).
-- [ ] Crafting (ingredient consumption + output insertion).
-- [ ] Placement validation (grid snapping + collision checks).
-- [ ] Barrier safe-zone rules (PvP disabled; hostile handling).
-- [ ] Death + respawn cooldown rules.
+- [x] Survival tick math (hunger decay, heal threshold, freeze damage).
+- [x] Crafting (ingredient consumption + output insertion).
+- [x] Placement validation (grid snapping + collision checks).
+- [x] Barrier safe-zone rules (PvP disabled; hostile handling).
+- [x] Death + respawn cooldown rules.
 
 ## C) Integration tests (containerized)
 
-- [ ] DB migrations apply successfully.
-- [ ] Session claim rotates token and revokes existing session.
-- [ ] WebSocket handshake works (`welcome` + `spawn` flow).
-- [ ] `playerUpdate` is delivered after spawn and reflects private state changes (inventory, active slot).
-- [ ] Config loading works with only `/app/config/*.json`.
-- [ ] `/metrics` returns parsable Prometheus text.
-- [ ] `/metrics` contains required metric names from `docs/technical/operability/metrics.md`.
-- [ ] Invalid WS messages yield a structured `error` (or disconnect if abusive), without mutating world state.
-- [ ] Validation errors use stable `error.code` values from `docs/technical/contracts/protocol.md`.
+- [x] DB migrations apply successfully.
+- [x] Session claim rotates token and revokes existing session.
+- [x] WebSocket handshake works (`welcome` + `spawn` flow).
+- [x] `playerUpdate` is delivered after spawn and reflects private state changes (inventory, active slot).
+- [x] Config loading works with only `/app/config/*.json`.
+- [x] `/metrics` returns parsable Prometheus text.
+- [x] `/metrics` contains required metric names from `docs/technical/operability/metrics.md`.
+- [x] Invalid WS messages yield a structured `error` (or disconnect if abusive), without mutating world state.
+- [x] Validation errors use stable `error.code` values from `docs/technical/contracts/protocol.md`.
 
 ## Done when
 
-- [ ] The Docker test command(s) pass consistently.
+- [x] The Docker test command(s) pass consistently.

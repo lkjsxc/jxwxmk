@@ -1,0 +1,20 @@
+[package]
+name = "jxwxmk-server"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "jxwxmk-server"
+path = "src/main.rs"
+
+[dependencies]
+config = { workspace = true }
+game = { workspace = true }
+net = { workspace = true }
+persistence = { workspace = true }
+protocol = { workspace = true }
+actix-web = { workspace = true }
+tokio = { workspace = true }
+uuid = { workspace = true }
+log = { workspace = true }
+env_logger = { workspace = true }

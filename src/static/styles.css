@@ -1,0 +1,291 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #1a1a2e;
+    color: #fff;
+    overflow: hidden;
+    touch-action: none; /* Prevent browser zooming/panning on mobile */
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+#game-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: #0f0f1a;
+    touch-action: none;
+}
+
+#ui-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+#ui-overlay > * {
+    pointer-events: auto;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Login Screen */
+#login-screen {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 40px;
+    border-radius: 10px;
+    border: 2px solid #4a4a6a;
+}
+
+#login-screen h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+    color: #6a6aff;
+    text-shadow: 0 0 10px #6a6aff;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.login-form input {
+    padding: 10px 15px;
+    font-size: 16px;
+    border: 1px solid #4a4a6a;
+    border-radius: 5px;
+    background: #2a2a3e;
+    color: #fff;
+}
+
+.login-form button {
+    padding: 12px 24px;
+    font-size: 18px;
+    background: #6a6aff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.login-form button:hover {
+    background: #8080ff;
+}
+
+/* HUD */
+#hud {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    pointer-events: none;
+}
+
+#hud > * {
+    pointer-events: auto;
+}
+
+.vitals {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+.bar label {
+    width: 60px;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.progress {
+    width: 150px;
+    height: 10px;
+    background: #333;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.progress > div {
+    height: 100%;
+    transition: width 0.2s;
+}
+
+#hp-bar { background: #ff4444; width: 100%; }
+#hunger-bar { background: #ffaa44; width: 100%; }
+#temp-bar { background: #4444ff; width: 50%; }
+
+#hotbar {
+    display: flex;
+    gap: 5px;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.hotbar-slot {
+    width: 50px;
+    height: 50px;
+    background: #2a2a3e;
+    border: 2px solid #4a4a6a;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.hotbar-slot.active {
+    border-color: #6a6aff;
+    box-shadow: 0 0 5px #6a6aff;
+}
+
+/* Menu Button */
+.hud-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid #4a4a6a;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hud-btn:hover {
+    background: rgba(106, 106, 255, 0.3);
+    border-color: #6a6aff;
+}
+
+/* Touch Action Buttons */
+#touch-actions {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.action-btn {
+    width: 50px;
+    height: 50px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid #4a4a6a;
+    border-radius: 5px;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btn:hover {
+    background: rgba(106, 106, 255, 0.3);
+    border-color: #6a6aff;
+}
+
+.action-btn:active {
+    transform: scale(0.95);
+}
+
+/* Notifications */
+#notifications {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.notification {
+    background: rgba(0, 0, 0, 0.8);
+    padding: 10px 20px;
+    border-radius: 5px;
+    border-left: 3px solid #6a6aff;
+    animation: slideIn 0.3s ease;
+}
+
+.notification-error {
+    border-left-color: #ff4444;
+}
+
+.notification-achievement {
+    border-left-color: #ffd700;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .progress {
+        width: 100px;
+    }
+    
+    .bar label {
+        width: 50px;
+        font-size: 10px;
+    }
+    
+    .hotbar-slot {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .action-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 20px;
+    }
+}

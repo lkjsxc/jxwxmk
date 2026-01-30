@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  jxwxmk:
+    build:
+      context: ../..
+      dockerfile: src/runtime/Dockerfile
+    image: jxwxmk:latest
+    container_name: jxwxmk
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./.local/pgdata:/var/lib/postgresql/data
+      - ../../config:/app/config:ro
+    environment:
+      - DATABASE_URL=postgres://postgres@localhost/jxwxmk
+      - CONFIG_PATH=/app/config
+    user: "1000:1000"
+    restart: unless-stopped

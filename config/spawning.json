@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "resource_respawn_seconds": {
+    "tree": 120,
+    "rock": 180,
+    "food": 60
+  },
+  "mob_respawn_seconds": {
+    "wolf": 180
+  },
+  "chunk_budgets": {
+    "forest": {
+      "resources": { "tree": 25, "rock": 12, "food": 10 },
+      "mobs": { "wolf": 4 }
+    }
+  }
+}

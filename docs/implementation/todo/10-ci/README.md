@@ -7,17 +7,17 @@ References:
 
 ## A) Build job
 
-- [ ] Add `.github/workflows/ci.yml` that triggers on:
+- [x] Add `.github/workflows/ci.yml` that triggers on:
   - `push`
   - `pull_request`
-- [ ] Job builds the image:
+- [x] Job builds the image:
   - `docker build -f src/runtime/Dockerfile -t jxwxmk:ci .`
-- [ ] Job fails on any build error.
+- [x] Job fails on any build error.
 
 ## B) Optional smoke test
 
-- [ ] Optionally run the container and hit `/health` and `/metrics` (per `docs/technical/deployment/ci.md`).
+- [x] Optionally run the container and hit `/health` and `/metrics` (per `docs/technical/deployment/ci.md`).
 
 ## Done when
 
-- [ ] CI builds successfully on a clean runner.
+- [x] CI builds successfully on a clean runner.

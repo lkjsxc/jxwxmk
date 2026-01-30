@@ -1,0 +1,11 @@
+[package]
+name = "systems"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+world = { workspace = true }
+config = { workspace = true }
+protocol = { workspace = true }
+uuid = { workspace = true }
+log = { workspace = true }

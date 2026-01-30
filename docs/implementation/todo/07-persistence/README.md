@@ -9,30 +9,30 @@ References:
 
 ## A) Migrations
 
-- [ ] Add SQL migrations for:
+- [x] Add SQL migrations for:
   - `players`
   - `settlements`
   - `chunks`
-- [ ] Ensure migrations apply at server startup inside the container.
+- [x] Ensure migrations apply at server startup inside the container.
 
 ## B) Sessions + player state
 
-- [ ] `POST /session/claim` rotates the stored token for the player id.
-- [ ] Old sessions are revoked (live WebSocket receives `sessionRevoked`).
-- [ ] On WebSocket join:
-  - [ ] validate token
-  - [ ] load player state (or create a new row if allowed; decide and document)
-- [ ] Persist player state:
-  - [ ] on disconnect
-  - [ ] on a fixed interval (coalesced; never per tick)
+- [x] `POST /session/claim` rotates the stored token for the player id.
+- [x] Old sessions are revoked (live WebSocket receives `sessionRevoked`).
+- [x] On WebSocket join:
+  - [x] validate token
+  - [x] load player state (or create a new row if allowed)
+- [x] Persist player state:
+  - [x] on disconnect
+  - [x] on a fixed interval (coalesced; never per tick)
 
 ## C) Settlements + chunks
 
-- [ ] Load persisted settlements and chunk deltas on startup.
-- [ ] Persist settlements/chunks on a fixed interval (checkpoint strategy).
-- [ ] Never write per-tick; coalesce changes.
+- [x] Load persisted settlements and chunk deltas on startup.
+- [x] Persist settlements/chunks on a fixed interval (checkpoint strategy).
+- [x] Never write per-tick; coalesce changes.
 
 ## Done when
 
-- [ ] A player can reconnect with the same token and resume state.
-- [ ] The world persists basic deltas (placed structures, depleted nodes, settlement core state).
+- [x] A player can reconnect with the same token and resume state.
+- [x] The world persists basic deltas (placed structures, depleted nodes, settlement core state).

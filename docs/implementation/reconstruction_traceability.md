@@ -1,165 +1,75 @@
 # Reconstruction Traceability Matrix
 
-This document maps acceptance criteria to documentation sources, implementation locations, and tests.
+This document maps acceptance criteria to documentation sources and implementation locations.
 
-## Traceability Format
+## Section H) Frontend (Canvas renderer + input + UI)
 
-| Acceptance Item | Source Docs | Implementation | Tests |
-|-----------------|-------------|----------------|-------|
+| Acceptance Item | Doc Source | Implementation | Test |
+|-----------------|------------|----------------|------|
+| `src/client/` TypeScript sources | `docs/technical/frontend/build.md` | `src/client/` | Build via Docker |
+| Build via esbuild to `src/static/game.js` | `docs/technical/frontend/build.md` | `src/client/package.json` | `npm run build` in Docker |
+| Client connects to `/ws`, handles `welcome` | `docs/technical/frontend/runtime.md` | `src/client/connection.ts` | Integration test |
+| Client performs spawn flow | `docs/technical/frontend/runtime.md` | `src/client/index.ts` | Manual test |
+| Client handles `playerUpdate` for HUD/hotbar/inventory | `docs/technical/frontend/ui/hud.md` | `src/client/ui/` | Visual verification |
+| Chunk cache maintenance | `docs/technical/frontend/runtime.md` | `src/client/world.ts` | Unit test |
+| `chunkAdd`/`chunkRemove`/`entityDelta` handling | `docs/technical/backend/server/protocol.md` | `src/client/world.ts` | Integration test |
+| Canvas render loop (camera + entities) | `docs/technical/frontend/rendering/` | `src/client/renderer.ts` | Visual verification |
+| UI: HUD (HP/hunger/temp) | `docs/technical/frontend/ui/hud.md` | `src/client/ui/hud.ts` | Visual verification |
+| UI: Hotbar slot selection | `docs/technical/frontend/ui/hud.md` | `src/client/ui/hotbar.ts` | Unit test |
+| UI: Inventory view (30 slots) | `docs/technical/frontend/ui/inventory.md` | `src/client/ui/inventory.ts` | Visual verification |
+| UI: Crafting menu | `docs/technical/frontend/ui/crafting.md` | `src/client/ui/crafting.ts` | Visual verification |
+| UI: Quests + Achievements | `docs/technical/frontend/ui/quests.md`, `achievements.md` | `src/client/ui/` | Visual verification |
+| UI: Notifications/toasts | `docs/technical/frontend/ui/notifications.md` | `src/client/ui/notifications.ts` | Visual verification |
+| Session revoked overlay | `docs/technical/frontend/ui/screens.md` | `src/client/ui/screens.ts` | Manual test |
+| Input: Unified InputManager | `docs/technical/frontend/input/` | `src/client/input.ts` | Unit test |
+| Input: Keyboard (WASD, 1-7, E) | `docs/technical/frontend/input/keyboard.md` | `src/client/input.ts` | Manual test |
+| Input: Touch (joystick + gestures) | `docs/technical/frontend/input/touch.md` | `src/client/input.ts` | Manual test |
+| Camera smooth follow + zoom | `docs/technical/frontend/rendering/camera.md` | `src/client/camera.ts` | Visual verification |
 
----
+## Frontend Source Tree Mapping
 
-## A) Repo + docs invariants
+```
+src/client/
+├── README.md                 # Directory documentation (required)
+├── package.json              # npm manifest with esbuild
+├── tsconfig.json             # TypeScript configuration
+├── index.ts                  # Entry point
+├── types.ts                  # Shared type definitions
+├── connection.ts             # WebSocket connection manager
+├── input.ts                  # InputManager (keyboard + touch)
+├── camera.ts                 # Camera controller
+├── renderer.ts               # Canvas2D renderer
+├── world.ts                  # Chunk cache + entity management
+└── ui/                       # UI components
+    ├── README.md
+    ├── manager.ts            # UIManager
+    ├── hud.ts                # HUD bars (HP/hunger/temp)
+    ├── hotbar.ts             # Hotbar (7 slots)
+    ├── inventory.ts          # Inventory grid (30 slots)
+    ├── crafting.ts           # Crafting menu
+    ├── quests.ts             # Quest log
+    ├── achievements.ts       # Achievements tab
+    ├── notifications.ts      # Toasts
+    ├── screens.ts            # Login/game over overlays
+    └── profile.ts            # Profile page
+```
 
-| Acceptance Item | Source Docs | Implementation | Tests |
-|-----------------|-------------|----------------|-------|
-| Root allowlist | `docs/policy/INSTRUCT.md` §1.1 | Root directory structure | Visual inspection |
-| One README per directory | `docs/policy/INSTRUCT.md` §1.2 | All `src/`, `config/`, `docs/` dirs | `find` command validation |
-| No placeholder markers | `docs/policy/INSTRUCT.md` §1.2.1 | `src/`, `docs/` content grep | `grep -r "TODO\|TBD\|stub"` |
-| TOC reachability | `docs/policy/INSTRUCT.md` §1.2 | All leaf docs linked via README chain | Manual traversal |
+## Protocol Message Coverage
 
-## B) Runtime container
-
-| Acceptance Item | Source Docs | Implementation | Tests |
-|-----------------|-------------|----------------|-------|
-| Multi-stage Docker build | `docs/technical/deployment/README.md` | `src/runtime/Dockerfile` | `docker build` command |
-| Single container runtime | `docs/policy/INSTRUCT.md` §1.4 | Runtime stage in Dockerfile | Container inspection |
-| PostgreSQL internal only | `docs/technical/deployment/README.md` | `entrypoint.sh` bind config | Port scan validation |
-| Health endpoint | `docs/technical/backend/server/http_ws.md` | `net` crate HTTP handler | Integration test |
-
-## C) Configuration
-
-| Acceptance Item | Source Docs | Implementation | Tests |
-|-----------------|-------------|----------------|-------|
-| Config file set | `docs/technical/config/files.md` | `config/*.json` | File existence |
-| Config loading | `docs/technical/config/README.md` | `config` crate loader | Unit tests |
-| Schema validation | `docs/technical/config/schemas/` | `config` crate validation | Unit tests |
-| Unknown field rejection | `docs/technical/contracts/config.md` | Serde `deny_unknown_fields` | Unit tests |
-
-## D) Backend HTTP + WebSocket
-
-| Acceptance Item | Source Docs | Implementation | Tests |
-|-----------------|-------------|----------------|-------|
-| HTTP routes | `docs/technical/backend/server/http_ws.md` | `net` crate HTTP handlers | Integration tests |
-| Single-session enforcement | `docs/technical/security/session_model.md` | Session registry in `net` | Integration test |
-| Security headers | `docs/technical/backend/server/http_ws.md` | Actix middleware | Integration test |
-| Protocol messages | `docs/technical/backend/server/protocol.md` | `protocol` crate types | Unit tests |
-| Strict validation | `docs/technical/contracts/protocol.md` | `protocol` crate validation | Unit tests |
-| Error responses | `docs/technical/contracts/protocol.md` §Error model | `protocol` crate error types | Integration tests |
-| Private state isolation | `docs/technical/contracts/protocol.md` §Public vs private | `game` crate broadcast logic | Unit tests |
-| Input aim validation | `docs/technical/backend/server/protocol.md` | `systems` crate interaction | Unit tests |
-| Static asset embedding | `docs/technical/backend/server/static_assets.md` | `assets` crate with `rust-embed` | Integration test |
-
-## E) Game simulation
-
-| Acceptance Item | Source Docs | Implementation | Tests |
-|-----------------|-------------|----------------|-------|
-| Fixed tick loop | `docs/technical/contracts/tick.md` | `game` crate tick loop | Metrics validation |
-| Single-writer rule | `docs/technical/contracts/authority.md` | `game` crate ownership | Code review |
-| Tick backpressure | `docs/technical/contracts/tick.md` §Backpressure | Bounded queues in `game` | Load test |
-| Chunk streaming | `docs/technical/backend/game/world_state.md` | `world` + `game` crates | Integration test |
-| Interest management | `docs/technical/backend/game/world_state.md` | `world` crate interest sets | Unit tests |
-| Settlements | `docs/design/world/settlements.md` | `world` crate settlement gen | Unit tests |
-
-## F) Gameplay systems
-
-| Acceptance Item | Source Docs | Implementation | Tests |
-|-----------------|-------------|----------------|-------|
-| Survival system | `docs/technical/backend/game/systems_survival.md` | `systems` crate survival | Unit tests |
-| Movement | `docs/technical/backend/game/systems_interaction.md` | `systems` crate movement | Unit tests |
-| Interaction | `docs/technical/backend/game/systems_interaction.md` | `systems` crate interaction | Unit tests |
-| Crafting | `docs/technical/backend/game/systems_crafting.md` | `systems` crate crafting | Unit tests |
-| Spawning/AI | `docs/technical/backend/game/spawning_and_ai.md` | `systems` crate spawning | Unit tests |
-| Barriers | `docs/technical/backend/game/barriers.md` | `systems` crate barriers | Unit tests |
-| Death/respawn | `docs/technical/backend/game/death.md` | `systems` crate death | Unit tests |
-| Achievements | `docs/technical/backend/game/achievements.md` | `systems` crate achievements | Unit tests |
-| Quests | `docs/technical/backend/game/quests.md` | `systems` crate quests | Unit tests |
-
-## G) Persistence
-
-| Acceptance Item | Source Docs | Implementation | Tests |
-|-----------------|-------------|----------------|-------|
-| SQL migrations | `docs/technical/backend/database/schema.md` | `persistence` crate migrations | Integration test |
-| Player state | `docs/technical/backend/persistence/README.md` | `persistence` crate player ops | Integration test |
-| Settlement state | `docs/technical/backend/persistence/README.md` | `persistence` crate settlement ops | Integration test |
-| Chunk deltas | `docs/technical/backend/persistence/README.md` | `persistence` crate chunk ops | Integration test |
-| Checkpoint strategy | `docs/technical/contracts/persistence.md` | `game` crate checkpoint logic | Integration test |
-
-## H) Frontend
-
-| Acceptance Item | Source Docs | Implementation | Tests |
-|-----------------|-------------|----------------|-------|
-| TypeScript build | `docs/technical/frontend/build.md` | `src/client/` + esbuild | Build test |
-| Connection flow | `docs/technical/frontend/runtime.md` | `src/client/` connection logic | Manual test |
-| PlayerUpdate handling | `docs/technical/frontend/ui/README.md` | `src/client/` state store | Manual test |
-| Chunk cache | `docs/technical/frontend/runtime.md` | `src/client/` chunk cache | Manual test |
-| Canvas rendering | `docs/technical/frontend/rendering/README.md` | `src/client/` renderer | Manual test |
-| UI surfaces | `docs/technical/frontend/ui/README.md` | `src/client/` UI components | Manual test |
-
-## I) Tests
-
-| Acceptance Item | Source Docs | Implementation | Tests |
-|-----------------|-------------|----------------|-------|
-| Unit tests | `docs/technical/testing/README.md` | `src/server/*/tests/` | `cargo test` |
-| Integration tests | `docs/technical/testing/README.md` | `src/server/tests/` | Docker test runner |
-| Docker-first | `docs/policy/INSTRUCT.md` §1.5 | All test commands use Docker | CI validation |
-
-## J) Operability
-
-| Acceptance Item | Source Docs | Implementation | Tests |
-|-----------------|-------------|----------------|-------|
-| Structured logs | `docs/technical/operability/logging.md` | `env_logger` + structured format | Log inspection |
-| Metrics endpoint | `docs/technical/operability/metrics.md` | `net` crate metrics handler | Integration test |
-| Lifecycle | `docs/technical/operability/lifecycle.md` | `game` + `net` crate lifecycle | Integration test |
-
-## K) Modularity
-
-| Acceptance Item | Source Docs | Implementation | Tests |
-|-----------------|-------------|----------------|-------|
-| Crate boundaries | `docs/technical/module_map.md` | `src/server/Cargo.toml` workspace | Build validation |
-| Dependency rules | `docs/technical/module_map.md` §Dependency Rules | Crate `Cargo.toml` files | Build validation |
-| Framework isolation | `docs/technical/module_map.md` §Boundary hygiene | `world`/`systems` crate imports | Code review |
-
----
-
-## Doc-to-Code Mapping
-
-### Protocol Types
-- **Docs**: `docs/technical/backend/server/protocol.md`, `docs/technical/contracts/protocol.md`
-- **Code**: `src/server/protocol/src/lib.rs` (message types, validation)
-
-### Config
-- **Docs**: `docs/technical/config/`, `docs/technical/contracts/config.md`
-- **Code**: `src/server/config/src/lib.rs` (loader, validation)
-
-### World State
-- **Docs**: `docs/technical/backend/game/world_state.md`, `docs/design/world/`
-- **Code**: `src/server/world/src/lib.rs` (World, Chunk, entities)
-
-### Systems
-- **Docs**: `docs/technical/backend/game/systems_*.md`
-- **Code**: `src/server/systems/src/` (survival, combat, crafting, etc.)
-
-### Game Engine
-- **Docs**: `docs/technical/backend/game/engine.md`, `docs/technical/contracts/tick.md`
-- **Code**: `src/server/game/src/lib.rs` (tick loop, event queues)
-
-### Persistence
-- **Docs**: `docs/technical/backend/persistence/`, `docs/technical/backend/database/`
-- **Code**: `src/server/persistence/src/lib.rs` (sqlx, migrations)
-
-### Network
-- **Docs**: `docs/technical/backend/server/http_ws.md`, `docs/technical/security/`
-- **Code**: `src/server/net/src/lib.rs` (HTTP, WebSocket, sessions)
-
-### Assets
-- **Docs**: `docs/technical/backend/server/static_assets.md`
-- **Code**: `src/server/assets/src/lib.rs` (rust-embed, serving)
-
-### Client
-- **Docs**: `docs/technical/frontend/`
-- **Code**: `src/client/src/` (TypeScript client)
-
-### Runtime
-- **Docs**: `docs/technical/deployment/`, `docs/technical/operability/lifecycle.md`
-- **Code**: `src/runtime/` (Dockerfile, entrypoint)
+| Message | Direction | Implementation | Test |
+|---------|-----------|----------------|------|
+| `input` | C→S | `src/client/input.ts` | Unit test |
+| `spawn` | C→S | `src/client/index.ts` | Integration |
+| `craft` | C→S | `src/client/ui/crafting.ts` | Integration |
+| `slot` | C→S | `src/client/ui/hotbar.ts` | Unit test |
+| `swapSlots` | C→S | `src/client/ui/inventory.ts` | Integration |
+| `welcome` | S→C | `src/client/connection.ts` | Integration |
+| `playerUpdate` | S→C | `src/client/index.ts` | Integration |
+| `chunkAdd` | S→C | `src/client/world.ts` | Unit test |
+| `chunkRemove` | S→C | `src/client/world.ts` | Unit test |
+| `entityDelta` | S→C | `src/client/world.ts` | Unit test |
+| `sessionRevoked` | S→C | `src/client/connection.ts` | Manual |
+| `error` | S→C | `src/client/ui/notifications.ts` | Manual |
+| `achievement` | S→C | `src/client/ui/notifications.ts` | Manual |
+| `notification` | S→C | `src/client/ui/notifications.ts` | Manual |
+| `questUpdate` | S→C | `src/client/ui/quests.ts` | Integration |

@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "quests": [
+    {
+      "id": "caravan_guard",
+      "name": "Guard the Caravan",
+      "description": "Protect the merchant caravan from bandits.",
+      "objectives": [
+        { "type": "kill", "target": "bandit", "count": 3 }
+      ],
+      "rewards": {
+        "xp": 100,
+        "items": [{ "item": "salt_crate", "count": 2 }]
+      }
+    }
+  ]
+}

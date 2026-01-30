@@ -1,6 +1,6 @@
 # 08 — Frontend (TS client + Canvas + UI)
 
-Goal: implement the “dumb client”: renderer + input only, matching the server protocol.
+Goal: implement the "dumb client": renderer + input only, matching the server protocol.
 
 References:
 - `docs/technical/frontend/build.md`
@@ -12,61 +12,61 @@ References:
 
 ## A) Build pipeline
 
-- [ ] `npm run build` bundles `src/client/index.ts` to `src/static/game.js` using `esbuild`.
-- [ ] Docker build invokes the build step in the Node stage.
+- [x] `npm run build` bundles `src/client/index.ts` to `src/static/game.js` using `esbuild`.
+- [x] Docker build invokes the build step in the Node stage.
 
 ## B) Connection + session flow
 
-- [ ] Client stores the session token in `localStorage`.
-- [ ] Client connects to `/ws?token=<token>` when a token exists.
-- [ ] On `welcome`:
-  - [ ] store token
-  - [ ] send `spawn` if `spawned` is false
-- [ ] On `playerUpdate`:
-  - [ ] update the local `PlayerState` store (inventory, vitals, progression, quests, achievements)
-  - [ ] render HUD/hotbar/inventory/profile/quests/achievements from `PlayerState` (no “invented” client authority)
-- [ ] On `sessionRevoked`:
-  - [ ] clear token
-  - [ ] show blocking overlay and return to login
-- [ ] On `error`:
-  - [ ] show a toast with the error message
+- [x] Client stores the session token in `localStorage`.
+- [x] Client connects to `/ws?token=<token>` when a token exists.
+- [x] On `welcome`:
+  - [x] store token
+  - [x] send `spawn` if `spawned` is false
+- [x] On `playerUpdate`:
+  - [x] update the local `PlayerState` store (inventory, vitals, progression, quests, achievements)
+  - [x] render HUD/hotbar/inventory/profile/quests/achievements from `PlayerState` (no "invented" client authority)
+- [x] On `sessionRevoked`:
+  - [x] clear token
+  - [x] show blocking overlay and return to login
+- [x] On `error`:
+  - [x] show a toast with the error message
   - optionally highlight the relevant UI surface based on `code`
 
 ## C) World replication
 
-- [ ] Maintain local chunk cache keyed by chunk coord.
-- [ ] Handle:
-  - [ ] `chunkAdd` (insert chunk)
-  - [ ] `chunkRemove` (evict chunk)
-  - [ ] `entityDelta` (apply updates/removals)
+- [x] Maintain local chunk cache keyed by chunk coord.
+- [x] Handle:
+  - [x] `chunkAdd` (insert chunk)
+  - [x] `chunkRemove` (evict chunk)
+  - [x] `entityDelta` (apply updates/removals)
 
 ## D) Input
 
-- [ ] Implement `InputManager` (keyboard + touch unified).
-- [ ] Every ~50ms, send `input` when movement/actions are active.
-- [ ] Include `aim` world coordinates when `attack` or `interact` is true.
-- [ ] Implement slot switching:
+- [x] Implement `InputManager` (keyboard + touch unified).
+- [x] Every ~50ms, send `input` when movement/actions are active.
+- [x] Include `aim` world coordinates when `attack` or `interact` is true.
+- [x] Implement slot switching:
   - number keys / clicking hotbar sends `slot`
   - drag/drop (optional) uses `swapSlots`
 
 ## E) Rendering (Canvas2D)
 
-- [ ] `requestAnimationFrame` loop draws world and UI.
-- [ ] Camera follows player smoothly (per rendering docs).
-- [ ] Draw entities with minimal visuals (shapes/sprites), using interpolation.
+- [x] `requestAnimationFrame` loop draws world and UI.
+- [x] Camera follows player smoothly (per rendering docs).
+- [x] Draw entities with minimal visuals (shapes/sprites), using interpolation.
 
 ## F) UI (Canvas-rendered)
 
 Minimum surfaces required (see acceptance criteria):
 
-- [ ] HUD bars (HP/hunger/temp) from `playerUpdate.vitals`.
-- [ ] Hotbar (7 slots) from `playerUpdate.inventory[0..=6]` + active highlight from `playerUpdate.active_slot`.
-- [ ] Inventory view from `playerUpdate.inventory` (30 slots); swap is confirmed by the next `playerUpdate`.
-- [ ] Crafting menu wired to `craft` messages.
-- [ ] Quests and achievements surfaces.
-- [ ] Notifications/toasts.
-- [ ] Login/profile screen that can claim a player id and show/copy it.
+- [x] HUD bars (HP/hunger/temp) from `playerUpdate.vitals`.
+- [x] Hotbar (7 slots) from `playerUpdate.inventory[0..=6]` + active highlight from `playerUpdate.active_slot`.
+- [x] Inventory view from `playerUpdate.inventory` (30 slots); swap is confirmed by the next `playerUpdate`.
+- [x] Crafting menu wired to `craft` messages.
+- [x] Quests and achievements surfaces.
+- [x] Notifications/toasts.
+- [x] Login/profile screen that can claim a player id and show/copy it.
 
 ## Done when
 
-- [ ] A player can claim a session, connect, spawn, move, and see chunk/entity updates.
+- [x] A player can claim a session, connect, spawn, move, and see chunk/entity updates.

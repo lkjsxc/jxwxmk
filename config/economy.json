@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "prices": {
+    "salt_crate": { "buy": 10, "sell": 8 }
+  }
+}

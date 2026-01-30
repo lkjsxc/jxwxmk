@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  jxwxmk:
+    image: jxwxmk:latest
+    container_name: jxwxmk
+    ports:
+      - "8080:8080"
+    volumes:
+      - jxwxmk_pgdata:/var/lib/postgresql/data
+      - ./config:/app/config:ro
+    environment:
+      - DATABASE_URL=postgres://postgres@localhost/jxwxmk
+      - CONFIG_PATH=/app/config
+    restart: unless-stopped
+
+volumes:
+  jxwxmk_pgdata:

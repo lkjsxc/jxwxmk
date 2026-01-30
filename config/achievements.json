@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "achievements": [
+    {
+      "id": "first_steps",
+      "name": "First Steps",
+      "description": "Take your first 100 steps in the world.",
+      "requirement": { "type": "stat", "stat": "steps", "value": 100 },
+      "reward_xp": 10
+    },
+    {
+      "id": "gatherer",
+      "name": "Gatherer",
+      "description": "Gather 50 resources.",
+      "requirement": { "type": "stat", "stat": "gathers", "value": 50 },
+      "reward_xp": 25
+    },
+    {
+      "id": "craftsman",
+      "name": "Craftsman",
+      "description": "Craft 10 items.",
+      "requirement": { "type": "stat", "stat": "crafts", "value": 10 },
+      "reward_xp": 25
+    }
+  ]
+}
